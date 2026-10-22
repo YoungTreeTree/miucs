@@ -1,0 +1,151 @@
+{
+  "checks" : [
+    {
+      "metrics" : {
+        "frames" : 25,
+        "maxCentsError" : 0.00022961357443893729,
+        "voiced" : 25
+      },
+      "name" : "Single-note 130.8128 Hz",
+      "passed" : true
+    },
+    {
+      "metrics" : {
+        "frames" : 25,
+        "maxCentsError" : 0,
+        "voiced" : 25
+      },
+      "name" : "Single-note 220.0 Hz",
+      "passed" : true
+    },
+    {
+      "metrics" : {
+        "frames" : 25,
+        "maxCentsError" : 0.00022961357443893729,
+        "voiced" : 25
+      },
+      "name" : "Single-note 261.6256 Hz",
+      "passed" : true
+    },
+    {
+      "metrics" : {
+        "frames" : 25,
+        "maxCentsError" : 0,
+        "voiced" : 25
+      },
+      "name" : "Single-note 440.0 Hz",
+      "passed" : true
+    },
+    {
+      "metrics" : {
+        "frames" : 25,
+        "maxCentsError" : 0.00010124743771355379,
+        "voiced" : 25
+      },
+      "name" : "Single-note 523.2511 Hz",
+      "passed" : true
+    },
+    {
+      "metrics" : {
+        "frames" : 25,
+        "maxCentsError" : 0,
+        "voiced" : 25
+      },
+      "name" : "Single-note 880.0 Hz",
+      "passed" : true
+    },
+    {
+      "metrics" : {
+        "frames" : 25,
+        "maxCentsError" : 0.00043210851252890777,
+        "voiced" : 25
+      },
+      "name" : "Single-note 1046.502 Hz",
+      "passed" : true
+    },
+    {
+      "metrics" : {
+        "accuracyWithin50Cents" : 1,
+        "estimatedHz" : [
+          261.62556530059868,
+          329.62755691286992,
+          391.99543598174927,
+          329.62755691286992,
+          261.62556530059868,
+          523.25113060119736,
+          261.62556530059868
+        ],
+        "octaveErrors" : 0
+      },
+      "name" : "Predominant melody with accompaniment: instrument",
+      "passed" : true
+    },
+    {
+      "metrics" : {
+        "accuracyWithin50Cents" : 1,
+        "estimatedHz" : [
+          261.62556530059868,
+          329.62755691286992,
+          391.99543598174927,
+          329.62755691286992,
+          261.62556530059868,
+          523.25113060119736,
+          261.62556530059868
+        ],
+        "octaveErrors" : 0
+      },
+      "name" : "Predominant melody with accompaniment: vocal-formants",
+      "passed" : true
+    },
+    {
+      "metrics" : {
+        "frames" : 25,
+        "hits" : 25
+      },
+      "name" : "Missing fundamental",
+      "passed" : true
+    },
+    {
+      "metrics" : {
+        "comparedFrames" : 25
+      },
+      "name" : "Amplitude does not change pitch",
+      "passed" : true
+    },
+    {
+      "metrics" : {
+        "percussionFalseFrames" : 0,
+        "percussionFrames" : 137
+      },
+      "name" : "Silence and broadband percussion reject melody",
+      "passed" : true
+    },
+    {
+      "metrics" : {
+        "frames" : 43
+      },
+      "name" : "Chunk-independent pitch timeline",
+      "passed" : true
+    },
+    {
+      "metrics" : {
+        "chunkMilliseconds" : 10,
+        "hopSamples" : 1024,
+        "responseMilliseconds" : [
+          70.000000000000057,
+          50.000000000000043,
+          50.000000000000043
+        ],
+        "windowSamples" : 4096
+      },
+      "name" : "Causal pitch response measured at PCM delivery, not window center",
+      "passed" : true
+    }
+  ],
+  "date" : "2026-10-22T08:20:51Z",
+  "failed" : 0,
+  "limitations" : [
+    "Accompaniment tests are controlled synthesis; not a general-music accuracy guarantee"
+  ],
+  "passed" : 14
+}

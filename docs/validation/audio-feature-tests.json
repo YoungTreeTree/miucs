@@ -1,0 +1,272 @@
+{
+  "checks" : [
+    {
+      "detail" : "0.5-amplitude 1500 Hz sine; RMS=0.5\/√2, crest=3.0103 dB",
+      "measurements" : {
+        "crestDB" : 3.0103001160734455,
+        "peak" : 0.5,
+        "rms" : 0.35355338410363324,
+        "rmsDBFS" : -9.03090002935307
+      },
+      "name" : "RMS \/ peak \/ crest \/ dBFS",
+      "passed" : true
+    },
+    {
+      "detail" : "",
+      "measurements" : {
+        "halfAmplitudeDB" : 6.020599913279623,
+        "unclampedPeak" : 1.25
+      },
+      "name" : "Amplitude scaling remains linear",
+      "passed" : true
+    },
+    {
+      "detail" : "",
+      "measurements" : {
+        "rms" : 0,
+        "silenceDuration" : 0.9813333333333328
+      },
+      "name" : "Silence has no fabricated spectral \/ spatial values",
+      "passed" : true
+    },
+    {
+      "detail" : "Frequency tolerance 2 Hz; band share ≥ 99%",
+      "measurements" : {
+        "bandShare" : 0.9999999999999928,
+        "bandwidthHz" : 16.57281518405971,
+        "frequencyHz" : 187.5
+      },
+      "name" : "Single-tone frequency and low band",
+      "passed" : true
+    },
+    {
+      "detail" : "Frequency tolerance 2 Hz; band share ≥ 99%",
+      "measurements" : {
+        "bandShare" : 0.9999999999999951,
+        "bandwidthHz" : 16.572815307536807,
+        "frequencyHz" : 1499.9999996507543
+      },
+      "name" : "Single-tone frequency and mid band",
+      "passed" : true
+    },
+    {
+      "detail" : "Frequency tolerance 2 Hz; band share ≥ 99%",
+      "measurements" : {
+        "bandShare" : 0.9999999999999984,
+        "bandwidthHz" : 16.572814813628398,
+        "frequencyHz" : 5999.999999650755
+      },
+      "name" : "Single-tone frequency and high band",
+      "passed" : true
+    },
+    {
+      "detail" : "187.5\/1500\/6000 Hz at amplitudes 0.3\/0.2\/0.1; shares 9\/14,4\/14,1\/14",
+      "measurements" : {
+        "highShare" : 0.07142857611686823,
+        "lowShare" : 0.6428571477988493,
+        "midShare" : 0.28571427608428246,
+        "spectralPower" : 0.07000000250463587
+      },
+      "name" : "Mixture band energies follow squared amplitudes",
+      "passed" : true
+    },
+    {
+      "detail" : "",
+      "measurements" : {
+        "highCentroid" : 5999.999999650755,
+        "lowCentroid" : 187.5,
+        "noiseBandwidth" : 5729.914353018421
+      },
+      "name" : "Brightness and spectral spread distinguish signals",
+      "passed" : true
+    },
+    {
+      "detail" : "Tone < 0.001; mean white-noise power flatness 0.3...0.9",
+      "measurements" : {
+        "noiseFlatness" : 0.562107792102183,
+        "toneFlatness" : 6.246692386128402e-10
+      },
+      "name" : "Flatness distinguishes tone and seeded white noise",
+      "passed" : true
+    },
+    {
+      "detail" : "",
+      "measurements" : {
+        "balance" : -1,
+        "centroidHz" : 1499.9999996507538,
+        "sideEnergyRatio" : 0.5
+      },
+      "name" : "Stereo left only",
+      "passed" : true
+    },
+    {
+      "detail" : "",
+      "measurements" : {
+        "balance" : 1,
+        "centroidHz" : 1499.9999996507538,
+        "sideEnergyRatio" : 0.5
+      },
+      "name" : "Stereo right only",
+      "passed" : true
+    },
+    {
+      "detail" : "",
+      "measurements" : {
+        "balance" : 0,
+        "centroidHz" : 1499.9999996507543,
+        "sideEnergyRatio" : 0
+      },
+      "name" : "Stereo in phase",
+      "passed" : true
+    },
+    {
+      "detail" : "",
+      "measurements" : {
+        "balance" : 0,
+        "centroidHz" : 1499.9999996507543,
+        "sideEnergyRatio" : 1
+      },
+      "name" : "Stereo anti phase",
+      "passed" : true
+    },
+    {
+      "detail" : "",
+      "measurements" : {
+        "correlation" : 0.0008348894573901688,
+        "sideEnergyRatio" : 0.49955518594074866
+      },
+      "name" : "Independent stereo noise",
+      "passed" : true
+    },
+    {
+      "detail" : "",
+      "measurements" : {
+        "channelCount" : 1
+      },
+      "name" : "Mono has no stereo measurements",
+      "passed" : true
+    },
+    {
+      "detail" : "",
+      "measurements" : {
+        "centroidHz" : 1499.9999996507543,
+        "correlation" : 0.9999999999999988
+      },
+      "name" : "DC removal preserves spectrum and centered correlation",
+      "passed" : true
+    },
+    {
+      "detail" : "1000 Hz non-bin-centered tone, centroid tolerance 10 Hz",
+      "measurements" : {
+        "centroidHz" : 996.7734464038565,
+        "sampleRate" : 44100
+      },
+      "name" : "Actual sample rate 44100 Hz",
+      "passed" : true
+    },
+    {
+      "detail" : "1000 Hz non-bin-centered tone, centroid tolerance 10 Hz",
+      "measurements" : {
+        "centroidHz" : 994.1527707113164,
+        "sampleRate" : 96000
+      },
+      "name" : "Actual sample rate 96000 Hz",
+      "passed" : true
+    },
+    {
+      "detail" : "Same PCM in 480-sample vs 17\/511\/4096\/127\/1024-sample blocks; exact JSON equality",
+      "measurements" : {
+        "expectedFrames" : 78,
+        "frames" : 78
+      },
+      "name" : "Chunk sizes do not change analysis",
+      "passed" : true
+    },
+    {
+      "detail" : "",
+      "measurements" : {
+        "centroidHz" : 996.7734464038565,
+        "firstTime" : 0.023219954648526078
+      },
+      "name" : "Sample-rate changes reset pending audio and history",
+      "passed" : true
+    },
+    {
+      "detail" : "25 ms attack, 200 ms release; analytic exponential on DC level step",
+      "measurements" : {
+        "expectedLastEnvelope" : 0.04172887851445837,
+        "firstEnvelope" : 0.409265157740071,
+        "lastEnvelope" : 0.04172887851445839
+      },
+      "name" : "Time-based attack and release",
+      "passed" : true
+    },
+    {
+      "detail" : "",
+      "measurements" : {
+        "silenceHoldSeconds" : 0.15
+      },
+      "name" : "Silence hysteresis and hold time",
+      "passed" : true
+    },
+    {
+      "detail" : "Sine: zero events; seeded white noise after first second: zero events in 5 seconds",
+      "measurements" : {
+        "noiseFalseOnsetsAfterWarmup" : 0,
+        "toneFalseOnsets" : 0
+      },
+      "name" : "Stationary sine and noise avoid repeated onsets",
+      "passed" : true
+    },
+    {
+      "detail" : "8 decaying low-tone\/noise bursts at 0.5-second intervals; match within 50 ms; no extra events",
+      "measurements" : {
+        "detected" : 8,
+        "maxTimingErrorMs" : 18.66666666666672
+      },
+      "name" : "Known drum-like onsets",
+      "passed" : true
+    },
+    {
+      "detail" : "CoreMedia sample buffer round-trip, stereo channel identity and rate",
+      "measurements" : {
+        "frames" : 4800,
+        "sampleRate" : 44100
+      },
+      "name" : "PCM decoding planar",
+      "passed" : true
+    },
+    {
+      "detail" : "CoreMedia sample buffer round-trip, stereo channel identity and rate",
+      "measurements" : {
+        "frames" : 4800,
+        "sampleRate" : 44100
+      },
+      "name" : "PCM decoding interleaved",
+      "passed" : true
+    },
+    {
+      "detail" : "",
+      "measurements" : {
+        "rejectedCases" : 6
+      },
+      "name" : "Invalid input rejected without poisoning next frame",
+      "passed" : true
+    },
+    {
+      "detail" : "10 seconds of stereo input; processing faster than real time",
+      "measurements" : {
+        "audioSeconds" : 10,
+        "millisecondsPerFrame" : 0.026836544594366494,
+        "processingSeconds" : 0.012532666325569153
+      },
+      "name" : "Streaming throughput",
+      "passed" : true
+    }
+  ],
+  "date" : "2026-10-22T08:21:45Z",
+  "failed" : 0,
+  "hopSize" : 1024,
+  "passed" : 28,
+  "windowSize" : 2048
+}

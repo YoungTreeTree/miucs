@@ -1,0 +1,175 @@
+{
+  "date": "2026-10-22T08:20:52.957259+00:00",
+  "dataset": "ADC2004, 20 annotated excerpts",
+  "source": "https://www.ee.columbia.edu/~dpwe/LabROSA/projects/melody/",
+  "analyzerSHA256": "831458b6fa1a6a0889cfbc99182bcda01fbabc2677557cfccb86695fad9a1088",
+  "method": "nearest reference timestamp; frame-center estimates; 50-cent pitch tolerance; mean over tracks",
+  "meanRawPitchAccuracy": 0.7364772487663042,
+  "tracks": [
+    {
+      "track": "daisy1",
+      "frames": 905,
+      "rawPitchAccuracy": 0.9365079365079365,
+      "rawChromaAccuracy": 0.9624819624819625,
+      "voicingRecall": 1.0,
+      "voicingFalseAlarm": 1.0
+    },
+    {
+      "track": "daisy2",
+      "frames": 944,
+      "rawPitchAccuracy": 0.9445145018915511,
+      "rawChromaAccuracy": 0.9583858764186634,
+      "voicingRecall": 1.0,
+      "voicingFalseAlarm": 1.0
+    },
+    {
+      "track": "daisy3",
+      "frames": 730,
+      "rawPitchAccuracy": 0.9835616438356164,
+      "rawChromaAccuracy": 0.9835616438356164,
+      "voicingRecall": 1.0,
+      "voicingFalseAlarm": 0
+    },
+    {
+      "track": "daisy4",
+      "frames": 634,
+      "rawPitchAccuracy": 0.9227129337539433,
+      "rawChromaAccuracy": 0.9794952681388013,
+      "voicingRecall": 1.0,
+      "voicingFalseAlarm": 0
+    },
+    {
+      "track": "jazz1",
+      "frames": 716,
+      "rawPitchAccuracy": 0.8595419847328244,
+      "rawChromaAccuracy": 0.9206106870229007,
+      "voicingRecall": 1.0,
+      "voicingFalseAlarm": 0.9508196721311475
+    },
+    {
+      "track": "jazz2",
+      "frames": 662,
+      "rawPitchAccuracy": 0.8494983277591973,
+      "rawChromaAccuracy": 0.862876254180602,
+      "voicingRecall": 0.9983277591973244,
+      "voicingFalseAlarm": 1.0
+    },
+    {
+      "track": "jazz3",
+      "frames": 635,
+      "rawPitchAccuracy": 0.9411764705882353,
+      "rawChromaAccuracy": 0.946078431372549,
+      "voicingRecall": 0.9901960784313726,
+      "voicingFalseAlarm": 0.9383259911894273
+    },
+    {
+      "track": "jazz4",
+      "frames": 430,
+      "rawPitchAccuracy": 0.8554216867469879,
+      "rawChromaAccuracy": 0.8795180722891566,
+      "voicingRecall": 0.9969879518072289,
+      "voicingFalseAlarm": 0.9489795918367347
+    },
+    {
+      "track": "midi1",
+      "frames": 825,
+      "rawPitchAccuracy": 0.3594351732991014,
+      "rawChromaAccuracy": 0.441591784338896,
+      "voicingRecall": 0.6957637997432606,
+      "voicingFalseAlarm": 0.8043478260869565
+    },
+    {
+      "track": "midi2",
+      "frames": 712,
+      "rawPitchAccuracy": 0.8890449438202247,
+      "rawChromaAccuracy": 0.9550561797752809,
+      "voicingRecall": 0.9985955056179775,
+      "voicingFalseAlarm": 0
+    },
+    {
+      "track": "midi3",
+      "frames": 1090,
+      "rawPitchAccuracy": 0.6511194029850746,
+      "rawChromaAccuracy": 0.7098880597014925,
+      "voicingRecall": 1.0,
+      "voicingFalseAlarm": 0.9444444444444444
+    },
+    {
+      "track": "midi4",
+      "frames": 824,
+      "rawPitchAccuracy": 0.4338235294117647,
+      "rawChromaAccuracy": 0.5470588235294118,
+      "voicingRecall": 0.7970588235294118,
+      "voicingFalseAlarm": 0.5902777777777778
+    },
+    {
+      "track": "opera_fem2",
+      "frames": 690,
+      "rawPitchAccuracy": 0.6178107606679035,
+      "rawChromaAccuracy": 0.6567717996289425,
+      "voicingRecall": 0.9276437847866419,
+      "voicingFalseAlarm": 0.9933774834437086
+    },
+    {
+      "track": "opera_fem4",
+      "frames": 596,
+      "rawPitchAccuracy": 0.7509225092250923,
+      "rawChromaAccuracy": 0.7841328413284133,
+      "voicingRecall": 0.9704797047970479,
+      "voicingFalseAlarm": 1.0
+    },
+    {
+      "track": "opera_male3",
+      "frames": 858,
+      "rawPitchAccuracy": 0.42782152230971127,
+      "rawChromaAccuracy": 0.5748031496062992,
+      "voicingRecall": 0.9553805774278216,
+      "voicingFalseAlarm": 1.0
+    },
+    {
+      "track": "opera_male5",
+      "frames": 952,
+      "rawPitchAccuracy": 0.7099879663056559,
+      "rawChromaAccuracy": 0.8459687123947052,
+      "voicingRecall": 0.9783393501805054,
+      "voicingFalseAlarm": 0.9917355371900827
+    },
+    {
+      "track": "pop1",
+      "frames": 974,
+      "rawPitchAccuracy": 0.43908629441624364,
+      "rawChromaAccuracy": 0.4416243654822335,
+      "voicingRecall": 1.0,
+      "voicingFalseAlarm": 1.0
+    },
+    {
+      "track": "pop2",
+      "frames": 834,
+      "rawPitchAccuracy": 0.6363636363636364,
+      "rawChromaAccuracy": 0.6655844155844156,
+      "voicingRecall": 0.9967532467532467,
+      "voicingFalseAlarm": 0.9954128440366973
+    },
+    {
+      "track": "pop3",
+      "frames": 858,
+      "rawPitchAccuracy": 0.7337278106508875,
+      "rawChromaAccuracy": 0.8254437869822485,
+      "voicingRecall": 0.9866863905325444,
+      "voicingFalseAlarm": 0.9340659340659341
+    },
+    {
+      "track": "pop4",
+      "frames": 929,
+      "rawPitchAccuracy": 0.7874659400544959,
+      "rawChromaAccuracy": 0.8841961852861036,
+      "voicingRecall": 0.9877384196185286,
+      "voicingFalseAlarm": 0.9538461538461539
+    }
+  ],
+  "limitations": [
+    "Causal harmonic-salience heuristic; complex accompaniment can win over the melody",
+    "Confidence is not a calibrated probability",
+    "Not an unseen-data or general-song accuracy guarantee"
+  ]
+}

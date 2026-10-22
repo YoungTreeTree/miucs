@@ -1,0 +1,333 @@
+{
+  "date": "2026-10-22T06:30:49.905268+00:00",
+  "captureStatus": "completed",
+  "captureScope": "exclude-existing-applications",
+  "frameCount": 666,
+  "analyzerSHA256": "7bb4b6b463285d9778add84ba020c1b05d0f68093c7cceffaed6c06d08fed99a",
+  "segments": [
+    {
+      "name": "silence-start",
+      "frameCount": 30,
+      "measurements": {
+        "rms": {
+          "median": 0.0,
+          "expected": 0,
+          "tolerance": 1e-05
+        }
+      },
+      "issues": [],
+      "passed": true
+    },
+    {
+      "name": "low",
+      "frameCount": 40,
+      "measurements": {
+        "rms": {
+          "median": 0.08485391355423437,
+          "expected": 0.08485281382580187,
+          "tolerance": 0.0016970562765160375
+        },
+        "centroidHz": {
+          "median": 187.51038550060548,
+          "expected": 187.5,
+          "tolerance": 2.0
+        },
+        "lowShare": {
+          "median": 0.9999999999831571,
+          "expected": 1.0,
+          "tolerance": 0.02
+        },
+        "balance": {
+          "median": 0.0,
+          "expected": 0,
+          "tolerance": 0.05
+        },
+        "sideEnergyRatio": {
+          "median": 0.0,
+          "expected": 0,
+          "tolerance": 0.03
+        },
+        "correlation": {
+          "median": 1.0,
+          "expected": 1,
+          "tolerance": 0.05
+        }
+      },
+      "issues": [],
+      "passed": true
+    },
+    {
+      "name": "gap-low",
+      "frameCount": 2,
+      "measurements": {
+        "rms": {
+          "median": 0.0,
+          "expected": 0,
+          "tolerance": 1e-05
+        }
+      },
+      "issues": [],
+      "passed": true
+    },
+    {
+      "name": "mid",
+      "frameCount": 40,
+      "measurements": {
+        "rms": {
+          "median": 0.0848515683361761,
+          "expected": 0.08485281304706617,
+          "tolerance": 0.0016970562609413234
+        },
+        "centroidHz": {
+          "median": 1500.0016361459075,
+          "expected": 1500,
+          "tolerance": 2.0
+        },
+        "midShare": {
+          "median": 0.9999999999984202,
+          "expected": 1.0,
+          "tolerance": 0.02
+        },
+        "balance": {
+          "median": 0.0,
+          "expected": 0,
+          "tolerance": 0.05
+        },
+        "sideEnergyRatio": {
+          "median": 0.0,
+          "expected": 0,
+          "tolerance": 0.03
+        },
+        "correlation": {
+          "median": 1.0,
+          "expected": 1,
+          "tolerance": 0.05
+        }
+      },
+      "issues": [],
+      "passed": true
+    },
+    {
+      "name": "gap-mid",
+      "frameCount": 2,
+      "measurements": {
+        "rms": {
+          "median": 0.0,
+          "expected": 0,
+          "tolerance": 1e-05
+        }
+      },
+      "issues": [],
+      "passed": true
+    },
+    {
+      "name": "high",
+      "frameCount": 40,
+      "measurements": {
+        "rms": {
+          "median": 0.08485265149373436,
+          "expected": 0.08485281326005098,
+          "tolerance": 0.0016970562652010197
+        },
+        "centroidHz": {
+          "median": 6000.025126085731,
+          "expected": 6000,
+          "tolerance": 2.0
+        },
+        "highShare": {
+          "median": 0.9999999999729595,
+          "expected": 1.0,
+          "tolerance": 0.02
+        },
+        "balance": {
+          "median": 0.0,
+          "expected": 0,
+          "tolerance": 0.05
+        },
+        "sideEnergyRatio": {
+          "median": 0.0,
+          "expected": 0,
+          "tolerance": 0.03
+        },
+        "correlation": {
+          "median": 1.0,
+          "expected": 1,
+          "tolerance": 0.05
+        }
+      },
+      "issues": [],
+      "passed": true
+    },
+    {
+      "name": "gap-high",
+      "frameCount": 2,
+      "measurements": {
+        "rms": {
+          "median": 0.0,
+          "expected": 0,
+          "tolerance": 1e-05
+        }
+      },
+      "issues": [],
+      "passed": true
+    },
+    {
+      "name": "left",
+      "frameCount": 40,
+      "measurements": {
+        "rms": {
+          "median": 0.05999911925807554,
+          "expected": 0.05999999950833484,
+          "tolerance": 0.0011999999901666969
+        },
+        "centroidHz": {
+          "median": 1500.0016317212564,
+          "expected": 1500,
+          "tolerance": 2.0
+        },
+        "midShare": {
+          "median": 0.9999999999984172,
+          "expected": 1.0,
+          "tolerance": 0.02
+        },
+        "balance": {
+          "median": -1.0,
+          "expected": -1,
+          "tolerance": 0.05
+        },
+        "sideEnergyRatio": {
+          "median": 0.5,
+          "expected": 0.5,
+          "tolerance": 0.03
+        }
+      },
+      "issues": [],
+      "passed": true
+    },
+    {
+      "name": "right",
+      "frameCount": 40,
+      "measurements": {
+        "rms": {
+          "median": 0.0599991192904549,
+          "expected": 0.05999999950833484,
+          "tolerance": 0.0011999999901666969
+        },
+        "centroidHz": {
+          "median": 1500.001630448413,
+          "expected": 1500,
+          "tolerance": 2.0
+        },
+        "midShare": {
+          "median": 0.9999999999983833,
+          "expected": 1.0,
+          "tolerance": 0.02
+        },
+        "balance": {
+          "median": 1.0,
+          "expected": 1,
+          "tolerance": 0.05
+        },
+        "sideEnergyRatio": {
+          "median": 0.5,
+          "expected": 0.5,
+          "tolerance": 0.03
+        }
+      },
+      "issues": [],
+      "passed": true
+    },
+    {
+      "name": "anti-phase",
+      "frameCount": 40,
+      "measurements": {
+        "rms": {
+          "median": 0.08485156754407902,
+          "expected": 0.08485281304706617,
+          "tolerance": 0.0016970562609413234
+        },
+        "centroidHz": {
+          "median": 1500.0016182660067,
+          "expected": 1500,
+          "tolerance": 2.0
+        },
+        "midShare": {
+          "median": 0.9999999999984142,
+          "expected": 1.0,
+          "tolerance": 0.02
+        },
+        "balance": {
+          "median": 0.0,
+          "expected": 0,
+          "tolerance": 0.05
+        },
+        "sideEnergyRatio": {
+          "median": 1.0,
+          "expected": 1,
+          "tolerance": 0.03
+        },
+        "correlation": {
+          "median": -1.0,
+          "expected": -1,
+          "tolerance": 0.05
+        }
+      },
+      "issues": [],
+      "passed": true
+    },
+    {
+      "name": "noise",
+      "frameCount": 39,
+      "measurements": {
+        "rms": {
+          "median": 0.04091197603343692,
+          "expected": 0.046275533173971685,
+          "tolerance": 0.0009255106634794338
+        },
+        "balance": {
+          "median": 0.0017367559128113534,
+          "expected": 0,
+          "tolerance": 0.05
+        },
+        "sideEnergyRatio": {
+          "median": 0.4981491513149285,
+          "expected": 0.5,
+          "tolerance": 0.03
+        },
+        "correlation": {
+          "median": 0.0038908034389816856,
+          "expected": 0,
+          "tolerance": 0.05
+        },
+        "flatness": {
+          "median": 0.7244345173298412,
+          "minimum": 0.3
+        }
+      },
+      "issues": [
+        "rms: 0.04091197603343692, expected 0.046275533173971685 ± 0.0009255106634794338"
+      ],
+      "passed": false
+    },
+    {
+      "name": "silence-end",
+      "frameCount": 30,
+      "measurements": {
+        "rms": {
+          "median": 0.0,
+          "expected": 0,
+          "tolerance": 1e-05
+        }
+      },
+      "issues": [],
+      "passed": true
+    }
+  ],
+  "status": "failed",
+  "issues": [
+    "Capture alignment differs from playback start by more than 250 ms"
+  ],
+  "alignmentOffsetSeconds": 1.112,
+  "passedSegments": 11,
+  "totalSegments": 12
+}

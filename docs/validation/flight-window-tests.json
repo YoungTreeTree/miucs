@@ -1,0 +1,66 @@
+{
+  "checks" : [
+    {
+      "name" : "400x260 native panel",
+      "passed" : true
+    },
+    {
+      "name" : "Transparent window, no shadow",
+      "passed" : true
+    },
+    {
+      "name" : "Default mouse click-through",
+      "passed" : true
+    },
+    {
+      "name" : "Scale to 150 percent without stretching",
+      "passed" : true
+    },
+    {
+      "name" : "Drawing view follows window size",
+      "passed" : true
+    },
+    {
+      "name" : "Scaling preserves mouse click-through",
+      "passed" : true
+    },
+    {
+      "name" : "Custom size survives reopening",
+      "passed" : true
+    },
+    {
+      "name" : "Small size has readable lower bound",
+      "passed" : true
+    },
+    {
+      "name" : "Large size fits a visible display",
+      "passed" : true
+    },
+    {
+      "name" : "Nonfinite size is ignored",
+      "passed" : true
+    },
+    {
+      "name" : "Does not take keyboard focus",
+      "passed" : true
+    },
+    {
+      "name" : "Position adjustment accepts mouse",
+      "passed" : true
+    },
+    {
+      "name" : "Drag resize keeps upper left anchored",
+      "passed" : true
+    },
+    {
+      "name" : "Finishing adjustment restores click-through",
+      "passed" : true
+    },
+    {
+      "name" : "Hide restores safe input state",
+      "passed" : true
+    }
+  ],
+  "failed" : 0,
+  "passed" : 15
+}

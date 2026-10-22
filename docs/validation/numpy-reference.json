@@ -1,0 +1,100 @@
+{
+  "date": "2026-10-22T08:21:48.851637+00:00",
+  "reference": "NumPy 2.2.6 float64 rfft; SciPy 1.15.3 WAV decoder",
+  "input": "system-audio-fixture.wav",
+  "inputSHA256": "80206761e3ccb47191a99a689e28b43cad152209d1a4492b604c1bc291658cd2",
+  "analyzerSHA256": "7bb4b6b463285d9778add84ba020c1b05d0f68093c7cceffaed6c06d08fed99a",
+  "frameCount": 542,
+  "expectedFrameCount": 542,
+  "status": "passed",
+  "comparisons": {
+    "rms": {
+      "maxAbsoluteError": 5.967448757360216e-16,
+      "tolerance": 1e-07,
+      "comparedFrames": 542
+    },
+    "rmsDBFS": {
+      "maxAbsoluteError": 6.394884621840902e-14,
+      "tolerance": 1e-05,
+      "comparedFrames": 542
+    },
+    "peak": {
+      "maxAbsoluteError": 0.0,
+      "tolerance": 1e-07,
+      "comparedFrames": 542
+    },
+    "crestDB": {
+      "maxAbsoluteError": 6.217248937900877e-14,
+      "tolerance": 1e-05,
+      "comparedFrames": 404
+    },
+    "lowEnergy": {
+      "maxAbsoluteError": 5.058525334722397e-10,
+      "tolerance": 1e-07,
+      "comparedFrames": 542
+    },
+    "midEnergy": {
+      "maxAbsoluteError": 5.532306201691539e-10,
+      "tolerance": 1e-07,
+      "comparedFrames": 542
+    },
+    "highEnergy": {
+      "maxAbsoluteError": 1.8620099385968647e-10,
+      "tolerance": 1e-07,
+      "comparedFrames": 542
+    },
+    "lowShare": {
+      "maxAbsoluteError": 2.8199135457263047e-09,
+      "tolerance": 1e-05,
+      "comparedFrames": 404
+    },
+    "midShare": {
+      "maxAbsoluteError": 8.137822415932305e-09,
+      "tolerance": 1e-05,
+      "comparedFrames": 404
+    },
+    "highShare": {
+      "maxAbsoluteError": 6.878255659481525e-09,
+      "tolerance": 1e-05,
+      "comparedFrames": 404
+    },
+    "centroidHz": {
+      "maxAbsoluteError": 0.0010044775713708987,
+      "tolerance": 0.1,
+      "comparedFrames": 404
+    },
+    "bandwidthHz": {
+      "maxAbsoluteError": 0.007615489348609117,
+      "tolerance": 0.1,
+      "comparedFrames": 404
+    },
+    "flatness": {
+      "maxAbsoluteError": 4.332716012356297e-09,
+      "tolerance": 1e-05,
+      "comparedFrames": 404
+    },
+    "balance": {
+      "maxAbsoluteError": 0.0,
+      "tolerance": 1e-06,
+      "comparedFrames": 404
+    },
+    "sideEnergyRatio": {
+      "maxAbsoluteError": 3.1086244689504383e-15,
+      "tolerance": 1e-06,
+      "comparedFrames": 404
+    },
+    "correlation": {
+      "maxAbsoluteError": 5.88418203051333e-15,
+      "tolerance": 1e-06,
+      "comparedFrames": 293
+    }
+  },
+  "mismatches": [],
+  "mismatchCount": 0,
+  "notCovered": [
+    "onset quality on natural audio",
+    "tempo",
+    "pitch",
+    "semantic classification"
+  ]
+}

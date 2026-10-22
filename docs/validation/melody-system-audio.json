@@ -1,0 +1,31 @@
+{
+  "checks": [
+    {
+      "name": "low",
+      "expectedHz": 187.5,
+      "medianHz": 187.14677540918828,
+      "frames": 40,
+      "voicedFrames": 40,
+      "passed": true
+    },
+    {
+      "name": "mid",
+      "expectedHz": 1500,
+      "medianHz": 1497.1742032735062,
+      "frames": 40,
+      "voicedFrames": 40,
+      "passed": true
+    },
+    {
+      "name": "anti-phase",
+      "expectedHz": 1500,
+      "medianHz": 1497.1742032735062,
+      "frames": 40,
+      "voicedFrames": 40,
+      "passed": true
+    }
+  ],
+  "passed": 3,
+  "failed": 0,
+  "analyzerSHA256": "831458b6fa1a6a0889cfbc99182bcda01fbabc2677557cfccb86695fad9a1088"
+}
