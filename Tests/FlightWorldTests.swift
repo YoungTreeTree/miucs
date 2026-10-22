@@ -149,6 +149,37 @@ struct FlightWorldTests {
             return (abs(w.birdY - heldHeight) < 0.001 && w.score > 5 && w.flap < 0.001 && w.birdY.isFinite,
                     ["score": w.score, "flap": w.flap, "heldHeight": w.birdY])
         }
+        check("Trailing note preserves absolute name, accidentals and octave") {
+            var w = SoundFlightWorld(seed: 1), actual = [String]()
+            for (i, midi) in [48.0, 60, 61, 69, 71, 72, 84].enumerated() {
+                let t = Double(i) / 60
+                w.receive(audio: audio(t)); w.receive(melody: melody(t, midi))
+                actual.append(w.melodyNoteName ?? "nil")
+                w.advance(seconds: 1.0 / 60)
+            }
+            let expected = ["C3", "C4", "C♯4", "A4", "B4", "C5", "C6"]
+            return (actual == expected, ["actual": actual, "expected": expected])
+        }
+        check("Note label resists boundary chatter and expires on missing melody") {
+            var w = SoundFlightWorld(seed: 1)
+            w.receive(audio: audio(0)); w.receive(melody: melody(0, 60))
+            w.receive(melody: melody(0.02, 60.55))
+            let held = w.melodyNoteName == "C4"
+            w.receive(melody: melody(0.04, 60.7))
+            let changed = w.melodyNoteName == "C♯4"
+            w.receive(melody: melody(0.06, 60.45))
+            let stable = w.melodyNoteName == "C♯4"
+            w.advance(seconds: 0.15)
+            let fading = w.melodyNoteName != nil && w.melodyNoteOpacity < 0.88
+            w.receive(audio: audio(0.2)); w.advance(seconds: 0.1)
+            let expired = w.melodyNoteName == nil
+            w.receive(melody: melody(0.3, 72)); w.receive(audio: audio(0.3, silent: true))
+            let silent = w.melodyNoteName == nil
+            w.receive(audio: nil)
+            return (held && changed && stable && fading && expired && silent && w.melodyNoteName == nil,
+                    ["boundaryHeld": held && stable, "changedAtNewNote": changed, "fades": fading,
+                     "missingMelodyClears": expired, "silenceClears": silent])
+        }
         check("Identical input gives identical scene") {
             func run() -> SoundFlightWorld {
                 var w = SoundFlightWorld(seed: 123)

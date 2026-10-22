@@ -90,6 +90,7 @@ final class PencilFlightView: NSView {
         for gate in world.gates { draw(gate: gate) }
         drawParticles()
         drawBird()
+        drawMelodyNote()
         drawText(String(world.score), at: NSPoint(x: 354, y: 9), size: 21, opacity: 0.75)
         if adjustingPosition {
             drawText("拖动移动 · 右下角缩放 · 菜单栏完成", at: NSPoint(x: 47, y: 235), size: 12, opacity: 0.95)
@@ -155,6 +156,17 @@ final class PencilFlightView: NSView {
                 sketch([NSPoint(x: x + halfBody - 6, y: y), NSPoint(x: x + halfBody - 2, y: y - 3)], seed: gate.id * 3 + h, width: 0.6, opacity: 0.24)
             }
         }
+    }
+
+    private func drawMelodyNote() {
+        let note = world.melodyNoteName ?? "—"
+        let size = 17.0
+        let font = NSFont(name: "Bradley Hand", size: size) ?? NSFont.systemFont(ofSize: size)
+        let width = (note as NSString).size(withAttributes: [.font: font]).width
+        // Trail the bird without rotating with it, leaving its tail silhouette clear.
+        drawText(note, at: NSPoint(x: max(6, SoundFlightWorld.birdScreenX - 35 - width),
+                                  y: world.birdY - 12),
+                 size: size, opacity: world.melodyNoteOpacity)
     }
 
     private func drawBird() {
@@ -229,9 +241,9 @@ final class PencilFlightView: NSView {
 
     private func drawText(_ text: String, at point: NSPoint, size: Double, opacity: Double) {
         let font = NSFont(name: "Bradley Hand", size: size) ?? NSFont.systemFont(ofSize: size)
+        let halo = NSColor(calibratedWhite: 0.98, alpha: min(0.6, opacity * 0.8))
         let outline: [NSAttributedString.Key: Any] = [.font: font,
-            .foregroundColor: NSColor(calibratedWhite: 0.98, alpha: 0.6), .strokeWidth: -3,
-            .strokeColor: NSColor(calibratedWhite: 0.98, alpha: 0.6)]
+            .foregroundColor: halo, .strokeWidth: -3, .strokeColor: halo]
         NSAttributedString(string: text, attributes: outline).draw(at: point)
         NSAttributedString(string: text, attributes: [.font: font,
             .foregroundColor: NSColor(calibratedWhite: 0.24, alpha: opacity)]).draw(at: point)

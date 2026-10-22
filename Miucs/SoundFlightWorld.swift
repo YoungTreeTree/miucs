@@ -79,6 +79,19 @@ struct SoundFlightWorld {
     private(set) var distance = 0.0
     var birdY: Double { birdMotion.position }
     private(set) var melodyTargetY = 126.0
+    private var noteMIDI: Int?
+    private var noteAge = Double.infinity
+    /// The detected note, independently of the adaptive height range and flight spring.
+    var melodyNoteName: String? {
+        guard hasAudio, audio?.isSilent == false, audioAge < 0.4,
+              noteAge < 0.24, let midi = noteMIDI else { return nil }
+        let names = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"]
+        return "\(names[midi % 12])\(midi / 12 - 1)"
+    }
+    var melodyNoteOpacity: Double {
+        guard melodyNoteName != nil else { return 0.3 }
+        return 0.88 * min(max((0.24 - noteAge) / 0.12, 0), 1)
+    }
     var needsMotionUpdates: Bool {
         abs(birdY - melodyTargetY) > 0.001 || abs(birdMotion.velocity) > 0.01
     }
@@ -118,6 +131,7 @@ struct SoundFlightWorld {
             audio = nil; hasAudio = false; pendingOnset = false
             lastAudioTime = -.infinity; lastMelodyTime = -.infinity
             range = MelodyRange()
+            noteMIDI = nil; noteAge = .infinity
             return
         }
         guard frame.time != lastAudioTime else { return }
@@ -129,7 +143,16 @@ struct SoundFlightWorld {
         guard let melody else { return }
         if melody.time < lastMelodyTime { range = MelodyRange() }
         lastMelodyTime = melody.time
-        if let height = range.height(for: melody) { melodyTargetY = height }
+        if let height = range.height(for: melody) {
+            melodyTargetY = height
+            if let midi = melody.midi, (0...127).contains(midi) {
+                // A 15-cent boundary hysteresis avoids alternating names on vibrato.
+                if noteAge >= 0.24 || noteMIDI.map({ abs(midi - Double($0)) > 0.65 }) != false {
+                    noteMIDI = Int(midi.rounded())
+                }
+                noteAge = 0
+            }
+        }
     }
 
     mutating func advance(seconds: Double) {
@@ -142,7 +165,7 @@ struct SoundFlightWorld {
     }
 
     private mutating func step(_ dt: Double) {
-        elapsed += dt; audioAge += dt
+        elapsed += dt; audioAge += dt; noteAge += dt
         let active = audio.map { !$0.isSilent } == true && audioAge < 0.4
         let targetActivity = active ? 1.0 : 0.0
         activity += (targetActivity - activity) * (1 - exp(-dt / 0.28))

@@ -73,9 +73,44 @@
       "metrics" : {
         "flap" : 1.0111519887139508e-31,
         "heldHeight" : 122.11111111111111,
-        "score" : 10
+        "score" : 11
       },
       "name" : "No melody retains height; stale onset is not replayed",
+      "passed" : true
+    },
+    {
+      "metrics" : {
+        "actual" : [
+          "C3",
+          "C4",
+          "C♯4",
+          "A4",
+          "B4",
+          "C5",
+          "C6"
+        ],
+        "expected" : [
+          "C3",
+          "C4",
+          "C♯4",
+          "A4",
+          "B4",
+          "C5",
+          "C6"
+        ]
+      },
+      "name" : "Trailing note preserves absolute name, accidentals and octave",
+      "passed" : true
+    },
+    {
+      "metrics" : {
+        "boundaryHeld" : true,
+        "changedAtNewNote" : true,
+        "fades" : true,
+        "missingMelodyClears" : true,
+        "silenceClears" : true
+      },
+      "name" : "Note label resists boundary chatter and expires on missing melody",
       "passed" : true
     },
     {
@@ -88,5 +123,5 @@
     }
   ],
   "failed" : 0,
-  "passed" : 9
+  "passed" : 11
 }
