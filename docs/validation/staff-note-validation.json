@@ -1,0 +1,200 @@
+{
+  "date": "2026-10-23T06:13:41.931527+00:00",
+  "scope": "staff-note visualization, per-module layout and geometry; no audio algorithm or JSON contract changes",
+  "status": "passed",
+  "regressions": {
+    "passed": 206,
+    "failed": 0,
+    "reports": [
+      {
+        "path": "docs/validation/audio-feature-tests.json",
+        "passed": 28,
+        "failed": 0
+      },
+      {
+        "path": "docs/validation/melody-tests.json",
+        "passed": 14,
+        "failed": 0
+      },
+      {
+        "path": "docs/validation/audio-recovery-tests.json",
+        "passed": 18,
+        "failed": 0
+      },
+      {
+        "path": "docs/validation/flight-world-tests.json",
+        "passed": 15,
+        "failed": 0
+      },
+      {
+        "path": "docs/validation/flight-window-tests.json",
+        "passed": 19,
+        "failed": 0
+      },
+      {
+        "path": "docs/validation/pencil-palette-tests.json",
+        "passed": 25,
+        "failed": 0
+      },
+      {
+        "path": "docs/validation/contract-tests.json",
+        "passed": 16,
+        "failed": 0
+      },
+      {
+        "path": "docs/validation/audio-pipeline-tests.json",
+        "passed": 3,
+        "failed": 0
+      },
+      {
+        "path": "docs/validation/visualization-host-tests.json",
+        "passed": 11,
+        "failed": 0
+      },
+      {
+        "path": "docs/validation/staff-note-tests.json",
+        "passed": 34,
+        "failed": 0
+      },
+      {
+        "path": "docs/validation/staff-note-platform-tests.json",
+        "passed": 23,
+        "failed": 0
+      }
+    ]
+  },
+  "numericalReference": {
+    "status": "passed",
+    "frames": 542,
+    "mismatches": 0,
+    "path": "docs/validation/numpy-reference.json"
+  },
+  "flightPreviewByteEquality": [
+    {
+      "name": "flight-transparent.png",
+      "passed": true,
+      "SHA256": "7b8cab0269a6094b42dea8c3a21955848795f5f0e14ed3d1d4fda71dd91519f2"
+    },
+    {
+      "name": "flight-light.png",
+      "passed": true,
+      "SHA256": "cf2b9d0f933d36b915de75735297f591b246509b4dcc6edc517f982713d09dac"
+    },
+    {
+      "name": "flight-dark.png",
+      "passed": true,
+      "SHA256": "6e18d7113a602893e498f9d077caf529be04da6f97c1c0eaf177814385371cfd"
+    }
+  ],
+  "staffPreviews": {
+    "method": "invented notes through production renderer, 2x bitmap; no desktop or audio capture",
+    "widthsPoints": [
+      600,
+      800,
+      1600
+    ],
+    "backgrounds": [
+      "transparent",
+      "light",
+      "dark"
+    ],
+    "edgeNotes": [
+      "E2",
+      "C7"
+    ],
+    "staticRedrawByteEquality": true,
+    "readmeAsset": "docs/assets/miucs-staff-note.png"
+  },
+  "compatibility": {
+    "bundleID": "com.miucs.app",
+    "signingIdentity": "Miucs Dev",
+    "nativeBuild": "passed",
+    "strictSignatureVerification": "passed",
+    "xcodeSourcePaths": "validated; no Xcode project generation/build run",
+    "audioAndJSONContractsUnchanged": true,
+    "legacyFlightPreferenceKeysRetained": true,
+    "perModuleGeometryAndSelection": "passed isolated-preference tests"
+  },
+  "pending": [],
+  "sourceSHA256": {
+    "apps/macos/App.swift": "fe4ead2f42a5c39c9270eb62ea7d3963d960fd5b434fe5c842d814c00f6d790f",
+    "apps/macos/BuiltInVisualizations.swift": "fbc1879ee57edbf6d3b4335a523ae1405bb6f17f4d3755c0f0dc9552fd53435e",
+    "apps/macos/VisualizationHostView.swift": "3faad6c4345f0dba02afcf336a8f9c1cfbd0cb932358d6c17bae7856b15acd68",
+    "apps/macos/VisualizerPanel.swift": "f8d74c37d9a692b22222f9b89df8174d013bc05de04c205fd57363f9ccfa9c48",
+    "modules/visualizations/api/VisualizationModule.swift": "878e0f12bd91ae262b484956612090b1450e73799973c5eac6bb89b152d5f146",
+    "modules/visualizations/pencil-flight/core/PencilFlightSimulation.swift": "b8aa2023354664db56460980c8dc0ce523ad3f206927b60675299a5418376de3",
+    "modules/visualizations/staff-note/core/StaffNoteScene.swift": "3cedd4c7e43a75f427ad16d7322f96d96b1d74a0eb5db47f59e1ef72e82703b3",
+    "modules/visualizations/staff-note/core/StaffNoteSimulation.swift": "4a98d554b4571163c6ebdfb87dbc077926080cedeb10eb3fdcd5d28c8bbb2cdf",
+    "modules/visualizations/staff-note/core/StaffPitch.swift": "ec4f405935a124177615262577ea2e3a002ba2d6c18d60529eaa8c8d897bdc83",
+    "modules/visualizations/staff-note/platforms/macos/MacStaffNoteSession.swift": "d978011f4c8071428269fbdca1297d059f21d46dafcf1b7ed268938078f1c1d2",
+    "modules/visualizations/staff-note/platforms/macos/StaffNoteView.swift": "46ded4b6bb4d6b2b6992e01ff4a188a47ea251e503cecc58d29f4254eb2398e6"
+  },
+  "nativeCadence": {
+    "staff-note": {
+      "path": "docs/validation/staff-note-cadence.json",
+      "draw": {
+        "maxMs": 2.5497497990727425,
+        "meanMs": 0.25748812551896333,
+        "medianMs": 0.24445820599794388,
+        "p95Ms": 0.4276251420378685,
+        "p99Ms": 0.7481668144464493
+      },
+      "fps": 59.49674049115825,
+      "frames": 358,
+      "hiddenStopsRendering": true,
+      "interval": {
+        "maxMs": 61.486583203077316,
+        "meanMs": 16.807643439704215,
+        "medianMs": 16.665416304022074,
+        "p95Ms": 16.918166540563107,
+        "p99Ms": 17.79487496241927
+      },
+      "intervalsOver25ms": 1,
+      "method": "real native transparent window; synthetic capture transport; 1s warmup + 6s measurement; no recording",
+      "moduleID": "staff-note",
+      "resumedFramesInOneSecond": 57,
+      "widthPoints": 1000
+    },
+    "pencil-flight": {
+      "path": "docs/validation/flight-cadence-staff-regression.json",
+      "draw": {
+        "maxMs": 3.4489580430090427,
+        "meanMs": 0.47509719138996226,
+        "medianMs": 0.4182918928563595,
+        "p95Ms": 0.8967914618551731,
+        "p99Ms": 1.80395832285285
+      },
+      "fps": 59.66226935612995,
+      "frames": 358,
+      "hiddenStopsRendering": true,
+      "interval": {
+        "maxMs": 53.26800001785159,
+        "meanMs": 16.761011788386757,
+        "medianMs": 16.669124830514193,
+        "p95Ms": 17.37295836210251,
+        "p99Ms": 21.244083531200886
+      },
+      "intervalsOver25ms": 2,
+      "method": "real native transparent window; synthetic capture transport; 1s warmup + 6s measurement; no recording",
+      "moduleID": "pencil-flight",
+      "resumedFramesInOneSecond": 57,
+      "widthPoints": 1000
+    }
+  },
+  "interactiveVerification": {
+    "method": "CUA inspected the running native application; observed flight to staff mode change, restarted from this workspace build, and inspected the restored staff image and the disabled settings menu. Window sizing/resize constraints are covered by isolated native platform tests.",
+    "checks": {
+      "selectedStaffAfterRestart": true,
+      "staffGeometryPreserved": true,
+      "flightGeometryPreserved": true,
+      "flightWidthPreserved": true,
+      "nativeStaffImageObservedAfterRestart": true,
+      "settingsMenuDisabledWithoutPalette": true
+    },
+    "activeModule": "staff-note",
+    "staffWidthPoints": 800.0,
+    "staffHeightPoints": 160.0,
+    "syntheticAssetsOnly": true,
+    "nativeUIScreenshotsPublished": false
+  }
+}

@@ -19,7 +19,8 @@ final class VisualizationHostView: NSView {
 
     init(source: any AudioFeatureSource, registry: VisualizationRegistry, selectedID: String) {
         controller = VisualizationController(source: source, registry: registry)
-        super.init(frame: NSRect(x: 0, y: 0, width: 400, height: 260))
+        let layout = registry.descriptor(id: selectedID)?.layout ?? .desktop
+        super.init(frame: NSRect(x: 0, y: 0, width: layout.width, height: layout.height))
         wantsLayer = true; layer?.isOpaque = false; layer?.backgroundColor = NSColor.clear.cgColor
         _ = select(id: selectedID)
         overlay.frame = bounds; overlay.autoresizingMask = [.width, .height]
@@ -38,17 +39,28 @@ final class VisualizationHostView: NSView {
             addSubview(view, positioned: .below, relativeTo: overlay.superview == nil ? nil : overlay)
             view.needsDisplay = true
         }
+        overlay.layout = controller.current!.descriptor.layout
+        overlay.needsDisplay = true
+        updateViewport()
         return true
     }
     func presentSettings() { (controller.current as? any MacVisualizationSession)?.presentSettings() }
     var settingsTitle: String? { (controller.current as? any MacVisualizationSession)?.settingsTitle }
+    func applyAppearance(_ appearance: VisualizationAppearance) {
+        controller.applyAppearance(appearance)
+        overlay.ink = appearance.ink.nsColor; overlay.needsDisplay = true
+    }
     func dispose() {
         setRendering(false); activeView?.removeFromSuperview(); controller.dispose()
     }
 
     override func setFrameSize(_ newSize: NSSize) {
         super.setFrameSize(newSize)
-        controller.resize(to: VisualizationViewport(width: newSize.width, height: newSize.height, scale: newSize.width / 400))
+        updateViewport()
+    }
+    func updateViewport() {
+        let layout = controller.current?.descriptor.layout ?? .desktop
+        controller.resize(to: VisualizationViewport(width: bounds.width, height: bounds.height, scale: bounds.width / layout.width))
     }
     func setRendering(_ active: Bool) {
         guard active else {
@@ -74,7 +86,7 @@ final class VisualizationHostView: NSView {
         let now = link.targetTimestamp
         let dt = lastTick > 0 ? now - lastTick : link.targetTimestamp - link.timestamp
         lastTick = now
-        if let input = controller.tick(deltaTime: min(max(dt, 0), 0.1)), input.state != overlay.state {
+        if let input = controller.tick(deltaTime: max(dt, 0)), input.state != overlay.state {
             overlay.state = input.state; overlay.needsDisplay = true
         }
         if let color = (controller.current as? any MacVisualizationSession)?.hintColor, color != overlay.ink {
@@ -93,7 +105,7 @@ final class VisualizationHostView: NSView {
         guard adjustingPosition, let initial = resizeStartFrame, let panel = window as? VisualizerPanel else { return }
         let mouse = NSEvent.mouseLocation
         let dx = mouse.x - resizeStartMouse.x, dy = resizeStartMouse.y - mouse.y
-        let ratio = 260.0 / 400
+        let ratio = panel.drawingAspectRatio
         panel.setDrawingWidth(initial.width + (dx + dy * ratio) / (1 + ratio * ratio),
                               topLeft: NSPoint(x: initial.minX, y: initial.maxY), persist: false)
     }
@@ -114,6 +126,7 @@ private final class HostFrameTarget: NSObject {
 
 @MainActor
 private final class HostOverlayView: NSView {
+    var layout = VisualizationLayout.desktop
     var ink = NSColor(calibratedWhite: 0.24, alpha: 1)
     var state = AudioSourceState.connecting
     var adjustingPosition = false
@@ -123,7 +136,7 @@ private final class HostOverlayView: NSView {
     override func draw(_ dirtyRect: NSRect) {
         guard adjustingPosition || state != .running else { return }
         NSGraphicsContext.saveGraphicsState(); defer { NSGraphicsContext.restoreGraphicsState() }
-        let scale = NSAffineTransform(); scale.scaleX(by: bounds.width / 400, yBy: bounds.height / 260); scale.concat()
+        let scale = NSAffineTransform(); scale.scaleX(by: bounds.width / layout.width, yBy: bounds.height / layout.height); scale.concat()
         let text: String
         if adjustingPosition { text = "拖动移动 · 右下角缩放 · 菜单栏完成" }
         else {
@@ -139,12 +152,14 @@ private final class HostOverlayView: NSView {
         let font = NSFont(name: "Bradley Hand", size: 12) ?? NSFont.systemFont(ofSize: 12)
         let attributes: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: ink.withAlphaComponent(0.9),
             .strokeColor: NSColor(calibratedWhite: 0.98, alpha: 0.6), .strokeWidth: -3]
-        NSAttributedString(string: text, attributes: attributes).draw(at: NSPoint(x: adjustingPosition ? 47 : 75, y: 235))
+        let label = NSAttributedString(string: text, attributes: attributes)
+        label.draw(at: NSPoint(x: max(18, (layout.width - label.size().width) / 2), y: layout.height - 25))
         if adjustingPosition {
             NSColor(calibratedWhite: 0.45, alpha: 0.75).setStroke()
             let path = NSBezierPath(); path.lineWidth = 1
             for i in 0..<3 {
-                path.move(to: NSPoint(x: 374 + i * 4, y: 253)); path.line(to: NSPoint(x: 390, y: 237 + i * 4))
+                path.move(to: NSPoint(x: layout.width - 26 + Double(i * 4), y: layout.height - 7))
+                path.line(to: NSPoint(x: layout.width - 10, y: layout.height - 23 + Double(i * 4)))
             }
             path.stroke()
         }

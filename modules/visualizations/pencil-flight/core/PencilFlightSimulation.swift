@@ -38,7 +38,7 @@ final class PencilFlightSimulation: VisualizationSession {
             }
             world.receive(onset: !input.onsets.isEmpty, spectralFluxPeak: input.spectralFluxPeak)
         } else { world.receive(audio: nil) }
-        world.advance(seconds: deltaTime)
+        world.advance(seconds: min(deltaTime, 0.1)) // Preserve the flight host's original integration bound.
         needsDisplay = wasMoving || world.activity > 0 || !world.particles.isEmpty || world.needsMotionUpdates
     }
 }

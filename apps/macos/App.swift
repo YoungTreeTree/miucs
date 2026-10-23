@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import Combine
 
 @main
 struct MiucsApp: App {
@@ -11,18 +12,25 @@ struct MiucsApp: App {
         }
         .commands {
             CommandGroup(replacing: .appSettings) {
-                Button(appDelegate.visualizationSettingsTitle) { appDelegate.showVisualizationSettings() }
-                    .keyboardShortcut("p", modifiers: .command)
-                    .disabled(!appDelegate.hasVisualizationSettings)
+                VisualizationColorCommand(store: appDelegate.appearanceStore)
             }
         }
     }
 }
 
+private struct VisualizationColorCommand: View {
+    @ObservedObject var store: VisualizationAppearanceStore
+    var body: some View {
+        Picker("线条颜色", selection: Binding(get: { store.selection }, set: { store.select($0) })) {
+            ForEach(VisualizationInk.allCases) { ink in Text(ink.name).tag(ink) }
+        }
+        .pickerStyle(.menu)
+    }
+}
+
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
-    @Published private(set) var visualizationSettingsTitle = "调色盘…"
-    @Published private(set) var hasVisualizationSettings = true
+    let appearanceStore = VisualizationAppearanceStore()
     private var statusItem: NSStatusItem?
     private var panel: VisualizerPanel?
     private let engine = AudioEngine()
@@ -31,7 +39,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     private var sizeItem: NSMenuItem?
     private let registry = BuiltInVisualizations.registry()
     private var visualizationMenu: NSMenu?
-    private var settingsItem: NSMenuItem?
+    private var colorMenu: VisualizationColorMenu?
+    private var appearanceSubscription: AnyCancellable?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -56,6 +65,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             return
         }
 
+        if CommandLine.arguments.contains("--render-staff-preview") {
+            let args = CommandLine.arguments
+            if let i = args.firstIndex(of: "--output"), i + 1 < args.count {
+                do { try StaffNotePreview.render(to: URL(fileURLWithPath: args[i + 1])) }
+                catch { fputs("Staff preview failed: \(error)\n", stderr) }
+            }
+            NSApp.terminate(nil)
+            return
+        }
+
         if CommandLine.arguments.contains("--diagnose-audio") || CommandLine.arguments.contains("--verify-audio-recovery") {
             let diagnostics = AudioDiagnostics(engine: engine)
             self.diagnostics = diagnostics
@@ -67,6 +86,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             return
         }
 
+        appearanceStore.saveSelection()
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         item.button?.image = NSImage(
             systemSymbolName: "waveform",
@@ -103,11 +123,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         let visualizationItem = NSMenuItem(title: "可视化", action: nil, keyEquivalent: "")
         visualizationItem.submenu = visualizations; menu.addItem(visualizationItem)
         visualizationMenu = visualizations
-        let palette = NSMenuItem(title: "调色盘…", action: #selector(showVisualizationSettings), keyEquivalent: "p")
-        palette.target = self
-        palette.image = NSImage(systemSymbolName: "paintpalette", accessibilityDescription: nil)
-        menu.addItem(palette)
-        settingsItem = palette
+        let colors = VisualizationColorMenu(store: appearanceStore)
+        colorMenu = colors; menu.addItem(colors.item)
         menu.addItem(.separator())
         menu.addItem(
             NSMenuItem(title: "重新连接音频", action: #selector(reconnect), keyEquivalent: "r")
@@ -118,12 +135,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         item.menu = menu
         statusItem = item
 
-        let panel = VisualizerPanel(source: engine.channel, registry: registry, selectedID: BuiltInVisualizations.defaultID)
-        panel.orderFrontRegardless()
+        let panel = VisualizerPanel(source: engine.channel, registry: registry)
         self.panel = panel
+        appearanceSubscription = appearanceStore.$selection.sink { [weak self] ink in
+            self?.panel?.visualizationHost.applyAppearance(ink.appearance)
+        }
+        panel.orderFrontRegardless()
         panel.onSizeChange = { [weak self] in self?.updateSizeMenu() }
         updateSizeMenu()
-        updateSettingsMenu()
+        updateVisualizationMenu()
 
         Task { await engine.start() }
     }
@@ -144,27 +164,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     }
 
     @objc private func changeSize(_ sender: NSMenuItem) {
-        panel?.setDrawingWidth(Double(sender.tag) * 4)
-    }
-
-    @objc func showVisualizationSettings() {
-        panel?.visualizationHost.presentSettings()
+        guard let panel else { return }
+        panel.setDrawingWidth(panel.descriptor.layout.width * Double(sender.tag) / 100)
     }
 
     @objc private func selectVisualization(_ sender: NSMenuItem) {
-        guard let id = sender.representedObject as? String, panel?.visualizationHost.select(id: id) == true else { return }
-        for option in visualizationMenu?.items ?? [] {
-            option.state = option.representedObject as? String == id ? .on : .off
-        }
-        updateSettingsMenu()
+        guard let id = sender.representedObject as? String, panel?.selectVisualization(id: id) == true else { return }
+        updateVisualizationMenu()
+        updateSizeMenu()
     }
 
-    private func updateSettingsMenu() {
-        let title = panel?.visualizationHost.settingsTitle
-        hasVisualizationSettings = title != nil
-        visualizationSettingsTitle = title ?? "可视化设置…"
-        settingsItem?.title = visualizationSettingsTitle
-        settingsItem?.isHidden = title == nil
+    private func updateVisualizationMenu() {
+        for option in visualizationMenu?.items ?? [] {
+            option.state = option.representedObject as? String == panel?.descriptor.id ? .on : .off
+        }
     }
 
     private func updateSizeMenu() {

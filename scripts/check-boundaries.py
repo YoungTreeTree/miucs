@@ -38,6 +38,7 @@ for path in (root / "scripts").glob("*"):
 required = ["contracts/audio-features/frame.schema.json", "contracts/audio-features/input.schema.json",
             "contracts/visualization/README.md", "modules/audio/platforms/windows/README.md",
             "modules/visualizations/pencil-flight/platforms/windows/README.md", "apps/windows/README.md",
+            "modules/visualizations/staff-note/platforms/windows/README.md",
             "CONTRIBUTING.md", "docs/architecture.md"]
 for name in required:
     path = root / name

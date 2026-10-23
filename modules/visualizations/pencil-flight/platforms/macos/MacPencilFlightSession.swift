@@ -8,9 +8,10 @@ final class MacPencilFlightSession: MacVisualizationSession {
     private let paletteStore: PencilPaletteStore
     private var subscription: AnyCancellable?
     private var settingsWindow: PaletteWindowController?
+    private var appearance: VisualizationAppearance?
     var descriptor: VisualizationDescriptor { PencilFlightSimulation.module }
     var view: NSView { drawing }
-    var settingsTitle: String? { "调色盘…" }
+    var settingsTitle: String? { appearance == nil ? "调色盘…" : nil }
     private(set) var hintColor: NSColor
     init(paletteStore: PencilPaletteStore) {
         self.paletteStore = paletteStore
@@ -19,8 +20,15 @@ final class MacPencilFlightSession: MacVisualizationSession {
         drawing.wantsLayer = true
         drawing.layer?.isOpaque = false; drawing.layer?.backgroundColor = NSColor.clear.cgColor
         subscription = paletteStore.$palette.sink { [weak self] palette in
+            guard self?.appearance == nil else { return }
             self?.drawing.updatePalette(palette); self?.hintColor = palette.notes.nsColor
         }
+    }
+    func applyAppearance(_ appearance: VisualizationAppearance) {
+        self.appearance = appearance
+        settingsWindow?.close(); settingsWindow = nil
+        drawing.updatePalette(PencilPalette(ink: appearance.ink))
+        hintColor = appearance.ink.nsColor
     }
     func activate(viewport: VisualizationViewport) { simulation.activate(viewport: viewport); drawing.needsDisplay = true }
     func resize(to viewport: VisualizationViewport) { simulation.resize(to: viewport); drawing.needsDisplay = true }
@@ -31,6 +39,7 @@ final class MacPencilFlightSession: MacVisualizationSession {
     func deactivate() { simulation.deactivate() }
     func dispose() { deactivate(); settingsWindow?.close(); settingsWindow = nil; subscription?.cancel() }
     func presentSettings() {
+        guard appearance == nil else { return }
         if settingsWindow == nil { settingsWindow = PaletteWindowController(store: paletteStore) }
         settingsWindow?.present()
     }

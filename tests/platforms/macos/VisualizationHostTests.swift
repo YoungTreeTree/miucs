@@ -77,7 +77,8 @@ enum VisualizationHostTests {
         check("Host mounts only the active native module", host.activeView === firstSession?.view &&
             host.subviews.count == 2 && firstSession?.active == true)
         panel.setDrawingWidth(500)
-        let frame = panel.frame, saved = preferences.dictionary(forKey: "MiucsPencilFlightFrame")!
+        let frameKey = VisualizerPanel.framePreferencesKey(for: "first")
+        let frame = panel.frame, saved = preferences.dictionary(forKey: frameKey)!
         check("Viewport follows the existing native window resize", firstSession?.viewport.width == panel.frame.width &&
             firstSession?.view.frame.size == host.bounds.size)
         host.presentSettings()
@@ -100,7 +101,7 @@ enum VisualizationHostTests {
         check("Switch preserves the running audio capture and generation", engine.isRunning && capture.starts == 1 &&
             capture.stops == 0 && engine.channel.snapshot?.sessionID == generation)
         check("Module switch preserves geometry, transparency and click-through", panel.frame == frame &&
-            NSDictionary(dictionary: saved).isEqual(to: preferences.dictionary(forKey: "MiucsPencilFlightFrame")!) &&
+            NSDictionary(dictionary: saved).isEqual(to: preferences.dictionary(forKey: frameKey)!) &&
             panel.ignoresMouseEvents && !panel.isOpaque && panel.backgroundColor?.alphaComponent == 0)
         host.adjustingPosition = true
         check("Position adjustment belongs to the host even if a module accepts mouse input",

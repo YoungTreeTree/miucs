@@ -26,8 +26,11 @@ targets:
       - path: modules/visualizations/api/platforms/macos
       - path: modules/visualizations/pencil-flight/core
       - path: modules/visualizations/pencil-flight/platforms/macos
+      - path: modules/visualizations/staff-note/core
+      - path: modules/visualizations/staff-note/platforms/macos
       - path: tools/macos/AudioDiagnostics.swift
       - path: tools/macos/FlightPreview.swift
+      - path: tools/macos/StaffNotePreview.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.miucs.app

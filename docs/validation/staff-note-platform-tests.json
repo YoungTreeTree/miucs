@@ -1,0 +1,98 @@
+{
+  "checks" : [
+    {
+      "name" : "Legacy flight preference keys and 400x260 layout remain compatible",
+      "passed" : true
+    },
+    {
+      "name" : "First staff switch uses 800x160 and keeps the old upper-left anchor",
+      "passed" : true
+    },
+    {
+      "name" : "New session activates only after its own viewport is restored",
+      "passed" : true
+    },
+    {
+      "name" : "Module selection is persisted",
+      "passed" : true
+    },
+    {
+      "name" : "The long panel stays transparent and mouse click-through",
+      "passed" : true
+    },
+    {
+      "name" : "Staff scaling uses the 5:1 ratio and logical 800-point width",
+      "passed" : true
+    },
+    {
+      "name" : "Switching back restores flight's independent position and size",
+      "passed" : true
+    },
+    {
+      "name" : "Returning to staff restores its independent position and size",
+      "passed" : true
+    },
+    {
+      "name" : "Same or unknown module leaves its current geometry\/session intact",
+      "passed" : true
+    },
+    {
+      "name" : "Reopening remembers the selected module and its saved rectangle",
+      "passed" : true
+    },
+    {
+      "name" : "Staff has a readable minimum width of 600 points",
+      "passed" : true
+    },
+    {
+      "name" : "Staff maximum is screen-constrained and never exceeds 1600 points",
+      "passed" : true
+    },
+    {
+      "name" : "Long-layout resizing keeps the upper-left anchor and accepts adjustment input",
+      "passed" : true
+    },
+    {
+      "name" : "Finishing adjustment restores mouse transparency",
+      "passed" : true
+    },
+    {
+      "name" : "Changing a hidden module does not activate rendering",
+      "passed" : true
+    },
+    {
+      "name" : "Unknown saved identifiers fall back to flight",
+      "passed" : true
+    },
+    {
+      "name" : "Both production modules are registered and staff has no palette panel",
+      "passed" : true
+    },
+    {
+      "name" : "First redraw after native resume cannot display a cached old trajectory",
+      "passed" : true
+    },
+    {
+      "name" : "Identical scene redraws have byte-identical pencil marks",
+      "passed" : true
+    },
+    {
+      "name" : "Canvas remains mostly transparent with antialiased pencil lines",
+      "passed" : true
+    },
+    {
+      "name" : "Graphite and pale underlines are visible on light and dark backgrounds",
+      "passed" : true
+    },
+    {
+      "name" : "E2 and C7 note bodies, stems and flags remain inside the canvas",
+      "passed" : true
+    },
+    {
+      "name" : "Minimum and maximum sizes render uniformly at 2x backing scale",
+      "passed" : true
+    }
+  ],
+  "failed" : 0,
+  "passed" : 23
+}

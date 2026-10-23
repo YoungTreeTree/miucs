@@ -29,8 +29,9 @@ enum PerformanceProbe {
     }
     static func main() throws {
         NSApplication.shared.setActivationPolicy(.prohibited)
-        if CommandLine.arguments.count == 3 && CommandLine.arguments[1] == "--cadence" {
-            try cadence(to: URL(fileURLWithPath: CommandLine.arguments[2])); return
+        if CommandLine.arguments.count == 3 && ["--cadence", "--staff-cadence"].contains(CommandLine.arguments[1]) {
+            let id = CommandLine.arguments[1] == "--staff-cadence" ? StaffNoteSimulation.module.id : BuiltInVisualizations.defaultID
+            try cadence(to: URL(fileURLWithPath: CommandLine.arguments[2]), moduleID: id); return
         }
         guard CommandLine.arguments.count == 2 else { return }
         let directory = URL(fileURLWithPath: CommandLine.arguments[1])
@@ -97,7 +98,7 @@ enum PerformanceProbe {
             .write(to: directory.appendingPathComponent("performance.json"))
     }
 
-    static func cadence(to destination: URL) throws {
+    static func cadence(to destination: URL, moduleID: String) throws {
         guard CGDisplayIsActive(CGMainDisplayID()) != 0, CGDisplayIsAsleep(CGMainDisplayID()) == 0 else {
             throw AudioAnalysisError.invalidInput("Native cadence needs an awake display; macOS pauses display-link callbacks while the display sleeps")
         }
@@ -105,12 +106,15 @@ enum PerformanceProbe {
         let preferences = UserDefaults(suiteName: suite)!
         defer { preferences.removePersistentDomain(forName: suite) }
         let engine = AudioEngine(factory: { _, frame, _ in ProbeCapture(onFrame: frame) }, monitorsSystem: false)
-        let panel = VisualizerPanel(source: engine.channel, registry: BuiltInVisualizations.registry(preferences: preferences), selectedID: BuiltInVisualizations.defaultID, preferences: preferences, persistsFrame: false)
+        let panel = VisualizerPanel(source: engine.channel, registry: BuiltInVisualizations.registry(preferences: preferences), selectedID: moduleID, preferences: preferences, persistsFrame: false)
         panel.setDrawingWidth(1000)
-        let view = panel.visualizationHost.activeView as! PencilFlightView
+        func setProbe(_ handler: ((Double, Double) -> Void)?) {
+            if let view = panel.visualizationHost.activeView as? PencilFlightView { view.onRender = handler }
+            if let view = panel.visualizationHost.activeView as? StaffNoteView { view.onRender = handler }
+        }
         var timestamps = [Double](), costs = [Double]()
         let warm = ProcessInfo.processInfo.systemUptime + 1
-        view.onRender = { cost, timestamp in
+        setProbe { cost, timestamp in
             if timestamp >= warm { timestamps.append(timestamp); costs.append(cost) }
         }
         panel.orderFrontRegardless()
@@ -123,19 +127,18 @@ enum PerformanceProbe {
         RunLoop.main.run(until: Date(timeIntervalSinceNow: 0.15))
         let hiddenStopped = timestamps.count == stoppedCount
         var resumedFrames = 0
-        view.onRender = { _, _ in resumedFrames += 1 }
+        setProbe { _, _ in resumedFrames += 1 }
         panel.orderFrontRegardless(); panel.orderFrontRegardless()
         RunLoop.main.run(until: Date(timeIntervalSinceNow: 1))
         let deliveredFrames = engine.channel.snapshot?.sequence ?? 0
         let sourceRunning = engine.isRunning
-        engine.stop(); panel.orderOut(nil); view.onRender = nil
+        engine.stop(); panel.orderOut(nil); setProbe(nil)
         let intervals = zip(timestamps.dropFirst(), timestamps).map { $0 - $1 }
         guard intervals.count > 100 else {
-            let session = panel.visualizationHost.controller.current as? MacPencilFlightSession
-            throw AudioAnalysisError.invalidInput("Display link did not render enough frames: recorded=\(timestamps.count), resumed=\(resumedFrames), snapshot=\(deliveredFrames), running=\(sourceRunning), activity=\(session?.simulation.world.activity ?? -1)")
+            throw AudioAnalysisError.invalidInput("Display link did not render enough frames: module=\(moduleID), recorded=\(timestamps.count), resumed=\(resumedFrames), snapshot=\(deliveredFrames), running=\(sourceRunning)")
         }
         let report: [String: Any] = ["method": "real native transparent window; synthetic capture transport; 1s warmup + 6s measurement; no recording",
-            "widthPoints": panel.frame.width, "frames": timestamps.count,
+            "moduleID": moduleID, "widthPoints": panel.frame.width, "frames": timestamps.count,
             "fps": Double(intervals.count) / intervals.reduce(0, +), "interval": metrics(intervals),
             "draw": metrics(costs), "intervalsOver25ms": intervals.filter { $0 > 0.025 }.count,
             "hiddenStopsRendering": hiddenStopped, "resumedFramesInOneSecond": resumedFrames]

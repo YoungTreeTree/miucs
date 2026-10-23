@@ -23,10 +23,12 @@ flowchart LR
 | `contracts/` | 语言无关的字段、单位、时间语义、版本、Schema 与合成样本 |
 | `modules/audio/core/` | PCM 数据模型、分析算法、FFT 后端接口和实时通道；只用 Foundation |
 | `modules/audio/platforms/macos/` | ScreenCaptureKit、CoreMedia 解码、恢复、Accelerate FFT；依赖音频核心 |
-| `modules/visualizations/api/` | 模块描述、会话、视口、注册和消费调度；只依赖音频数据与通道 |
-| `modules/visualizations/api/platforms/macos/` | 原生扩展协议，提供视图与设置入口 |
+| `modules/visualizations/api/` | 模块描述、会话、视口、通用 RGB 笔色、注册和消费调度；只用 Foundation |
+| `modules/visualizations/api/platforms/macos/` | 原生扩展协议、公共笔色到 AppKit 的转换 |
 | `modules/visualizations/pencil-flight/core/` | 特征映射、运动、管道、粒子、纯颜色数据和示例场景 |
-| `modules/visualizations/pencil-flight/platforms/macos/` | AppKit 绘图、颜色转换与 SwiftUI 调色盘 |
+| `modules/visualizations/pencil-flight/platforms/macos/` | AppKit 绘图与旧版配色兼容 |
+| `modules/visualizations/staff-note/core/` | 固定高音谱位、音符运动、起音弹跳与有界旋律轨迹 |
+| `modules/visualizations/staff-note/platforms/macos/` | 透明五线谱、音符、加线与轨迹绘制，接收公共笔色 |
 | `apps/macos/` | 入口、菜单、透明窗口、显示刷新、位置偏好、模块组合注册 |
 | `tools/macos/` | 数值诊断、文件分析、离线示例导出和性能测量 |
 | `tests/` | 契约、通用音频、场景规则与各平台集成验证 |
@@ -55,11 +57,17 @@ flowchart LR
 
 ## 可视化与应用外壳
 
-`VisualizationRegistry` 保存稳定 ID、名称与创建新会话的工厂。`VisualizationController` 仅管理当前会话、订阅和视口，切换时停用并释放旧会话，再用新订阅激活新会话。它不持有 `AudioEngine`，因此切换不会中断音频。
+`VisualizationRegistry` 保存稳定 ID、名称、`VisualizationLayout` 与创建新会话的工厂。布局包含基准宽高和宽度上下限，默认值兼容飞鸟。`VisualizationController` 仅管理当前会话、订阅和视口，不持有 `AudioEngine`，因此切换不会中断音频。
 
 `PencilFlightSimulation` 是通用飞鸟会话，`SoundFlightWorld` 管理场景规则。原生 `MacPencilFlightSession` 组合通用会话、`PencilFlightView` 和调色盘；绘制对象不再订阅音频、持有计时器或管理窗口。
 
-`VisualizationHostView` 管理屏幕同步刷新、当前原生视图和通用状态提示，以及拖动/缩放交互。`VisualizerPanel` 保留透明、鼠标穿透和位置保存。隐藏窗口停止刷新而音频继续；切换会话关闭旧模块设置界面并取消其订阅。新增内置模块只需实现会话与平台适配，再在 `BuiltInVisualizations` 注册，无须修改音频分析。
+`StaffNoteSimulation` 消费相同通道，`StaffPitch` 按自然音级映射真实谱位，`StaffPitchTracker` 按新音频时间戳过滤短暂异常并分级确认大跳。`StaffNoteScene` 分开管理确认后的准确谱位、平滑位置、装饰弹跳与最多 512 点/8 秒的轨迹，轨迹另做 25ms 轻度平滑。音量不进入谱位计算。`MacStaffNoteSession` 组合这一会话与 `StaffNoteView`；没有依赖飞鸟核心或改动音频算法、JSON 契约。详细规则见 [五线谱音符](staff-note.md)。
+
+全局颜色由 `VisualizationAppearanceStore` 保存为一个预设 ID，菜单提供五种笔色。`VisualizationController` 把纯数据的 `VisualizationAppearance` 交给当前会话，并在切换后的激活前传给新会话。两种原生适配只负责将公共 RGB 转成实际笔触；颜色更新不新建会话、不重订阅特征，也不清理音高轨迹。旧 `PencilColor` 是公共 `VisualizationColor` 的兼容别名，旧配色数据用于首次迁移；正常应用入口使用统一菜单。详见[笔色说明](appearance.md)。
+
+`VisualizationHostView` 管理屏幕同步刷新、当前原生视图和通用状态提示，以及拖动/缩放交互。`VisualizerPanel` 按模块布局保持比例，菜单预设、拖动缩放和提示使用同一逻辑坐标，不拉伸长条文字。切换时先保存旧窗口状态并暂停刷新，替换会话与视图，恢复新模块尺寸并传递视口，最后激活；音频持续运行。首次切换沿用左上角位置并限制到屏幕内。隐藏窗口切换时不启动刷新。
+
+各模块独立保存位置与尺寸，`MiucsSelectedVisualization.v1` 保存选择；未知 ID 回退飞鸟。新模块使用 `MiucsVisualizationFrame.v1.<id>` 与原生保存名 `MiucsVisualization.<id>`。隐藏窗口停止刷新而音频继续；切换会话关闭旧模块设置界面并取消其订阅。新增内置模块只需实现会话与平台适配、声明布局，再在 `BuiltInVisualizations` 注册，无须修改音频分析。
 
 兼容项保持 `com.miucs.app`、`Miucs Dev` 签名策略、`MiucsPencilFlight` 窗口保存名、`MiucsPencilFlightFrame` / `MiucsPencilFlightWidth` 以及原配色偏好。现有带宽距离、响度体积和气团效果均属于飞鸟核心。
 
@@ -67,4 +75,4 @@ flowchart LR
 
 运行步骤见 [CONTRIBUTING.md](../CONTRIBUTING.md)。重点证据包括通道积压/峰值/事件过期、并发读写、重连隔离、模块切换与原生视图释放，以及原有数值、旋律、恢复、飞行、窗口、配色测试。合成导出器与性能工具继续调用生产绘制路径，公开资源不包含真实桌面或声音。
 
-本次回归、数值对照、原生刷新、真实采集与恢复、重启及偏好恢复结果见 [分层验收汇总](validation/architecture-validation.json)。桌面解锁后，全部待验项目已完成。
+原分层重构的回归、数值对照、原生刷新及真实采集记录见 [分层验收汇总](validation/architecture-validation.json)，其中源码哈希对应当时版本。新增五线谱的规则、布局、绘图与回归记录见 [五线谱验收说明](staff-note.md)。

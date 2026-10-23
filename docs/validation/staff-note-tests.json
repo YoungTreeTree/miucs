@@ -1,0 +1,211 @@
+{
+  "checks" : [
+    {
+      "name" : "Natural notes alternate exact staff lines and spaces",
+      "passed" : true
+    },
+    {
+      "name" : "Sharps share the natural note position and use sharp spelling",
+      "passed" : true
+    },
+    {
+      "name" : "Octaves preserve seven diatonic steps and 28 points",
+      "passed" : true
+    },
+    {
+      "name" : "E2 and C7 fit the fixed 160-point canvas",
+      "passed" : true
+    },
+    {
+      "name" : "Ledger lines include all lines between the staff and the head",
+      "passed" : true
+    },
+    {
+      "name" : "Absent, invalid, low confidence and out-of-range pitches are rejected",
+      "passed" : true
+    },
+    {
+      "name" : "Hysteresis prevents semitone boundary chatter",
+      "passed" : true
+    },
+    {
+      "name" : "First missing melody waits faintly on B4",
+      "passed" : true
+    },
+    {
+      "name" : "Fresh targets preserve position and movement starts on the next refresh",
+      "passed" : true
+    },
+    {
+      "name" : "Accepted targets and repeated notes settle within 150ms",
+      "passed" : true
+    },
+    {
+      "name" : "High-confidence isolated notes and two-frame octave intrusions leave no spikes",
+      "passed" : true
+    },
+    {
+      "name" : "Semitone and whole-tone vocal motion changes the target on its first frame",
+      "passed" : true
+    },
+    {
+      "name" : "Sustained thirds, fifths and octaves confirm within 30, 50 and 75ms at 48kHz",
+      "passed" : true
+    },
+    {
+      "name" : "Confirmed jumps keep their full staff distance and the trail reaches the true note",
+      "passed" : true
+    },
+    {
+      "name" : "A quick melodic phrase with thirds and fourths keeps every sustained note",
+      "passed" : true
+    },
+    {
+      "name" : "Unrelated high and low candidates cannot accumulate into a confirmed jump",
+      "passed" : true
+    },
+    {
+      "name" : "A sustained new register can confirm despite nearby semitone variation",
+      "passed" : true
+    },
+    {
+      "name" : "Repeated snapshots cannot confirm a jump or append trajectory points",
+      "passed" : true
+    },
+    {
+      "name" : "Widely spaced observations cannot be treated as continuous confirmation",
+      "passed" : true
+    },
+    {
+      "name" : "Unconfirmed candidates do not keep an old reliable pitch alive indefinitely",
+      "passed" : true
+    },
+    {
+      "name" : "The first fresh pitch after expiry starts a new segment immediately",
+      "passed" : true
+    },
+    {
+      "name" : "Missing melody clears pending confirmation and starts the next trace at its true height",
+      "passed" : true
+    },
+    {
+      "name" : "The trail softens its first corner and reaches 95 percent of a small change within 90ms",
+      "passed" : true
+    },
+    {
+      "name" : "Volume changes size while leaving true pitch and base motion identical",
+      "passed" : true
+    },
+    {
+      "name" : "Dense onsets preserve continuous position and bounded bounce",
+      "passed" : true
+    },
+    {
+      "name" : "Trace preserves the accepted note and ignores loudness and decorative bounce",
+      "passed" : true
+    },
+    {
+      "name" : "Trace capacity never exceeds 512 samples",
+      "passed" : true
+    },
+    {
+      "name" : "History moves left in real time and fades",
+      "passed" : true
+    },
+    {
+      "name" : "All history expires after eight seconds, including long scheduling gaps",
+      "passed" : true
+    },
+    {
+      "name" : "Unreliable pitch holds the last height and fades the label",
+      "passed" : true
+    },
+    {
+      "name" : "Sound without melody holds pitch, stops history and still follows onsets",
+      "passed" : true
+    },
+    {
+      "name" : "Silence stops kicks while existing bounce settles smoothly",
+      "passed" : true
+    },
+    {
+      "name" : "Snapshot and event duplicates do not replay actions or trajectory",
+      "passed" : true
+    },
+    {
+      "name" : "Cached melody expires even when the snapshot remains fresh",
+      "passed" : true
+    },
+    {
+      "name" : "Stale audio cannot move the note or start actions",
+      "passed" : true
+    },
+    {
+      "name" : "Reconnect isolates old history and accepts the new generation",
+      "passed" : true
+    },
+    {
+      "name" : "Audio format changes discard old history and queued kicks",
+      "passed" : true
+    },
+    {
+      "name" : "PCM timeline reset does not connect unrelated trajectories",
+      "passed" : true
+    },
+    {
+      "name" : "Hidden session stops consuming and clears hidden history",
+      "passed" : true
+    },
+    {
+      "name" : "Resume rejects an expired hidden snapshot",
+      "passed" : true
+    },
+    {
+      "name" : "Resume starts a fresh trajectory from current reliable input",
+      "passed" : true
+    },
+    {
+      "name" : "Disconnected state holds height and lets existing history fade",
+      "passed" : true
+    },
+    {
+      "name" : "Missing melody breaks the drawn trajectory between reliable segments",
+      "passed" : true
+    },
+    {
+      "name" : "Switch through the real channel consumes current pitch without old bursts",
+      "passed" : true
+    },
+    {
+      "name" : "New channel onsets animate immediately while a large pitch jump is pending",
+      "passed" : true
+    },
+    {
+      "name" : "A sustained octave is confirmed through the production feature channel",
+      "passed" : true
+    },
+    {
+      "name" : "Hidden channel events are skipped and only current pitch starts fresh history",
+      "passed" : true
+    },
+    {
+      "name" : "Long render stalls expire old history while retaining the fresh current sample",
+      "passed" : true
+    }
+  ],
+  "failed" : 0,
+  "maximumRemainingFractionAt150ms" : 0.017351537314028782,
+  "passed" : 48,
+  "pitchConfirmationMillisecondsAt48kHz" : {
+    "60->64" : 21.333333333333332,
+    "60->67" : 42.666666666666671,
+    "60->72" : 64,
+    "69->64" : 21.333333333333332,
+    "72->60" : 64,
+    "72->65" : 42.666666666666671
+  },
+  "syntheticIntrusions" : {
+    "filteredVerticalTravel" : 0,
+    "rawVerticalTravel" : 272
+  }
+}

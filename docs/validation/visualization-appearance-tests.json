@@ -1,0 +1,110 @@
+{
+  "checks" : [
+    {
+      "name" : "Exactly five distinct, stable ink choices are shared by all modules",
+      "passed" : true
+    },
+    {
+      "name" : "Loading a store for offline tools does not write color preferences",
+      "passed" : true
+    },
+    {
+      "name" : "First launch uses graphite and stores one small identifier",
+      "passed" : true
+    },
+    {
+      "name" : "The global selection survives a new store",
+      "passed" : true
+    },
+    {
+      "name" : "Unknown saved ink safely falls back to graphite",
+      "passed" : true
+    },
+    {
+      "name" : "Legacy flight ink migrates to the nearest shared color without losing its original data",
+      "passed" : true
+    },
+    {
+      "name" : "An explicit shared selection takes precedence over a legacy palette",
+      "passed" : true
+    },
+    {
+      "name" : "Corrupt legacy data cannot enter the shared color model",
+      "passed" : true
+    },
+    {
+      "name" : "The menu exposes only the five named swatches with one selection",
+      "passed" : true
+    },
+    {
+      "name" : "Actual native menu actions select, mark and persist every color",
+      "passed" : true
+    },
+    {
+      "name" : "Choosing a color opens no configuration window",
+      "passed" : true
+    },
+    {
+      "name" : "A single ink reaches every flight part and its status text immediately",
+      "passed" : true
+    },
+    {
+      "name" : "Recoloring keeps the same session, pitch, geometry, transparency and click-through",
+      "passed" : true
+    },
+    {
+      "name" : "Changing color does not drain pending onsets or restart audio",
+      "passed" : true
+    },
+    {
+      "name" : "A newly mounted module gets the shared ink before its first update",
+      "passed" : true
+    },
+    {
+      "name" : "Staff recoloring changes ink without touching melody or trace history",
+      "passed" : true
+    },
+    {
+      "name" : "Returning to flight retains the shared selection even if legacy colors changed",
+      "passed" : true
+    },
+    {
+      "name" : "Shared coloring uses no per-module palette window",
+      "passed" : true
+    },
+    {
+      "name" : "Changing ink while hidden updates paint without activating rendering",
+      "passed" : true
+    },
+    {
+      "name" : "Future modules receive the shared appearance before activation",
+      "passed" : true
+    },
+    {
+      "name" : "Both production renderers produce distinct pixels for all five inks",
+      "passed" : true
+    },
+    {
+      "name" : "All five staff inks remain visible on light and dark backgrounds",
+      "passed" : true
+    },
+    {
+      "name" : "Color changes retain transparent margins",
+      "passed" : true
+    },
+    {
+      "name" : "Static pencil marks remain byte-stable in every ink",
+      "passed" : true
+    },
+    {
+      "name" : "Recoloring invalidates cached labels and returns to the exact original pixels",
+      "passed" : true
+    },
+    {
+      "name" : "A recolored retained view matches a fresh renderer including text",
+      "passed" : true
+    }
+  ],
+  "failed" : 0,
+  "passed" : 26
+}

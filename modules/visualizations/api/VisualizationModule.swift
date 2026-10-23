@@ -1,8 +1,18 @@
 import Foundation
 
+struct VisualizationLayout: Equatable, Sendable {
+    let width: Double
+    let height: Double
+    let minimumWidth: Double
+    let maximumWidth: Double
+    var aspectRatio: Double { height / width }
+    static let desktop = VisualizationLayout(width: 400, height: 260, minimumWidth: 280, maximumWidth: 1000)
+}
+
 struct VisualizationDescriptor: Equatable, Sendable {
     let id: String
     let name: String
+    var layout: VisualizationLayout = .desktop
 }
 
 struct VisualizationViewport: Equatable, Sendable {
@@ -16,11 +26,17 @@ struct VisualizationViewport: Equatable, Sendable {
 @MainActor
 protocol VisualizationSession: AnyObject {
     var descriptor: VisualizationDescriptor { get }
+    func applyAppearance(_ appearance: VisualizationAppearance)
     func activate(viewport: VisualizationViewport)
     func update(input: FeatureInput, deltaTime: Double)
     func resize(to viewport: VisualizationViewport)
     func deactivate()
     func dispose()
+}
+
+// Simulations have no paint. Native drawing adapters implement this hook.
+extension VisualizationSession {
+    func applyAppearance(_ appearance: VisualizationAppearance) {}
 }
 
 @MainActor
@@ -29,8 +45,12 @@ final class VisualizationRegistry {
     private(set) var descriptors = [VisualizationDescriptor]()
     func register(_ descriptor: VisualizationDescriptor, makeSession: @escaping () -> any VisualizationSession) {
         precondition(factories[descriptor.id] == nil, "Duplicate visualization identifier")
+        let layout = descriptor.layout
+        precondition([layout.width, layout.height, layout.minimumWidth, layout.maximumWidth].allSatisfy { $0.isFinite && $0 > 0 }
+                     && layout.minimumWidth <= layout.width && layout.width <= layout.maximumWidth, "Invalid visualization layout")
         descriptors.append(descriptor); factories[descriptor.id] = makeSession
     }
+    func descriptor(id: String) -> VisualizationDescriptor? { descriptors.first { $0.id == id } }
     func makeSession(id: String) -> (any VisualizationSession)? { factories[id]?() }
 }
 
@@ -42,6 +62,7 @@ final class VisualizationController {
     private var subscription: FeatureSubscription
     private(set) var current: (any VisualizationSession)?
     private(set) var isActive = false
+    private(set) var appearance: VisualizationAppearance?
     private var viewport = VisualizationViewport.desktop
     init(source: any AudioFeatureSource, registry: VisualizationRegistry) {
         self.source = source; self.registry = registry; subscription = source.subscribe()
@@ -54,11 +75,16 @@ final class VisualizationController {
         current?.deactivate(); current?.dispose()
         subscription = source.subscribe() // New module sees the snapshot, not old bursts.
         current = candidate
+        if let appearance { candidate.applyAppearance(appearance) }
         if isActive { candidate.activate(viewport: viewport) }
         return true
     }
     func resize(to viewport: VisualizationViewport) {
         self.viewport = viewport; current?.resize(to: viewport)
+    }
+    func applyAppearance(_ appearance: VisualizationAppearance) {
+        guard self.appearance != appearance else { return }
+        self.appearance = appearance; current?.applyAppearance(appearance)
     }
     func resume() {
         guard !isActive else { return }
