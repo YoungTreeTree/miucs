@@ -12,13 +12,17 @@ enum RenderDemo {
 
     static func main() throws {
         let arguments = CommandLine.arguments
-        guard arguments.count == 2 || (arguments.count == 3 && arguments[2] == "--desktop") else {
-            throw AudioAnalysisError.invalidInput("Usage: render-demo <output.gif> [--desktop]")
+        guard arguments.count == 2 || (arguments.count == 3 && ["--desktop", "--staff"].contains(arguments[2])) else {
+            throw AudioAnalysisError.invalidInput("Usage: render-demo <output.gif> [--desktop|--staff]")
         }
-        let desktop = arguments.count == 3
         NSApplication.shared.setActivationPolicy(.prohibited)
         let output = URL(fileURLWithPath: CommandLine.arguments[1])
         try FileManager.default.createDirectory(at: output.deletingLastPathComponent(), withIntermediateDirectories: true)
+        if arguments.last == "--staff" {
+            try StaffNoteDemo.render(to: output)
+            return
+        }
+        let desktop = arguments.last == "--desktop"
         let count = 250, fps = 25.0, warmup = 300, samplesPerTick = 480
         guard let destination = CGImageDestinationCreateWithURL(output as CFURL, UTType.gif.identifier as CFString, count, nil) else {
             throw AudioAnalysisError.invalidInput("Cannot create GIF destination")

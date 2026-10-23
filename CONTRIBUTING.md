@@ -70,9 +70,10 @@ zsh scripts/measure-performance.sh --cadence
 zsh scripts/measure-performance.sh --staff-cadence build/staff-note-cadence.json
 zsh scripts/render-demo.sh --desktop
 zsh scripts/render-demo.sh --close-up
+zsh scripts/render-demo.sh --staff
 ```
 
-生成的 WAV、逐帧诊断、临时可执行文件在 `build/`；摘要报告在 `docs/validation/`。合成 GIF 的导出器只生成模拟桌面，不能将真实桌面、播放内容、路径或账号信息放入公开示例。性能测量方法与限制见报告，位图耗时不能代替屏幕呈现帧率。两种 cadence 命令会短暂显示合成测试窗口，需要解锁桌面并保持显示器唤醒；显示休眠期间系统会暂停同步回调。
+生成的 WAV、逐帧诊断、临时可执行文件在 `build/`；摘要报告在 `docs/validation/`。合成 GIF 使用模拟桌面或纯纸色背景，不能将真实桌面、播放内容、路径或账号信息放入公开示例。`--staff` 通过生成的 PCM、生产分析器和五线谱原生图层导出倾摆与缩放演示；编码器验证帧数、时长、逐帧像素和元数据，检查图在 `build/demo-export/review/`。性能测量方法与限制见报告，位图耗时不能代替屏幕呈现帧率。两种 cadence 命令会短暂显示合成测试窗口，需要解锁桌面并保持显示器唤醒；显示休眠期间系统会暂停同步回调。
 
 ## 新增可视化模块
 

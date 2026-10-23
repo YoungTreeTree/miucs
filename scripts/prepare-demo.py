@@ -13,7 +13,7 @@ def main():
     frames = []
     with Image.open(source) as image:
         size = image.size
-        assert size in ((640, 416), (960, 600)) and image.n_frames == 250
+        assert size in ((640, 416), (960, 600), (1200, 240)) and image.n_frames == 250
         desktop = size == (960, 600)
         first = image.convert("RGB")
         palette = first.quantize(colors=128 if desktop else 64, method=Image.Quantize.MEDIANCUT)
@@ -40,7 +40,7 @@ def main():
     frames[0].save(temporary, format="GIF", save_all=True, append_images=frames[1:],
                    duration=40, loop=0, disposal=1 if desktop else 2, optimize=True)
     review = source.parent / "review" / source.stem
-    review.mkdir(exist_ok=True)
+    review.mkdir(parents=True, exist_ok=True)
     durations, changes = [], []
     with Image.open(temporary) as image:
         assert image.n_frames == 250 and image.size == size
