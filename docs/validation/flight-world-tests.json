@@ -73,7 +73,7 @@
       "metrics" : {
         "flap" : 1.0111519887139508e-31,
         "heldHeight" : 122.11111111111111,
-        "score" : 11
+        "score" : 10
       },
       "name" : "No melody retains height; stale onset is not replayed",
       "passed" : true

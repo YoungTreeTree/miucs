@@ -9,6 +9,12 @@ struct MiucsApp: App {
         Settings {
             EmptyView()
         }
+        .commands {
+            CommandGroup(replacing: .appSettings) {
+                Button("调色盘…") { appDelegate.showPalette() }
+                    .keyboardShortcut("p", modifiers: .command)
+            }
+        }
     }
 }
 
@@ -20,6 +26,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var diagnostics: AudioDiagnostics?
     private var moveItem: NSMenuItem?
     private var sizeItem: NSMenuItem?
+    private let paletteStore = PencilPaletteStore()
+    private var paletteWindow: PaletteWindowController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -44,10 +52,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
-        if CommandLine.arguments.contains("--diagnose-audio") {
+        if CommandLine.arguments.contains("--diagnose-audio") || CommandLine.arguments.contains("--verify-audio-recovery") {
             let diagnostics = AudioDiagnostics(engine: engine)
             self.diagnostics = diagnostics
-            Task { await diagnostics.run(arguments: CommandLine.arguments) }
+            Task {
+                if CommandLine.arguments.contains("--verify-audio-recovery") {
+                    await diagnostics.runRecovery(arguments: CommandLine.arguments)
+                } else { await diagnostics.run(arguments: CommandLine.arguments) }
+            }
             return
         }
 
@@ -77,6 +89,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         size.submenu = sizes
         menu.addItem(size)
         sizeItem = size
+        let palette = NSMenuItem(title: "调色盘…", action: #selector(showPalette), keyEquivalent: "p")
+        palette.target = self
+        palette.image = NSImage(systemSymbolName: "paintpalette", accessibilityDescription: nil)
+        menu.addItem(palette)
         menu.addItem(.separator())
         menu.addItem(
             NSMenuItem(title: "重新连接音频", action: #selector(reconnect), keyEquivalent: "r")
@@ -87,7 +103,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         item.menu = menu
         statusItem = item
 
-        let panel = VisualizerPanel(engine: engine)
+        let panel = VisualizerPanel(engine: engine, paletteStore: paletteStore)
         panel.orderFrontRegardless()
         self.panel = panel
         panel.onSizeChange = { [weak self] in self?.updateSizeMenu() }
@@ -115,6 +131,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         panel?.setDrawingWidth(Double(sender.tag) * 4)
     }
 
+    @objc func showPalette() {
+        if paletteWindow == nil { paletteWindow = PaletteWindowController(store: paletteStore) }
+        paletteWindow?.present()
+    }
+
     private func updateSizeMenu() {
         guard let panel else { return }
         let percent = panel.drawingScale * 100
@@ -125,12 +146,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func reconnect() {
-        engine.stop()
-        Task { await engine.start() }
+        Task { await engine.reconnect() }
     }
 
     @objc private func quit() {
         engine.stop()
         NSApp.terminate(nil)
+    }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        engine.stop()
+        panel?.saveDrawingFrame()
     }
 }

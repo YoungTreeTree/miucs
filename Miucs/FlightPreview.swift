@@ -19,6 +19,19 @@ enum FlightPreview {
         record("Scaling preserves mouse click-through", panel.ignoresMouseEvents)
         let restored = VisualizerPanel(engine: AudioEngine(), preferences: preferences, persistsFrame: false)
         record("Custom size survives reopening", restored.frame.width == 600 && restored.frame.height == 390)
+        panel.setAdjustingPosition(true)
+        if let screen = NSScreen.main {
+            panel.setFrameOrigin(NSPoint(x: screen.visibleFrame.minX + 84, y: screen.visibleFrame.minY + 96))
+        }
+        let movedFrame = panel.frame
+        let afterMove = VisualizerPanel(engine: AudioEngine(), preferences: preferences, persistsFrame: false)
+        record("Native move saves position before finishing adjustment", afterMove.frame == movedFrame)
+        panel.setDrawingWidth(500, persist: false)
+        panel.saveDrawingFrame() // Same save invoked by applicationWillTerminate.
+        let unfinishedFrame = panel.frame
+        let afterQuit = VisualizerPanel(engine: AudioEngine(), preferences: preferences, persistsFrame: false)
+        record("Shutdown save restores unfinished adjustment and click-through", afterQuit.frame == unfinishedFrame && afterQuit.ignoresMouseEvents && !afterQuit.isAdjustingPosition)
+        panel.setAdjustingPosition(false)
         panel.setDrawingWidth(100)
         record("Small size has readable lower bound", panel.frame.width == 280 && panel.frame.height == 182)
         panel.setDrawingWidth(100_000)
@@ -37,6 +50,12 @@ enum FlightPreview {
         record("Finishing adjustment restores click-through", panel.ignoresMouseEvents && !panel.isAdjustingPosition)
         panel.orderOut(nil)
         record("Hide restores safe input state", !panel.isVisible && panel.ignoresMouseEvents)
+        preferences.set(["x": -100_000.0, "y": -100_000.0, "width": 400.0, "height": 260.0], forKey: "MiucsPencilFlightFrame")
+        let recovered = VisualizerPanel(engine: AudioEngine(), preferences: preferences, persistsFrame: false)
+        record("Disconnected display recovers frame into visible desktop", NSScreen.screens.contains { $0.visibleFrame.insetBy(dx: -0.1, dy: -0.1).contains(recovered.frame) })
+        preferences.set(["x": "invalid", "y": 0, "width": -1, "height": 260] as [String: Any], forKey: "MiucsPencilFlightFrame")
+        let fallback = VisualizerPanel(engine: AudioEngine(), preferences: preferences, persistsFrame: false)
+        record("Malformed saved frame falls back safely", fallback.frame.width > 0 && fallback.frame.origin.x.isFinite && preferences.dictionary(forKey: "MiucsPencilFlightFrame")?["x"] is Double)
         let failures = checks.filter { !($0["passed"] as! Bool) }.count
         try FileManager.default.createDirectory(at: output.deletingLastPathComponent(), withIntermediateDirectories: true)
         try JSONSerialization.data(withJSONObject: ["passed": checks.count - failures, "failed": failures, "checks": checks], options: [.prettyPrinted, .sortedKeys]).write(to: output)
@@ -44,8 +63,8 @@ enum FlightPreview {
         if failures > 0 { throw AudioAnalysisError.invalidInput("Window behavior checks failed") }
     }
 
-    static func render(to directory: URL) throws {
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    /// Fixed synthetic scene for the palette and offline checks; never reads audio.
+    static func sampleWorld() -> SoundFlightWorld {
         var world = SoundFlightWorld(seed: 42)
         let notes = [60.0, 64, 67, 72, 67, 64, 62, 69]
         for tick in 0..<1_080 {
@@ -66,6 +85,12 @@ enum FlightPreview {
             world.receive(melody: MelodyFrame(time: t, pitchHz: 440 * pow(2, (midi - 69) / 12), confidence: 1, isMelodic: true))
             world.advance(seconds: 1.0 / 60)
         }
+        return world
+    }
+
+    static func render(to directory: URL) throws {
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let world = sampleWorld()
         let view = PencilFlightView(preview: world)
         let bitmap = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: 800, pixelsHigh: 520,
                                       bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true,

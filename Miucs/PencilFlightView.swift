@@ -1,21 +1,35 @@
 import AppKit
 import Combine
+import CoreText
+import QuartzCore
 
 @MainActor
 final class PencilFlightView: NSView {
+    private static let gateFade = CGGradient(
+        colorsSpace: CGColorSpaceCreateDeviceRGB(),
+        colors: [CGColor(red: 1, green: 1, blue: 1, alpha: 0),
+                 CGColor(red: 1, green: 1, blue: 1, alpha: 1)] as CFArray,
+        locations: [0, 1]
+    )!
     private(set) var world = SoundFlightWorld()
     private var subscriptions = Set<AnyCancellable>()
-    private var timer: Timer?
+    private var frameLink: CADisplayLink?
+    private lazy var frameTarget = FlightFrameTarget(view: self)
     private var lastTick = 0.0
     private var audioStatus = ""
     private var connected = false
     private var resizeStartFrame: NSRect?
     private var resizeStartMouse = NSPoint.zero
+    private(set) var palette = PencilPalette.graphite
+    private var inkColors = Dictionary(uniqueKeysWithValues: PencilPart.allCases.map { ($0, PencilPalette.graphite[$0].cgColor) })
+    private var eyeColor = PencilPalette.graphite.bird.shaded(by: 0.8).cgColor
+    /// Optional local probe; normal rendering records no timing samples.
+    var onRender: ((_ seconds: Double, _ timestamp: Double) -> Void)?
     var adjustingPosition = false { didSet { needsDisplay = true } }
     override var isFlipped: Bool { true }
     override var isOpaque: Bool { false }
 
-    init(engine: AudioEngine) {
+    init(engine: AudioEngine, paletteStore: PencilPaletteStore? = nil) {
         super.init(frame: NSRect(x: 0, y: 0, width: 400, height: 260))
         wantsLayer = true
         layer?.isOpaque = false
@@ -27,32 +41,54 @@ final class PencilFlightView: NSView {
         }.store(in: &subscriptions)
         engine.$status.sink { [weak self] in self?.audioStatus = $0; self?.needsDisplay = true }.store(in: &subscriptions)
         engine.$isRunning.sink { [weak self] in self?.connected = $0; self?.needsDisplay = true }.store(in: &subscriptions)
+        paletteStore?.$palette.sink { [weak self] in self?.updatePalette($0) }.store(in: &subscriptions)
         setAccessibilityElement(true)
         setAccessibilityRole(.image)
         setAccessibilityLabel("Miucs 铅笔飞鸟，随系统音乐自动飞行")
     }
 
-    init(preview: SoundFlightWorld) {
+    init(preview: SoundFlightWorld, palette: PencilPalette = .graphite) {
         world = preview; connected = true
         super.init(frame: NSRect(x: 0, y: 0, width: 400, height: 260))
+        updatePalette(palette)
+    }
+    /// Offscreen tools reuse the same renderer and its bounded drawing caches.
+    func updatePreview(_ scene: SoundFlightWorld) { world = scene }
+    func updatePalette(_ updated: PencilPalette) {
+        guard palette != updated else { return }
+        palette = updated
+        inkColors = Dictionary(uniqueKeysWithValues: PencilPart.allCases.map { ($0, updated[$0].cgColor) })
+        eyeColor = updated.bird.shaded(by: 0.8).cgColor
+        // CTLine embeds its ink color; geometry caches can be reused unchanged.
+        textCache.removeAll(keepingCapacity: true)
+        needsDisplay = true
     }
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
     func setRendering(_ active: Bool) {
-        timer?.invalidate(); timer = nil
-        guard active else { return }
-        lastTick = ProcessInfo.processInfo.systemUptime
-        let timer = Timer(timeInterval: 1.0 / 60, repeats: true) { [weak self] _ in
-            Task { @MainActor in self?.tick() }
+        guard active else {
+            frameLink?.invalidate(); frameLink = nil
+            return
         }
-        RunLoop.main.add(timer, forMode: .common)
-        self.timer = timer
+        guard frameLink == nil else { return }
+        lastTick = 0
+        let link = displayLink(target: frameTarget, selector: #selector(FlightFrameTarget.frame(_:)))
+        link.preferredFrameRateRange = CAFrameRateRange(minimum: 60, maximum: 60, preferred: 60)
+        link.add(to: .main, forMode: .common)
+        frameLink = link
     }
 
-    private func tick() {
-        let now = ProcessInfo.processInfo.systemUptime
+    override func viewWillMove(toWindow newWindow: NSWindow?) {
+        if newWindow == nil { setRendering(false) }
+        super.viewWillMove(toWindow: newWindow)
+    }
+
+    fileprivate func tick(_ link: CADisplayLink) {
+        let now = link.targetTimestamp
+        let dt = lastTick > 0 ? now - lastTick : link.targetTimestamp - link.timestamp
+        lastTick = now
         let wasMoving = world.activity > 0 || !world.particles.isEmpty || world.flap > 0.001 || world.needsMotionUpdates
-        world.advance(seconds: min(now - lastTick, 0.1)); lastTick = now
+        world.advance(seconds: min(max(dt, 0), 0.1))
         if wasMoving || world.activity > 0 || !world.particles.isEmpty || world.needsMotionUpdates {
             needsDisplay = true
         }
@@ -83,11 +119,15 @@ final class PencilFlightView: NSView {
     }
 
     override func draw(_ dirtyRect: NSRect) {
+        let started = onRender == nil ? nil : ProcessInfo.processInfo.systemUptime
+        defer {
+            if let started { onRender?(ProcessInfo.processInfo.systemUptime - started, started) }
+        }
         NSGraphicsContext.saveGraphicsState()
         let scale = NSAffineTransform()
         scale.scaleX(by: bounds.width / 400, yBy: bounds.height / 260); scale.concat()
         drawEnvironment()
-        for gate in world.gates { draw(gate: gate) }
+        drawGates()
         drawParticles()
         drawBird()
         drawMelodyNote()
@@ -112,12 +152,12 @@ final class PencilFlightView: NSView {
             let x = (Double(i) * 171 + 38 - world.distance * (0.10 + Double(i) * 0.025)).truncatingRemainder(dividingBy: 510)
             let position = x < -65 ? x + 510 : x
             let y = 34 + Double(i % 2) * 38
-            let cloud = NSBezierPath()
+            let cloud = CGMutablePath()
             cloud.move(to: NSPoint(x: position - 24, y: y + 9))
-            cloud.curve(to: NSPoint(x: position - 14, y: y - 1), controlPoint1: NSPoint(x: position - 27, y: y + 1), controlPoint2: NSPoint(x: position - 20, y: y - 5))
-            cloud.curve(to: NSPoint(x: position + 9, y: y - 4), controlPoint1: NSPoint(x: position - 13, y: y - 18), controlPoint2: NSPoint(x: position + 8, y: y - 19))
-            cloud.curve(to: NSPoint(x: position + 25, y: y + 9), controlPoint1: NSPoint(x: position + 23, y: y - 11), controlPoint2: NSPoint(x: position + 31, y: y + 2))
-            cloud.curve(to: NSPoint(x: position - 24, y: y + 9), controlPoint1: NSPoint(x: position + 5, y: y + 12), controlPoint2: NSPoint(x: position - 10, y: y + 7))
+            cloud.addCurve(to: NSPoint(x: position - 14, y: y - 1), control1: NSPoint(x: position - 27, y: y + 1), control2: NSPoint(x: position - 20, y: y - 5))
+            cloud.addCurve(to: NSPoint(x: position + 9, y: y - 4), control1: NSPoint(x: position - 13, y: y - 18), control2: NSPoint(x: position + 8, y: y - 19))
+            cloud.addCurve(to: NSPoint(x: position + 25, y: y + 9), control1: NSPoint(x: position + 23, y: y - 11), control2: NSPoint(x: position + 31, y: y + 2))
+            cloud.addCurve(to: NSPoint(x: position - 24, y: y + 9), control1: NSPoint(x: position + 5, y: y + 12), control2: NSPoint(x: position - 10, y: y + 7))
             pencil(cloud, width: backgroundWeight, opacity: 0.36)
         }
         sketch([NSPoint(x: 8, y: 247), NSPoint(x: 130, y: 247.4), NSPoint(x: 266, y: 246.8), NSPoint(x: 391, y: 247)], seed: 401, width: 0.9, opacity: 0.44)
@@ -129,9 +169,38 @@ final class PencilFlightView: NSView {
         }
     }
 
+    private func drawGates() {
+        guard let context = NSGraphicsContext.current?.cgContext else { return }
+        context.saveGState()
+        defer { context.restoreGState() }
+        // Mask the complete pipe drawing, including white underlines and hatching.
+        // The bird's x position is the zero-opacity boundary in world-view units.
+        let visible = CGRect(x: SoundFlightWorld.birdScreenX, y: 0,
+                             width: SoundFlightWorld.width - SoundFlightWorld.birdScreenX,
+                             height: SoundFlightWorld.height)
+        for gate in world.gates {
+            let x = SoundFlightWorld.birdScreenX + gate.x - world.distance
+            guard x > SoundFlightWorld.birdScreenX, x < 440 else { continue }
+            // Pipes never overlap horizontally. Composite only their narrow strip,
+            // rather than allocating and shading the entire right side of the view.
+            let strip = CGRect(x: x - 30, y: 0, width: 60, height: 260).intersection(visible)
+            guard !strip.isNull else { continue }
+            context.saveGState(); context.clip(to: strip)
+            context.beginTransparencyLayer(in: strip, auxiliaryInfo: nil)
+            draw(gate: gate)
+            context.setBlendMode(.destinationIn)
+            context.drawLinearGradient(Self.gateFade,
+                start: CGPoint(x: SoundFlightWorld.birdScreenX, y: 0),
+                end: CGPoint(x: SoundFlightWorld.width, y: 0),
+                options: [.drawsBeforeStartLocation, .drawsAfterEndLocation])
+            context.endTransparencyLayer()
+            context.restoreGState()
+        }
+    }
+
     private func draw(gate: FlightGate) {
         let x = SoundFlightWorld.birdScreenX + gate.x - world.distance
-        guard x > -40, x < 440 else { return }
+        guard x > SoundFlightWorld.birdScreenX, x < 440 else { return }
         let pressure = 1.15 + world.bass * 0.5
         let pulse = world.bass * world.flap
         let halfBody = 17 + pulse * 1.5
@@ -139,21 +208,21 @@ final class PencilFlightView: NSView {
         let upper = gate.openingTop, lower = gate.openingBottom
         let ink = gate.passed ? 0.64 : 0.87
         for side in [-1.0, 1.0] {
-            sketch([NSPoint(x: x + side * halfBody, y: -3), NSPoint(x: x + side * halfBody, y: upper - 9)], seed: gate.id * 11 + Int(side) + 1000, width: pressure, opacity: ink)
-            sketch([NSPoint(x: x + side * halfBody, y: lower + 9), NSPoint(x: x + side * halfBody, y: 246)], seed: gate.id * 11 + Int(side) + 1100, width: pressure, opacity: ink)
+            sketch([NSPoint(x: x + side * halfBody, y: -3), NSPoint(x: x + side * halfBody, y: upper - 9)], seed: gate.id * 11 + Int(side) + 1000, width: pressure, opacity: ink, part: .gates)
+            sketch([NSPoint(x: x + side * halfBody, y: lower + 9), NSPoint(x: x + side * halfBody, y: 246)], seed: gate.id * 11 + Int(side) + 1100, width: pressure, opacity: ink, part: .gates)
         }
         for (side, pair) in [(upper, -1.0), (lower, 1.0)].enumerated() {
             let (edge, direction) = pair
-            sketch([NSPoint(x: x - halfCap, y: edge + direction * 9), NSPoint(x: x - halfCap, y: edge), NSPoint(x: x + halfCap, y: edge), NSPoint(x: x + halfCap, y: edge + direction * 9), NSPoint(x: x - halfCap, y: edge + direction * 9)], seed: gate.id * 17 + side + 1700, width: pressure, opacity: ink)
+            sketch([NSPoint(x: x - halfCap, y: edge + direction * 9), NSPoint(x: x - halfCap, y: edge), NSPoint(x: x + halfCap, y: edge), NSPoint(x: x + halfCap, y: edge + direction * 9), NSPoint(x: x - halfCap, y: edge + direction * 9)], seed: gate.id * 17 + side + 1700, width: pressure, opacity: ink, part: .gates)
             for h in 0..<4 {
                 let hx = x - halfCap + 5 + Double(h) * 5
-                sketch([NSPoint(x: hx, y: edge + direction * 2), NSPoint(x: hx + 3, y: edge + direction * 6)], seed: gate.id + h + 1500, width: 0.7, opacity: 0.35 + world.bass * 0.13)
+                sketch([NSPoint(x: hx, y: edge + direction * 2), NSPoint(x: hx + 3, y: edge + direction * 6)], seed: gate.id + h + 1500, width: 0.7, opacity: 0.35 + world.bass * 0.13, part: .gates)
             }
         }
         for h in 0..<3 {
             let y = upper - 18 - Double(h) * 8
             if y > 5 {
-                sketch([NSPoint(x: x + halfBody - 6, y: y), NSPoint(x: x + halfBody - 2, y: y - 3)], seed: gate.id * 3 + h, width: 0.6, opacity: 0.24)
+                sketch([NSPoint(x: x + halfBody - 6, y: y), NSPoint(x: x + halfBody - 2, y: y - 3)], seed: gate.id * 3 + h, width: 0.6, opacity: 0.24, part: .gates)
             }
         }
     }
@@ -161,8 +230,7 @@ final class PencilFlightView: NSView {
     private func drawMelodyNote() {
         let note = world.melodyNoteName ?? "—"
         let size = 17.0
-        let font = NSFont(name: "Bradley Hand", size: size) ?? NSFont.systemFont(ofSize: size)
-        let width = (note as NSString).size(withAttributes: [.font: font]).width
+        let width = textLayout(note, size: size).width
         // Trail the bird without rotating with it, leaving its tail silhouette clear.
         drawText(note, at: NSPoint(x: max(6, SoundFlightWorld.birdScreenX - 35 - width),
                                   y: world.birdY - 12),
@@ -177,24 +245,28 @@ final class PencilFlightView: NSView {
         let stretch = 1 + world.flap * world.loudness * 0.06
         transform.scaleX(by: 1 / stretch, yBy: stretch)
         transform.concat()
-        let body = NSBezierPath()
+        let body = CGMutablePath()
         body.move(to: NSPoint(x: -15, y: 0))
-        body.curve(to: NSPoint(x: 7, y: -10), controlPoint1: NSPoint(x: -14, y: -14), controlPoint2: NSPoint(x: 0, y: -15))
-        body.curve(to: NSPoint(x: 15, y: 1), controlPoint1: NSPoint(x: 14, y: -9), controlPoint2: NSPoint(x: 15, y: -4))
-        body.curve(to: NSPoint(x: -15, y: 0), controlPoint1: NSPoint(x: 16, y: 15), controlPoint2: NSPoint(x: -14, y: 17))
-        pencil(body, width: 1.55, opacity: 0.96)
-        sketch([NSPoint(x: 14, y: -1), NSPoint(x: 23, y: 2), NSPoint(x: 14, y: 5)], seed: 31, width: 1.35)
-        sketch([NSPoint(x: -14, y: 2), NSPoint(x: -23, y: -1), NSPoint(x: -18, y: 7), NSPoint(x: -12, y: 8)], seed: 32, width: 1.3)
-        let eye = NSBezierPath(ovalIn: NSRect(x: 7, y: -5, width: 2.8, height: 3.1))
-        NSColor(calibratedWhite: 0.98, alpha: 0.7).setStroke(); eye.lineWidth = 1; eye.stroke()
-        NSColor(calibratedWhite: 0.19, alpha: 0.98).setFill(); eye.fill()
-        let wing = NSBezierPath()
+        body.addCurve(to: NSPoint(x: 7, y: -10), control1: NSPoint(x: -14, y: -14), control2: NSPoint(x: 0, y: -15))
+        body.addCurve(to: NSPoint(x: 15, y: 1), control1: NSPoint(x: 14, y: -9), control2: NSPoint(x: 15, y: -4))
+        body.addCurve(to: NSPoint(x: -15, y: 0), control1: NSPoint(x: 16, y: 15), control2: NSPoint(x: -14, y: 17))
+        pencil(body, width: 1.55, opacity: 0.96, part: .bird)
+        sketch([NSPoint(x: 14, y: -1), NSPoint(x: 23, y: 2), NSPoint(x: 14, y: 5)], seed: 31, width: 1.35, part: .bird)
+        sketch([NSPoint(x: -14, y: 2), NSPoint(x: -23, y: -1), NSPoint(x: -18, y: 7), NSPoint(x: -12, y: 8)], seed: 32, width: 1.3, part: .bird)
+        let eye = CGPath(ellipseIn: CGRect(x: 7, y: -5, width: 2.8, height: 3.1), transform: nil)
+        if let context = NSGraphicsContext.current?.cgContext {
+            context.setStrokeColor(Self.halo); context.setAlpha(0.7); context.setLineWidth(1)
+            context.addPath(eye); context.strokePath()
+            context.setFillColor(eyeColor); context.setAlpha(0.98)
+            context.addPath(eye); context.fillPath(); context.setAlpha(1)
+        }
+        let wing = CGMutablePath()
         let lift = world.flap * (10 + world.loudness * 9)
         wing.move(to: NSPoint(x: -7, y: 3))
-        wing.curve(to: NSPoint(x: 1, y: 7 - lift), controlPoint1: NSPoint(x: -15, y: 6 - lift), controlPoint2: NSPoint(x: -9, y: 17 - lift))
-        pencil(wing, width: 1.4, opacity: 0.94)
+        wing.addCurve(to: NSPoint(x: 1, y: 7 - lift), control1: NSPoint(x: -15, y: 6 - lift), control2: NSPoint(x: -9, y: 17 - lift))
+        pencil(wing, width: 1.4, opacity: 0.94, part: .bird)
         if world.flap > 0.35 {
-            sketch([NSPoint(x: -13, y: -5 - lift * 0.35), NSPoint(x: -17, y: -8 - lift * 0.45)], seed: 42, width: 0.7, opacity: world.flap * 0.45)
+            sketch([NSPoint(x: -13, y: -5 - lift * 0.35), NSPoint(x: -17, y: -8 - lift * 0.45)], seed: 42, width: 0.7, opacity: world.flap * 0.45, part: .bird)
         }
         NSGraphicsContext.restoreGraphicsState()
     }
@@ -203,49 +275,111 @@ final class PencilFlightView: NSView {
         for p in world.particles {
             let fade = max(p.life / p.lifetime, 0)
             if p.feather {
-                let path = NSBezierPath()
+                let path = CGMutablePath()
                 path.move(to: NSPoint(x: p.x - 4, y: p.y + 2))
-                path.curve(to: NSPoint(x: p.x + 4, y: p.y - 2), controlPoint1: NSPoint(x: p.x - 5, y: p.y - 5), controlPoint2: NSPoint(x: p.x + 1, y: p.y - 6))
-                pencil(path, width: 0.8, opacity: fade * 0.5)
+                path.addCurve(to: NSPoint(x: p.x + 4, y: p.y - 2), control1: NSPoint(x: p.x - 5, y: p.y - 5), control2: NSPoint(x: p.x + 1, y: p.y - 6))
+                pencil(path, width: 0.8, opacity: fade * 0.5, part: .trail)
             } else {
-                sketch([NSPoint(x: p.x, y: p.y), NSPoint(x: p.x + 1.6, y: p.y - 0.8)], seed: p.id, width: 0.7, opacity: fade * 0.62)
+                sketch([NSPoint(x: p.x, y: p.y), NSPoint(x: p.x + 1.6, y: p.y - 0.8)], seed: p.id, width: 0.7, opacity: fade * 0.62, part: .trail)
             }
         }
     }
 
-    private func pencil(_ path: NSBezierPath, width: Double, opacity: Double = 0.85) {
-        path.lineCapStyle = .round; path.lineJoinStyle = .round
-        NSColor(calibratedWhite: 0.98, alpha: opacity * 0.62).setStroke()
-        path.lineWidth = width + 1.05; path.stroke()
-        NSColor(calibratedRed: 0.24, green: 0.235, blue: 0.22, alpha: opacity).setStroke()
-        path.lineWidth = width; path.stroke()
+    private static let halo = CGColor(red: 0.98, green: 0.98, blue: 0.98, alpha: 1)
+
+    private func pencil(_ path: CGPath, width: Double, opacity: Double = 0.85, part: PencilPart = .scenery) {
+        guard let context = NSGraphicsContext.current?.cgContext else { return }
+        context.setLineCap(.round); context.setLineJoin(.round)
+        context.setStrokeColor(Self.halo); context.setAlpha(opacity * 0.62)
+        context.setLineWidth(width + 1.05); context.addPath(path); context.strokePath()
+        context.setStrokeColor(inkColors[part]!); context.setAlpha(opacity)
+        context.setLineWidth(width); context.addPath(path); context.strokePath()
+        context.setAlpha(1)
     }
 
-    private func sketch(_ points: [NSPoint], seed: Int, width: Double, opacity: Double = 0.85) {
-        guard points.count > 1 else { return }
-        let path = NSBezierPath(); path.move(to: points[0])
-        var index = 0
-        for i in 1..<points.count {
-            let a = points[i - 1], b = points[i]
-            let steps = max(1, Int(hypot(b.x - a.x, b.y - a.y) / 7))
-            for s in 1...steps {
-                let t = Double(s) / Double(steps)
-                let jitter = s == steps ? 0 : SoundFlightWorld.noise(index, seed) * 0.27
-                path.line(to: NSPoint(x: a.x + (b.x - a.x) * t + jitter,
-                                     y: a.y + (b.y - a.y) * t + jitter * 0.7))
-                index += 1
+    private struct SketchShape { let vertices: [NSPoint]; let path: CGPath }
+    private var sketchCache = [Int: SketchShape]()
+
+    private func sketch(_ points: [NSPoint], seed: Int, width: Double, opacity: Double = 0.85, part: PencilPart = .scenery) {
+        guard points.count > 1, let context = NSGraphicsContext.current?.cgContext else { return }
+        let origin = points[0]
+        let path: CGPath
+        if let cached = sketchCache[seed], cached.vertices.count == points.count,
+           points.indices.allSatisfy({ abs(points[$0].x - origin.x - cached.vertices[$0].x) < 1e-7 &&
+                                       abs(points[$0].y - origin.y - cached.vertices[$0].y) < 1e-7 }) {
+            path = cached.path
+        } else {
+            let vertices = points.map { NSPoint(x: $0.x - origin.x, y: $0.y - origin.y) }
+            let line = CGMutablePath(); line.move(to: .zero)
+            var index = 0
+            for i in 1..<vertices.count {
+                let a = vertices[i - 1], b = vertices[i]
+                let steps = max(1, Int(hypot(b.x - a.x, b.y - a.y) / 7))
+                for step in 1...steps {
+                    let t = Double(step) / Double(steps)
+                    let jitter = step == steps ? 0 : SoundFlightWorld.noise(index, seed) * 0.27
+                    line.addLine(to: NSPoint(x: a.x + (b.x - a.x) * t + jitter,
+                                            y: a.y + (b.y - a.y) * t + jitter * 0.7))
+                    index += 1
+                }
             }
+            path = line
+            // One current shape per seed, bounded even during very long sessions.
+            if sketchCache.count >= 512 { sketchCache.removeAll(keepingCapacity: true) }
+            sketchCache[seed] = SketchShape(vertices: vertices, path: path)
         }
-        pencil(path, width: width, opacity: opacity)
+        context.saveGState(); context.translateBy(x: origin.x, y: origin.y)
+        pencil(path, width: width, opacity: opacity, part: part)
+        context.restoreGState()
+    }
+
+    private struct TextKey: Hashable { let text: String; let size: Double }
+    private struct PencilText {
+        let outline: CTLine
+        let ink: CTLine
+        let width: Double
+        let baseline: Double
+    }
+    private var textCache = [TextKey: PencilText]()
+
+    private func textLayout(_ text: String, size: Double) -> PencilText {
+        let key = TextKey(text: text, size: size)
+        if let cached = textCache[key] { return cached }
+        let font = NSFont(name: "Bradley Hand", size: size) ?? NSFont.systemFont(ofSize: size)
+        let halo = NSColor(calibratedWhite: 0.98, alpha: 1)
+        let outline = CTLineCreateWithAttributedString(NSAttributedString(string: text, attributes: [
+            .font: font, .foregroundColor: halo, .strokeWidth: -3, .strokeColor: halo]))
+        let ink = CTLineCreateWithAttributedString(NSAttributedString(string: text, attributes: [
+            .font: font, .foregroundColor: palette.notes.nsColor]))
+        let layout = PencilText(outline: outline, ink: ink,
+                                width: CTLineGetTypographicBounds(ink, nil, nil, nil), baseline: font.ascender)
+        // Scores change indefinitely; never retain the whole session's text.
+        if textCache.count >= 64 { textCache.removeAll(keepingCapacity: true) }
+        textCache[key] = layout
+        return layout
     }
 
     private func drawText(_ text: String, at point: NSPoint, size: Double, opacity: Double) {
-        let font = NSFont(name: "Bradley Hand", size: size) ?? NSFont.systemFont(ofSize: size)
-        let halo = NSColor(calibratedWhite: 0.98, alpha: min(0.6, opacity * 0.8))
-        let outline: [NSAttributedString.Key: Any] = [.font: font,
-            .foregroundColor: halo, .strokeWidth: -3, .strokeColor: halo]
-        NSAttributedString(string: text, attributes: outline).draw(at: point)
-        NSAttributedString(string: text, attributes: [.font: font,
-            .foregroundColor: NSColor(calibratedWhite: 0.24, alpha: opacity)]).draw(at: point)
+        guard let context = NSGraphicsContext.current?.cgContext else { return }
+        let layout = textLayout(text, size: size)
+        context.saveGState()
+        context.translateBy(x: point.x, y: point.y + layout.baseline)
+        context.scaleBy(x: 1, y: -1)
+        context.textMatrix = .identity; context.textPosition = .zero
+        context.setAlpha(min(0.6, opacity * 0.8)); CTLineDraw(layout.outline, context)
+        context.textPosition = .zero
+        context.setAlpha(opacity); CTLineDraw(layout.ink, context)
+        context.restoreGState()
+    }
+}
+
+/// CADisplayLink retains its target; the proxy keeps the view releasable.
+@MainActor
+private final class FlightFrameTarget: NSObject {
+    weak var view: PencilFlightView?
+    init(view: PencilFlightView) { self.view = view }
+    @objc func frame(_ link: CADisplayLink) {
+        guard let view else { link.invalidate(); return }
+        view.tick(link)
     }
 }

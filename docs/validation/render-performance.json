@@ -1,0 +1,206 @@
+{
+  "method": "600 steady-state synthetic frames per size, 2x bitmap; same retained production view; world warmed past 30s adaptive range; excludes WindowServer/presentation",
+  "comparison": "Final runs executed sequentially without concurrent compilation; wall-time figures vary with system load. Pixel comparison uses premultiplied RGBA over the same deterministic scene.",
+  "sizes": [
+    {
+      "widthPoints": 400,
+      "before": {
+        "backingScale": 2,
+        "draw": {
+          "maxMs": 4.461416509002447,
+          "meanMs": 3.2358052185736597,
+          "medianMs": 3.200375009328127,
+          "p95Ms": 3.728708252310753,
+          "p99Ms": 3.992541693150997
+        },
+        "frames": 600,
+        "over16_67ms": 0,
+        "staticSceneStable": true,
+        "update": {
+          "maxMs": 0.05750032141804695,
+          "meanMs": 0.01850221771746874,
+          "medianMs": 0.017458107322454453,
+          "p95Ms": 0.02400018274784088,
+          "p99Ms": 0.041999854147434235
+        },
+        "widthPoints": 400
+      },
+      "after": {
+        "backingScale": 2,
+        "draw": {
+          "maxMs": 50.290375016629696,
+          "meanMs": 3.6712040270989137,
+          "medianMs": 3.0270833522081375,
+          "p95Ms": 6.0645416378974915,
+          "p99Ms": 11.832250282168388
+        },
+        "frames": 600,
+        "over16_67ms": 4,
+        "staticSceneStable": true,
+        "update": {
+          "maxMs": 0.2971249632537365,
+          "meanMs": 0.022398612927645445,
+          "medianMs": 0.019249971956014633,
+          "p95Ms": 0.04245853051543236,
+          "p99Ms": 0.06058346480131149
+        },
+        "widthPoints": 400
+      },
+      "meanDrawReductionPercent": -13.455655675009304,
+      "visual": {
+        "meanPremultipliedDifference": 0.09888637113499245,
+        "fractionPixelsDifferentByMoreThan8": 0.002098557692307692,
+        "transparentFraction": 0.9268557692307692,
+        "staticSceneStable": true
+      }
+    },
+    {
+      "widthPoints": 800,
+      "before": {
+        "backingScale": 2,
+        "draw": {
+          "maxMs": 18.31883331760764,
+          "meanMs": 7.340752927896877,
+          "medianMs": 7.077999878674746,
+          "p95Ms": 8.915291633456945,
+          "p99Ms": 9.398166555911303
+        },
+        "frames": 600,
+        "over16_67ms": 1,
+        "staticSceneStable": true,
+        "update": {
+          "maxMs": 0.0933334231376648,
+          "meanMs": 0.020200963287303846,
+          "medianMs": 0.018999911844730377,
+          "p95Ms": 0.02637505531311035,
+          "p99Ms": 0.04587508738040924
+        },
+        "widthPoints": 800
+      },
+      "after": {
+        "backingScale": 2,
+        "draw": {
+          "maxMs": 60.3500003926456,
+          "meanMs": 7.337388328742236,
+          "medianMs": 6.5187085419893265,
+          "p95Ms": 11.368874926120043,
+          "p99Ms": 20.416416693478823
+        },
+        "frames": 600,
+        "over16_67ms": 12,
+        "staticSceneStable": true,
+        "update": {
+          "maxMs": 0.325916800647974,
+          "meanMs": 0.02375945138434569,
+          "medianMs": 0.020625069737434387,
+          "p95Ms": 0.0377497635781765,
+          "p99Ms": 0.0655418261885643
+        },
+        "widthPoints": 800
+      },
+      "meanDrawReductionPercent": 0.045834523892696044,
+      "visual": {
+        "meanPremultipliedDifference": 0.10122219021021872,
+        "fractionPixelsDifferentByMoreThan8": 0.001807091346153846,
+        "transparentFraction": 0.9334831730769231,
+        "staticSceneStable": true
+      }
+    },
+    {
+      "widthPoints": 1000,
+      "before": {
+        "backingScale": 2,
+        "draw": {
+          "maxMs": 36.53966682031751,
+          "meanMs": 12.189622015381852,
+          "medianMs": 11.58958300948143,
+          "p95Ms": 14.710749965161085,
+          "p99Ms": 25.105041451752186
+        },
+        "frames": 600,
+        "over16_67ms": 15,
+        "staticSceneStable": true,
+        "update": {
+          "maxMs": 0.10558310896158218,
+          "meanMs": 0.02490006775284807,
+          "medianMs": 0.02391636371612549,
+          "p95Ms": 0.03216695040464401,
+          "p99Ms": 0.04820851609110832
+        },
+        "widthPoints": 1000
+      },
+      "after": {
+        "backingScale": 2,
+        "draw": {
+          "maxMs": 33.89720851555467,
+          "meanMs": 8.898226174836358,
+          "medianMs": 8.6107081733644,
+          "p95Ms": 10.665458627045155,
+          "p99Ms": 11.557791382074356
+        },
+        "frames": 600,
+        "over16_67ms": 4,
+        "staticSceneStable": true,
+        "update": {
+          "maxMs": 0.07958337664604187,
+          "meanMs": 0.02134770465393861,
+          "medianMs": 0.020708423107862473,
+          "p95Ms": 0.026458408683538437,
+          "p99Ms": 0.043458305299282074
+        },
+        "widthPoints": 1000
+      },
+      "meanDrawReductionPercent": 27.001623482599747,
+      "visual": {
+        "meanPremultipliedDifference": 0.10192469381598787,
+        "fractionPixelsDifferentByMoreThan8": 0.0017111538461538462,
+        "transparentFraction": 0.934865,
+        "staticSceneStable": true
+      }
+    }
+  ],
+  "nativeBefore": {
+    "draw": {
+      "maxMs": 2.1905414760112762,
+      "meanMs": 0.7796618638753223,
+      "medianMs": 0.6593749858438969,
+      "p95Ms": 1.4254585839807987,
+      "p99Ms": 1.6521667130291462
+    },
+    "fps": 59.49992113260462,
+    "frames": 357,
+    "interval": {
+      "maxMs": 74.15483333170414,
+      "meanMs": 16.80674496645715,
+      "medianMs": 16.620291396975517,
+      "p95Ms": 18.644833005964756,
+      "p99Ms": 20.248000044375658
+    },
+    "intervalsOver25ms": 1,
+    "method": "real native transparent window; synthetic capture transport; 1s warmup + 6s measurement; no recording",
+    "widthPoints": 1000
+  },
+  "nativeAfter": {
+    "draw": {
+      "maxMs": 2.9089581221342087,
+      "meanMs": 0.5130073014117549,
+      "medianMs": 0.4986249841749668,
+      "p95Ms": 0.8535417728126049,
+      "p99Ms": 1.3025831431150436
+    },
+    "fps": 59.57292990111502,
+    "frames": 359,
+    "hiddenStopsRendering": true,
+    "interval": {
+      "maxMs": 62.62041674926877,
+      "meanMs": 16.78614769594005,
+      "medianMs": 16.667291522026062,
+      "p95Ms": 16.830208245664835,
+      "p99Ms": 17.21212500706315
+    },
+    "intervalsOver25ms": 1,
+    "method": "real native transparent window; synthetic capture transport; 1s warmup + 6s measurement; no recording",
+    "resumedFramesInOneSecond": 60,
+    "widthPoints": 1000
+  }
+}

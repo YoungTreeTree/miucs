@@ -29,6 +29,14 @@
       "passed" : true
     },
     {
+      "name" : "Native move saves position before finishing adjustment",
+      "passed" : true
+    },
+    {
+      "name" : "Shutdown save restores unfinished adjustment and click-through",
+      "passed" : true
+    },
+    {
       "name" : "Small size has readable lower bound",
       "passed" : true
     },
@@ -59,8 +67,16 @@
     {
       "name" : "Hide restores safe input state",
       "passed" : true
+    },
+    {
+      "name" : "Disconnected display recovers frame into visible desktop",
+      "passed" : true
+    },
+    {
+      "name" : "Malformed saved frame falls back safely",
+      "passed" : true
     }
   ],
   "failed" : 0,
-  "passed" : 15
+  "passed" : 19
 }

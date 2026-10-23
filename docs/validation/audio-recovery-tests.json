@@ -1,0 +1,79 @@
+{
+  "checks" : [
+    {
+      "name" : "Interrupted capture reconnects and preserves capture scope",
+      "passed" : true
+    },
+    {
+      "name" : "Startup failures back off and recover when a source returns",
+      "passed" : true
+    },
+    {
+      "name" : "Sleep stops capture; wake recreates it exactly once",
+      "passed" : true
+    },
+    {
+      "name" : "Screen sleep waits for wake; system sleep remains authoritative",
+      "passed" : true
+    },
+    {
+      "name" : "Real workspace notification observers forward sleep and wake",
+      "passed" : true
+    },
+    {
+      "name" : "Display and output-route bursts are coalesced",
+      "passed" : true
+    },
+    {
+      "name" : "Stop cancels pending retry and suppresses wake recovery",
+      "passed" : true
+    },
+    {
+      "name" : "macOS user-stop is respected until explicitly restarted",
+      "passed" : true
+    },
+    {
+      "name" : "Explicit start works after stopping while asleep",
+      "passed" : true
+    },
+    {
+      "name" : "Permission denial polls without repeating capture requests",
+      "passed" : true
+    },
+    {
+      "name" : "Idle output without PCM is not mistaken for a stalled capture",
+      "passed" : true
+    },
+    {
+      "name" : "Silent PCM remains healthy for long periods",
+      "passed" : true
+    },
+    {
+      "name" : "Missing PCM during active output automatically rebuilds capture",
+      "passed" : true
+    },
+    {
+      "name" : "Callbacks from old captures cannot change the new scene or reconnect it",
+      "passed" : true
+    },
+    {
+      "name" : "Stopping a pending factory never starts a late capture",
+      "passed" : true
+    },
+    {
+      "name" : "Stopping an in-flight start cleans up its late completion",
+      "passed" : true
+    },
+    {
+      "name" : "A healthy interval restores the short retry delay",
+      "passed" : true
+    },
+    {
+      "name" : "A replacement survives the old in-flight start completing later",
+      "passed" : true
+    }
+  ],
+  "failed" : 0,
+  "method" : "injected capture transport, actual retry tasks, workspace notifications and controlled monotonic clock; no machine sleep or device changes",
+  "passed" : 18
+}

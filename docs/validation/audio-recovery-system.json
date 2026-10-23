@@ -1,0 +1,23 @@
+{
+  "checks" : [
+    {
+      "name" : "Real system capture delivers audio",
+      "passed" : true
+    },
+    {
+      "name" : "Real SCStream delivers audio after simulated sleep\/wake",
+      "passed" : true
+    },
+    {
+      "name" : "Real SCStream delivers audio after configuration rebuild",
+      "passed" : true
+    },
+    {
+      "name" : "Explicit stop prevents further capture callbacks",
+      "passed" : true
+    }
+  ],
+  "failed" : 0,
+  "method" : "real ScreenCaptureKit audio; simulated engine lifecycle events; no physical sleep or device change; counts only",
+  "passed" : 4
+}

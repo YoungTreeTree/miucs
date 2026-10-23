@@ -1,5 +1,5 @@
 {
-  "date": "2026-10-22T08:21:48.851637+00:00",
+  "date": "2026-10-23T02:46:32.623363+00:00",
   "reference": "NumPy 2.2.6 float64 rfft; SciPy 1.15.3 WAV decoder",
   "input": "system-audio-fixture.wav",
   "inputSHA256": "80206761e3ccb47191a99a689e28b43cad152209d1a4492b604c1bc291658cd2",

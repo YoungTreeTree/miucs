@@ -25,6 +25,62 @@ final class AudioDiagnostics {
 
     init(engine: AudioEngine) { self.engine = engine }
 
+    /// Exercises actual SCStream teardown/recreation without putting the computer to sleep.
+    /// The report contains counts only; no features from the user's system mix are retained.
+    func runRecovery(arguments: [String]) async {
+        guard let index = arguments.firstIndex(of: "--output"), index + 1 < arguments.count else {
+            fputs("Recovery verification requires --output <report.json>\n", stderr)
+            NSApp.terminate(nil); return
+        }
+        let destination = URL(fileURLWithPath: arguments[index + 1])
+        var count = 0, checks = [[String: Any]]()
+        subscription = engine.$features.compactMap { $0 }.sink { _ in count += 1 }
+        func awaitFrames(after previous: Int) async throws {
+            let deadline = ProcessInfo.processInfo.systemUptime + 10
+            while (!engine.isRunning || count < previous + 5) && ProcessInfo.processInfo.systemUptime < deadline {
+                try await Task.sleep(for: .milliseconds(25))
+            }
+            if !engine.isRunning || count < previous + 5 {
+                throw AudioAnalysisError.invalidInput("Capture did not resume delivering audio")
+            }
+        }
+        do {
+            await engine.start()
+            try await awaitFrames(after: 0)
+            checks.append(["name": "Real system capture delivers audio", "passed": true])
+            engine.handleLifecycle(.sleep)
+            guard !engine.isRunning else { throw AudioAnalysisError.invalidInput("Capture did not suspend") }
+            try await Task.sleep(for: .milliseconds(150))
+            let beforeWake = count
+            engine.handleLifecycle(.wake); engine.handleLifecycle(.screensWake)
+            try await awaitFrames(after: beforeWake)
+            checks.append(["name": "Real SCStream delivers audio after simulated sleep/wake", "passed": true])
+            let beforeConfiguration = count
+            engine.handleLifecycle(.configurationChanged)
+            try await awaitFrames(after: beforeConfiguration)
+            checks.append(["name": "Real SCStream delivers audio after configuration rebuild", "passed": true])
+            engine.stop()
+            let beforeStop = count
+            try await Task.sleep(for: .milliseconds(1200))
+            guard !engine.isRunning && count == beforeStop else {
+                throw AudioAnalysisError.invalidInput("Stopped capture resumed unexpectedly")
+            }
+            checks.append(["name": "Explicit stop prevents further capture callbacks", "passed": true])
+        } catch {
+            checks.append(["name": "System recovery verification", "passed": false, "error": String(describing: error)])
+        }
+        subscription?.cancel(); engine.stop()
+        let passed = checks.filter { $0["passed"] as? Bool == true }.count
+        let report: [String: Any] = ["checks": checks, "passed": passed, "failed": checks.count - passed,
+            "method": "real ScreenCaptureKit audio; simulated engine lifecycle events; no physical sleep or device change; counts only"]
+        do {
+            try FileManager.default.createDirectory(at: destination.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try JSONSerialization.data(withJSONObject: report, options: [.prettyPrinted, .sortedKeys]).write(to: destination, options: .atomic)
+            print("System audio recovery: \(passed)/\(checks.count) passed")
+        } catch { fputs("Cannot save recovery verification: \(error)\n", stderr) }
+        NSApp.terminate(nil)
+    }
+
     func run(arguments: [String]) async {
         func argument(_ flag: String) -> String? {
             guard let index = arguments.firstIndex(of: flag), index + 1 < arguments.count else { return nil }

@@ -2,16 +2,23 @@ import AppKit
 
 /// A transparent, nonactivating desktop drawing. Default input behavior is click-through.
 @MainActor
-final class VisualizerPanel: NSPanel {
+final class VisualizerPanel: NSPanel, NSWindowDelegate {
+    private static let savedFrameKey = "MiucsPencilFlightFrame"
     private let flightView: PencilFlightView
+    private let paletteStore: PencilPaletteStore
     private let preferences: UserDefaults
     private let persistsFrame: Bool
+    private var isRestoringFrame = true
+    private var isUpdatingDrawingSize = false
     private(set) var isAdjustingPosition = false
     var onSizeChange: (() -> Void)?
     var drawingScale: Double { frame.width / 400 }
 
-    init(engine: AudioEngine, preferences: UserDefaults = .standard, persistsFrame: Bool = true) {
-        flightView = PencilFlightView(engine: engine)
+    init(engine: AudioEngine, preferences: UserDefaults = .standard, persistsFrame: Bool = true,
+         paletteStore: PencilPaletteStore? = nil) {
+        let paletteStore = paletteStore ?? PencilPaletteStore(preferences: preferences)
+        self.paletteStore = paletteStore
+        flightView = PencilFlightView(engine: engine, paletteStore: paletteStore)
         self.preferences = preferences
         self.persistsFrame = persistsFrame
         super.init(contentRect: NSRect(x: 80, y: 80, width: 400, height: 260),
@@ -30,16 +37,23 @@ final class VisualizerPanel: NSPanel {
         contentView = flightView
         flightView.autoresizingMask = [.width, .height]
         var restored = false
-        if persistsFrame {
-            setFrameAutosaveName("MiucsPencilFlight")
-            restored = setFrameUsingName("MiucsPencilFlight")
+        if persistsFrame { setFrameAutosaveName("MiucsPencilFlight") }
+        let savedFrame = readSavedFrame()
+        if let savedFrame {
+            setFrame(savedFrame, display: false)
+            restored = true
+        } else if persistsFrame {
+            restored = setFrameUsingName("MiucsPencilFlight", force: true)
         }
         if !restored, let screen = NSScreen.main {
             setFrameOrigin(NSPoint(x: screen.visibleFrame.maxX - frame.width - 28,
                                    y: screen.visibleFrame.minY + 28))
         }
-        let savedWidth = preferences.object(forKey: "MiucsPencilFlightWidth") as? Double ?? 400
+        let savedWidth = savedFrame.map { Double($0.width) } ?? (preferences.object(forKey: "MiucsPencilFlightWidth") as? Double) ?? 400
         setDrawingWidth(savedWidth, persist: false)
+        delegate = self
+        isRestoringFrame = false
+        saveDrawingFrame()
     }
 
     override var canBecomeKey: Bool { false }
@@ -60,15 +74,34 @@ final class VisualizerPanel: NSPanel {
         let anchor = topLeft ?? NSPoint(x: frame.minX, y: frame.maxY)
         let origin = NSPoint(x: min(max(anchor.x, visible.minX), visible.maxX - width),
                              y: min(max(anchor.y - height, visible.minY), visible.maxY - height))
+        isUpdatingDrawingSize = true
         setFrame(NSRect(origin: origin, size: NSSize(width: width, height: height)), display: true)
+        isUpdatingDrawingSize = false
         onSizeChange?()
         if persist { saveDrawingFrame() }
     }
 
     func saveDrawingFrame() {
+        guard !isRestoringFrame, !isUpdatingDrawingSize,
+              frame.origin.x.isFinite, frame.origin.y.isFinite,
+              frame.width.isFinite, frame.height.isFinite, frame.width > 0, frame.height > 0 else { return }
+        preferences.set(["x": frame.minX, "y": frame.minY,
+                         "width": frame.width, "height": frame.height], forKey: Self.savedFrameKey)
         preferences.set(frame.width, forKey: "MiucsPencilFlightWidth")
         if persistsFrame { saveFrame(usingName: "MiucsPencilFlight") }
     }
+
+    private func readSavedFrame() -> NSRect? {
+        guard let saved = preferences.dictionary(forKey: Self.savedFrameKey),
+              let x = saved["x"] as? Double, let y = saved["y"] as? Double,
+              let width = saved["width"] as? Double, let height = saved["height"] as? Double,
+              [x, y, width, height].allSatisfy(\.isFinite), width > 0, height > 0 else { return nil }
+        return NSRect(x: x, y: y, width: width, height: height)
+    }
+
+    func windowDidMove(_ notification: Notification) { saveDrawingFrame() }
+    func windowDidResize(_ notification: Notification) { saveDrawingFrame() }
+    func windowWillClose(_ notification: Notification) { saveDrawingFrame() }
 
     func setAdjustingPosition(_ adjusting: Bool) {
         isAdjustingPosition = adjusting
