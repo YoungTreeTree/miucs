@@ -57,7 +57,7 @@
 
 ### 数据接口与定义
 
-`AudioFeatureAnalyzer.swift` 负责流式分析，`AudioPCMDecoder.swift` 保留双声道解码，`AudioEngine.features` 发布原始测量值。现有 `level`、`bands` 是单独派生的显示值。
+`modules/audio/core/` 中的分析器负责流式分析，`platforms/macos/AudioPCMDecoder.swift` 保留双声道解码。当前原始特征和独立主旋律经 `FeatureChannel` 的内存快照、事件和区间峰值交给可视化，不再逐帧通过 Combine 发布。旧版派生的 `level`、`bands` 已移除；`displayBands` 仍保留在数据契约中。分层与跨平台入口见 [架构说明](architecture.md)，字段定义见 [音频契约](../contracts/audio-features/README.md)。
 
 - 窗口为 2048 样本，步长 1024 样本，周期 Hann 窗。在 48 kHz 下，窗口覆盖约 42.67 ms，输出间隔约 21.33 ms；这不代表总采集或显示延迟。
 - 频率依据输入的实际采样率换算。格式变化会重置缓冲、时间线和历史状态。每次输入处理全部可用窗口，保留不足一窗的尾部。

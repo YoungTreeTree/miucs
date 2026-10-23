@@ -3,6 +3,7 @@ set -euo pipefail
 
 root="$(cd "$(dirname "$0")" && pwd)"
 app="$root/dist/Miucs.app"
+source "$root/scripts/swift-sources.sh"
 
 rm -rf "$app"
 mkdir -p "$app/Contents/MacOS"
@@ -19,9 +20,9 @@ swiftc \
   -framework CoreAudio \
   -framework Accelerate \
   -o "$app/Contents/MacOS/Miucs" \
-  "$root"/Miucs/*.swift
+  "${app_sources[@]}"
 
-cp "$root/Miucs/Info.plist" "$app/Contents/Info.plist"
+cp "$root/apps/macos/Info.plist" "$app/Contents/Info.plist"
 
 # Ad-hoc signatures change on every build, so macOS drops the screen-recording grant.
 # A stable self-signed identity keeps the TCC permission across rebuilds.

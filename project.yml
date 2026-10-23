@@ -11,13 +11,23 @@ settings:
     CURRENT_PROJECT_VERSION: "1"
     CODE_SIGN_STYLE: Automatic
     ENABLE_HARDENED_RUNTIME: YES
-    CODE_SIGN_ENTITLEMENTS: Miucs/Miucs.entitlements
+    CODE_SIGN_ENTITLEMENTS: apps/macos/Miucs.entitlements
 targets:
   Miucs:
     type: application
     platform: macOS
     sources:
-      - path: Miucs
+      - path: apps/macos
+      - path: modules/audio/core
+      - path: modules/audio/platforms/macos
+      - path: modules/visualizations/api
+        excludes:
+          - platforms/**
+      - path: modules/visualizations/api/platforms/macos
+      - path: modules/visualizations/pencil-flight/core
+      - path: modules/visualizations/pencil-flight/platforms/macos
+      - path: tools/macos/AudioDiagnostics.swift
+      - path: tools/macos/FlightPreview.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.miucs.app
@@ -27,6 +37,6 @@ targets:
         INFOPLIST_KEY_NSAudioCaptureUsageDescription: Miucs listens to system audio to draw the desktop visualizer.
         INFOPLIST_KEY_NSScreenCaptureUsageDescription: Miucs uses system audio capture to draw the desktop visualizer.
     entitlements:
-      path: Miucs/Miucs.entitlements
+      path: apps/macos/Miucs.entitlements
       properties:
         com.apple.security.app-sandbox: false

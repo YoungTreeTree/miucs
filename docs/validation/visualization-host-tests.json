@@ -1,0 +1,50 @@
+{
+  "checks" : [
+    {
+      "name" : "Host mounts only the active native module",
+      "passed" : true
+    },
+    {
+      "name" : "Viewport follows the existing native window resize",
+      "passed" : true
+    },
+    {
+      "name" : "Switch releases the old session, detaches its view and closes settings",
+      "passed" : true
+    },
+    {
+      "name" : "New native module starts without replaying previous effects",
+      "passed" : true
+    },
+    {
+      "name" : "Switch preserves the running audio capture and generation",
+      "passed" : true
+    },
+    {
+      "name" : "Module switch preserves geometry, transparency and click-through",
+      "passed" : true
+    },
+    {
+      "name" : "Position adjustment belongs to the host even if a module accepts mouse input",
+      "passed" : true
+    },
+    {
+      "name" : "Audio continues delivering fresh events to the replacement view",
+      "passed" : true
+    },
+    {
+      "name" : "Same and unknown IDs leave the current native view intact",
+      "passed" : true
+    },
+    {
+      "name" : "Hiding the host pauses animation while capture continues",
+      "passed" : true
+    },
+    {
+      "name" : "Explicit disposal releases the current native session",
+      "passed" : true
+    }
+  ],
+  "failed" : 0,
+  "passed" : 11
+}

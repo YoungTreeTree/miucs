@@ -1,0 +1,70 @@
+{
+  "checks" : [
+    {
+      "name" : "Language-neutral fixtures decode and round-trip through the runtime contract",
+      "passed" : true
+    },
+    {
+      "name" : "Continuous backlog keeps only the newest frame",
+      "passed" : true
+    },
+    {
+      "name" : "Onset backlog is ordered and capped at 64 newest events",
+      "passed" : true
+    },
+    {
+      "name" : "Events expire after 250ms; continuous state reports its age",
+      "passed" : true
+    },
+    {
+      "name" : "Interval flux peak survives a quieter latest snapshot and more than 64 frames",
+      "passed" : true
+    },
+    {
+      "name" : "Readers drain independently and new readers never replay old bursts",
+      "passed" : true
+    },
+    {
+      "name" : "Silent frames cannot enqueue onsets or flux effects",
+      "passed" : true
+    },
+    {
+      "name" : "Reconnect clears old data, rejects late callbacks, and restarts sequence numbers",
+      "passed" : true
+    },
+    {
+      "name" : "Diagnostic tap records every frame independently of display reads and stays bounded",
+      "passed" : true
+    },
+    {
+      "name" : "Concurrent publication and reads remain coherent and keep the event bound",
+      "passed" : true
+    },
+    {
+      "name" : "Registry switches sessions, drops pending bursts, and leaves the source generation intact",
+      "passed" : true
+    },
+    {
+      "name" : "Same or unknown module selection preserves the current session and its pending events",
+      "passed" : true
+    },
+    {
+      "name" : "Pause drops hidden-time events on resume and forwards the new viewport",
+      "passed" : true
+    },
+    {
+      "name" : "Flight consumes a short onset and flux peak even when the latest frame is quiet",
+      "passed" : true
+    },
+    {
+      "name" : "Format changes clear the previous note even if PCM time restarts at the same value",
+      "passed" : true
+    },
+    {
+      "name" : "A new flight session never revives a stale snapshot or disconnected input",
+      "passed" : true
+    }
+  ],
+  "failed" : 0,
+  "passed" : 16
+}

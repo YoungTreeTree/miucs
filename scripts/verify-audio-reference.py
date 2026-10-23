@@ -105,7 +105,7 @@ def main():
         "reference": f"NumPy {np.__version__} float64 rfft; SciPy {scipy.__version__} WAV decoder",
         "input": Path(args.wav).name,
         "inputSHA256": hashlib.sha256(Path(args.wav).read_bytes()).hexdigest(),
-        "analyzerSHA256": hashlib.sha256((ROOT / "Miucs/AudioFeatureAnalyzer.swift").read_bytes()).hexdigest(),
+        "analyzerSHA256": hashlib.sha256((ROOT / "modules/audio/core/AudioFeatureAnalyzer.swift").read_bytes()).hexdigest(),
         "frameCount": len(actual), "expectedFrameCount": expected_count,
         "status": "passed" if not mismatches else "failed",
         "comparisons": {key: {"maxAbsoluteError": max(values, default=0),

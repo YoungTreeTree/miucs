@@ -1,0 +1,287 @@
+{
+  "date": "2026-10-23T04:27:47.669854+00:00",
+  "scope": "Audio/visualization separation; Windows documentation and contracts only",
+  "regressions": {
+    "passed": 149,
+    "failed": 0,
+    "reports": [
+      {
+        "path": "docs/validation/audio-feature-tests.json",
+        "passed": 28,
+        "failed": 0
+      },
+      {
+        "path": "docs/validation/melody-tests.json",
+        "passed": 14,
+        "failed": 0
+      },
+      {
+        "path": "docs/validation/audio-recovery-tests.json",
+        "passed": 18,
+        "failed": 0
+      },
+      {
+        "path": "docs/validation/flight-world-tests.json",
+        "passed": 15,
+        "failed": 0
+      },
+      {
+        "path": "docs/validation/flight-window-tests.json",
+        "passed": 19,
+        "failed": 0
+      },
+      {
+        "path": "docs/validation/pencil-palette-tests.json",
+        "passed": 25,
+        "failed": 0
+      },
+      {
+        "path": "docs/validation/contract-tests.json",
+        "passed": 16,
+        "failed": 0
+      },
+      {
+        "path": "docs/validation/audio-pipeline-tests.json",
+        "passed": 3,
+        "failed": 0
+      },
+      {
+        "path": "docs/validation/visualization-host-tests.json",
+        "passed": 11,
+        "failed": 0
+      }
+    ]
+  },
+  "schemaValidation": {
+    "syntheticFixtures": 6,
+    "swiftRoundTrips": 6,
+    "invalidInputsRejected": 8,
+    "localResolution": true
+  },
+  "numericalReference": {
+    "status": "passed",
+    "frames": 542
+  },
+  "previewPixelEquality": [
+    {
+      "name": "flight-transparent.png",
+      "passed": true
+    },
+    {
+      "name": "flight-light.png",
+      "passed": true
+    },
+    {
+      "name": "flight-dark.png",
+      "passed": true
+    }
+  ],
+  "safeSyntheticDemos": {
+    "miucs-demo": {
+      "background": "plain paper",
+      "birdHeightRange": 109.70657979041289,
+      "durationSeconds": 10,
+      "fps": 25,
+      "frames": 250,
+      "gatesPassed": 14,
+      "height": 416,
+      "loop": "infinite",
+      "notes": [
+        "A3",
+        "A4",
+        "C4",
+        "C5",
+        "D4",
+        "D5",
+        "E4",
+        "E5",
+        "F♯4",
+        "G4"
+      ],
+      "source": "generated PCM, production analyzers and renderer; no desktop recording",
+      "width": 640
+    },
+    "miucs-desktop-demo": {
+      "background": "procedural empty desktop; illustrated cursor and selection",
+      "birdHeightRange": 109.70657979041289,
+      "durationSeconds": 10,
+      "fps": 25,
+      "frames": 250,
+      "gatesPassed": 14,
+      "height": 600,
+      "loop": "infinite",
+      "notes": [
+        "A3",
+        "A4",
+        "C4",
+        "C5",
+        "D4",
+        "D5",
+        "E4",
+        "E5",
+        "F♯4",
+        "G4"
+      ],
+      "source": "generated PCM, production analyzers and renderer; no desktop recording",
+      "width": 960
+    }
+  },
+  "offscreenPerformance": {
+    "method": "600 steady-state synthetic frames per size, 2x bitmap; same retained production view; world warmed past 30s adaptive range; excludes WindowServer/presentation",
+    "sizes": [
+      {
+        "backingScale": 2,
+        "draw": {
+          "maxMs": 2.816708292812109,
+          "meanMs": 2.49270362003396,
+          "medianMs": 2.5218334048986435,
+          "p95Ms": 2.678041812032461,
+          "p99Ms": 2.726208418607712
+        },
+        "frames": 600,
+        "over16_67ms": 0,
+        "staticSceneStable": true,
+        "update": {
+          "maxMs": 0.024666544049978256,
+          "meanMs": 0.014574230493356783,
+          "medianMs": 0.014416873455047607,
+          "p95Ms": 0.016291625797748566,
+          "p99Ms": 0.01808302477002144
+        },
+        "widthPoints": 400
+      },
+      {
+        "backingScale": 2,
+        "draw": {
+          "maxMs": 6.556291598826647,
+          "meanMs": 5.129102231779446,
+          "medianMs": 5.263458471745253,
+          "p95Ms": 5.512875039130449,
+          "p99Ms": 5.738791543990374
+        },
+        "frames": 600,
+        "over16_67ms": 0,
+        "staticSceneStable": true,
+        "update": {
+          "maxMs": 0.024541746824979782,
+          "meanMs": 0.014927560308327276,
+          "medianMs": 0.014791730791330338,
+          "p95Ms": 0.016291625797748566,
+          "p99Ms": 0.018791761249303818
+        },
+        "widthPoints": 800
+      },
+      {
+        "backingScale": 2,
+        "draw": {
+          "maxMs": 8.346875198185444,
+          "meanMs": 6.905527984878669,
+          "medianMs": 7.092124782502651,
+          "p95Ms": 7.707083132117987,
+          "p99Ms": 7.966999895870686
+        },
+        "frames": 600,
+        "over16_67ms": 0,
+        "staticSceneStable": true,
+        "update": {
+          "maxMs": 0.023416243493556976,
+          "meanMs": 0.01572223069767157,
+          "medianMs": 0.01529185101389885,
+          "p95Ms": 0.018541701138019562,
+          "p99Ms": 0.021208543330430984
+        },
+        "widthPoints": 1000
+      }
+    ]
+  },
+  "compatibility": {
+    "bundleID": "com.miucs.app",
+    "signingIdentity": "Miucs Dev",
+    "nativeBuild": "passed",
+    "strictSignatureVerification": "passed",
+    "infoAndEntitlementsUnchanged": true,
+    "windowAndPalettePreferences": "existing keys retained"
+  },
+  "pending": [],
+  "sourceSHA256": {
+    "apps/macos/App.swift": "3e3a64bb46fb979ff99ae58c2cbe416565cc5eff7e02accf995a6f69bac9449f",
+    "apps/macos/BuiltInVisualizations.swift": "06d4660d0093ec19c3a42856b54c80d0f5f4e1671dda9bfe5f901c3a04080f6c",
+    "apps/macos/VisualizationHostView.swift": "43dd81e3426d651e51d0b6ab5684dd628b49b96b39f34747f1ef8b5f550a5265",
+    "apps/macos/VisualizerPanel.swift": "8a8f0a14f7863f3bcbd9003fee0dacf1915ae5023622258b3690ea2624a4cd45",
+    "modules/audio/core/AudioAnalysisPipeline.swift": "559292e693655f4958aae2a676ba8b1334ab5bf8f7b9df1bf889d5f5bf51ec5a",
+    "modules/audio/core/AudioFeatureAnalyzer.swift": "6f8992a7fcd665ca3868f062427f615ee99e4a383b664c8dfb71b7bc28da1561",
+    "modules/audio/core/AudioFeatures.swift": "c2776598ba786ad5a05aa455ebd48ebc1f5694e6a32f83064f2ef5f37c3ca1da",
+    "modules/audio/core/AudioPCMBlock.swift": "be6a8497fc212a1e64b5d9be14c58d0048b562a05a602c93e950eae853cd8d41",
+    "modules/audio/core/FeatureChannel.swift": "a007d1f6998bbcf862e6048c850c006c56032b85198d192df050bc54ebfcff4a",
+    "modules/audio/core/MelodyAnalyzer.swift": "ca213364c3ce76a582d3b27361c4a3255a9cb404ea497f288ac0a64b5924fe15",
+    "modules/audio/core/MelodyFrame.swift": "aaf108b719a9240a27b0e753a79c0b5541c0ff61ff59334edbd02ff4717cf68d",
+    "modules/audio/core/SpectrumTransform.swift": "b492a773e1b8697cf6ff87686f2d36c2acd85d102515a8fbdbc76abb213ed940",
+    "modules/audio/platforms/macos/AccelerateSpectrumTransform.swift": "bcc163720d55fb7d67850edb6b6206adf9684fb8f7e2b588b7f87f1243e01742",
+    "modules/audio/platforms/macos/AudioEngine.swift": "ea2fe676709641e4b223d50466659e0663675c8217a571c1f99f57342321995f",
+    "modules/audio/platforms/macos/AudioPCMDecoder.swift": "ff8e66f65746d80a41058538cfa254b20bc620750d13bf676273ca25f8ea91fe",
+    "modules/visualizations/api/VisualizationModule.swift": "6de4f46906e0b7c779b9ff336edc7093c72d12ca3c50c2b8848fc58cd248ac15",
+    "modules/visualizations/api/platforms/macos/MacVisualizationSession.swift": "7aa092552758f00524fd8c345afd9c18564522ec36eef0151ef88bb2bb6f0a70",
+    "modules/visualizations/pencil-flight/core/PencilFlightSampleScene.swift": "8276823d6d25d8881b55a6da432c3260199c72f8905c6a6f3838157a73c9b60f",
+    "modules/visualizations/pencil-flight/core/PencilFlightSimulation.swift": "e9c378f2d1bfcf9fb0ca3934c5b217f1e0f6eca851d19c318bc23f2dd54a89b2",
+    "modules/visualizations/pencil-flight/core/PencilPalette.swift": "f87d99ec3793e3296843b1a741177b3d84fc2e28c201264afaabda1c4501b4c7",
+    "modules/visualizations/pencil-flight/core/SoundFlightWorld.swift": "43ca8fce65b0d99e0da442a7201b7bae0ed10b3ed38686e74aabc4626bd1383f",
+    "modules/visualizations/pencil-flight/platforms/macos/MacPencilFlightSession.swift": "4bfe7bb471dccbe9f6278aa466c111ca46473c06241b960592fca7a732d9e106",
+    "modules/visualizations/pencil-flight/platforms/macos/PaletteWindow.swift": "ff262aa8d5322409fefe379cc0bc55f68efafe39a3827d2c4569d2e56095bcbb",
+    "modules/visualizations/pencil-flight/platforms/macos/PencilFlightView.swift": "fde77f6b7741546b7fdbd048cb4ff1eee99d971a004ee31a63fcf22796d54406",
+    "modules/visualizations/pencil-flight/platforms/macos/PencilPaletteStore.swift": "1d9e66b5e7c59a68555a9fdb10ba98298526115c7b4dda42b73c7ea6335a6b14"
+  },
+  "status": "passed",
+  "nativeCadence": {
+    "draw": {
+      "maxMs": 5.013958550989628,
+      "meanMs": 0.5353212532973888,
+      "medianMs": 0.519083347171545,
+      "p95Ms": 0.7534585893154144,
+      "p99Ms": 1.3326252810657024
+    },
+    "fps": 59.66334002001466,
+    "frames": 359,
+    "hiddenStopsRendering": true,
+    "interval": {
+      "maxMs": 45.898166950792074,
+      "meanMs": 16.760711010555898,
+      "medianMs": 16.668417025357485,
+      "p95Ms": 16.881125047802925,
+      "p99Ms": 20.769416354596615
+    },
+    "intervalsOver25ms": 1,
+    "method": "real native transparent window; synthetic capture transport; 1s warmup + 6s measurement; no recording",
+    "resumedFramesInOneSecond": 60,
+    "widthPoints": 1000
+  },
+  "liveSystemCapture": {
+    "path": "docs/validation/system-audio.json",
+    "status": "passed",
+    "passedSegments": 12,
+    "totalSegments": 12,
+    "capturedFrames": 634
+  },
+  "liveSystemRecovery": {
+    "path": "docs/validation/audio-recovery-system.json",
+    "passed": 4,
+    "failed": 0,
+    "method": "real ScreenCaptureKit audio; simulated engine lifecycle events; no physical sleep or device change; counts only"
+  },
+  "interactiveRestart": {
+    "checks": {
+      "expectedExecutable": true,
+      "oneInteractiveInstance": true,
+      "newProcess": true,
+      "launchedAfterBuild": true,
+      "newAccessibilityLabelObserved": true,
+      "preferencesRestoredWithinCurrentVisibleDesktop": true
+    },
+    "preferences": {
+      "palettePreserved": true,
+      "positionRestoredWithinCurrentVisibleDesktop": true,
+      "widthPreferencePreserved": true,
+      "windowSizePreserved": true
+    },
+    "positionPolicy": "Restore saved frame, then constrain it to the current visible desktop; size and palette unchanged."
+  }
+}

@@ -1,9 +1,9 @@
 {
-  "date": "2026-10-22T08:24:13.726495+00:00",
+  "date": "2026-10-23T04:24:22.464526+00:00",
   "captureStatus": "completed",
   "captureScope": "exclude-existing-applications",
-  "frameCount": 661,
-  "analyzerSHA256": "7bb4b6b463285d9778add84ba020c1b05d0f68093c7cceffaed6c06d08fed99a",
+  "frameCount": 634,
+  "analyzerSHA256": "6f8992a7fcd665ca3868f062427f615ee99e4a383b664c8dfb71b7bc28da1561",
   "segments": [
     {
       "name": "silence-start",
@@ -23,17 +23,17 @@
       "frameCount": 40,
       "measurements": {
         "rms": {
-          "median": 0.08485389345833043,
+          "median": 0.0848530885366924,
           "expected": 0.08485281382580187,
           "tolerance": 0.0016970562765160375
         },
         "centroidHz": {
-          "median": 187.5103834009249,
+          "median": 187.50040751920335,
           "expected": 187.5,
           "tolerance": 2.0
         },
         "lowShare": {
-          "median": 0.9999999999831626,
+          "median": 0.9999999999961455,
           "expected": 1.0,
           "tolerance": 0.02
         },
@@ -74,17 +74,17 @@
       "frameCount": 40,
       "measurements": {
         "rms": {
-          "median": 0.08485154268221268,
+          "median": 0.0848526667158756,
           "expected": 0.08485281304706617,
           "tolerance": 0.0016970562609413234
         },
         "centroidHz": {
-          "median": 1500.00163566649,
+          "median": 1500.004602980966,
           "expected": 1500,
           "tolerance": 2.0
         },
         "midShare": {
-          "median": 0.9999999999985257,
+          "median": 0.9999999999886533,
           "expected": 1.0,
           "tolerance": 0.02
         },
@@ -125,17 +125,17 @@
       "frameCount": 40,
       "measurements": {
         "rms": {
-          "median": 0.08485265105961412,
+          "median": 0.08485145522696208,
           "expected": 0.08485281326005098,
           "tolerance": 0.0016970562652010197
         },
         "centroidHz": {
-          "median": 6000.025094435499,
+          "median": 6000.030862659844,
           "expected": 6000,
           "tolerance": 2.0
         },
         "highShare": {
-          "median": 0.9999999999730502,
+          "median": 0.9999999999994005,
           "expected": 1.0,
           "tolerance": 0.02
         },
@@ -176,17 +176,17 @@
       "frameCount": 40,
       "measurements": {
         "rms": {
-          "median": 0.05999910164765952,
+          "median": 0.05999998051716575,
           "expected": 0.05999999950833484,
           "tolerance": 0.0011999999901666969
         },
         "centroidHz": {
-          "median": 1500.0016312691632,
+          "median": 1500.0039472049828,
           "expected": 1500,
           "tolerance": 2.0
         },
         "midShare": {
-          "median": 0.9999999999985167,
+          "median": 0.9999999999818132,
           "expected": 1.0,
           "tolerance": 0.02
         },
@@ -209,17 +209,17 @@
       "frameCount": 40,
       "measurements": {
         "rms": {
-          "median": 0.05999910154586612,
+          "median": 0.060000012811344094,
           "expected": 0.05999999950833484,
           "tolerance": 0.0011999999901666969
         },
         "centroidHz": {
-          "median": 1500.0016304869405,
+          "median": 1500.003705181043,
           "expected": 1500,
           "tolerance": 2.0
         },
         "midShare": {
-          "median": 0.9999999999984877,
+          "median": 0.9999999999789766,
           "expected": 1.0,
           "tolerance": 0.02
         },
@@ -242,17 +242,17 @@
       "frameCount": 40,
       "measurements": {
         "rms": {
-          "median": 0.08485154296323151,
+          "median": 0.08485287744315644,
           "expected": 0.08485281304706617,
           "tolerance": 0.0016970562609413234
         },
         "centroidHz": {
-          "median": 1500.0016189957973,
+          "median": 1500.0035147506073,
           "expected": 1500,
           "tolerance": 2.0
         },
         "midShare": {
-          "median": 0.9999999999985167,
+          "median": 0.9999999999763063,
           "expected": 1.0,
           "tolerance": 0.02
         },
@@ -280,27 +280,27 @@
       "frameCount": 39,
       "measurements": {
         "rms": {
-          "median": 0.026589714145349334,
+          "median": 0.026537695875507788,
           "expected": 0.026528671614009423,
           "tolerance": 0.0005305734322801884
         },
         "balance": {
-          "median": 0.0010228727529854914,
+          "median": 0.0008483505668321593,
           "expected": 0,
           "tolerance": 0.05
         },
         "sideEnergyRatio": {
-          "median": 0.4962613856136284,
+          "median": 0.4955592159171695,
           "expected": 0.5,
           "tolerance": 0.03
         },
         "correlation": {
-          "median": 0.007310939663485,
+          "median": 0.00989195318083147,
           "expected": 0,
           "tolerance": 0.05
         },
         "flatness": {
-          "median": 5.876834166405831e-06,
+          "median": 4.634217569052662e-06,
           "expected": 4.65780210384056e-06,
           "tolerance": 0.0001
         }
@@ -326,8 +326,8 @@
   "issues": [],
   "fixtureSHA256": "80206761e3ccb47191a99a689e28b43cad152209d1a4492b604c1bc291658cd2",
   "validationMethod": "First clean low-tone onset alignment; segment interiors; afplay launch is not audio onset",
-  "alignmentOffsetSeconds": 1.4533333333333331,
-  "playbackStartupEstimateSeconds": 0.7493333333333332,
+  "alignmentOffsetSeconds": 0.984,
+  "playbackStartupEstimateSeconds": 0.2586666666666666,
   "passedSegments": 12,
   "totalSegments": 12
 }

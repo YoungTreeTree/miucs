@@ -257,14 +257,14 @@
       "detail" : "10 seconds of stereo input; processing faster than real time",
       "measurements" : {
         "audioSeconds" : 10,
-        "millisecondsPerFrame" : 0.024868309003255096,
-        "processingSeconds" : 0.01161350030452013
+        "millisecondsPerFrame" : 0.024894182620135312,
+        "processingSeconds" : 0.011625583283603191
       },
       "name" : "Streaming throughput",
       "passed" : true
     }
   ],
-  "date" : "2026-10-23T02:46:29Z",
+  "date" : "2026-10-23T03:54:59Z",
   "failed" : 0,
   "hopSize" : 1024,
   "passed" : 28,

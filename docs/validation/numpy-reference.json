@@ -1,9 +1,9 @@
 {
-  "date": "2026-10-23T02:46:32.623363+00:00",
+  "date": "2026-10-23T03:55:04.240123+00:00",
   "reference": "NumPy 2.2.6 float64 rfft; SciPy 1.15.3 WAV decoder",
   "input": "system-audio-fixture.wav",
   "inputSHA256": "80206761e3ccb47191a99a689e28b43cad152209d1a4492b604c1bc291658cd2",
-  "analyzerSHA256": "7bb4b6b463285d9778add84ba020c1b05d0f68093c7cceffaed6c06d08fed99a",
+  "analyzerSHA256": "6f8992a7fcd665ca3868f062427f615ee99e4a383b664c8dfb71b7bc28da1561",
   "frameCount": 542,
   "expectedFrameCount": 542,
   "status": "passed",

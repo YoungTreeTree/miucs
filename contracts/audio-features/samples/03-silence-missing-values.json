@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "sessionID": "11111111-1111-4111-8111-111111111111",
+  "state": "running",
+  "frame": {
+    "version": 1,
+    "sessionID": "11111111-1111-4111-8111-111111111111",
+    "sequence": 3,
+    "receivedAt": 100.05,
+    "audio": {
+      "time": 0.064,
+      "sampleRate": 48000,
+      "channelCount": 2,
+      "rms": 0,
+      "rmsDBFS": -240,
+      "peak": 0,
+      "envelope": 0.0001,
+      "isSilent": true,
+      "silenceDuration": 1,
+      "lowEnergy": 0,
+      "midEnergy": 0,
+      "highEnergy": 0,
+      "spectralFlux": 0,
+      "onsetThreshold": 0.18,
+      "isOnset": false,
+      "displayBands": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "melody": {
+      "time": 0.042666667,
+      "confidence": 0,
+      "isMelodic": false
+    }
+  },
+  "frameAge": 0.01,
+  "onsets": [],
+  "spectralFluxPeak": 0
+}

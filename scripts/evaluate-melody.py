@@ -23,8 +23,8 @@ def main():
     args = parser.parse_args()
     executable = ROOT / "build/melody-file-probe"
     subprocess.run(["swiftc", "-swift-version", "6", "-parse-as-library", "-O", "-framework", "Accelerate",
-                    "-framework", "AVFoundation", "Miucs/AudioFeatureAnalyzer.swift", "Miucs/MelodyAnalyzer.swift",
-                    "Tests/MelodyFileProbe.swift", "-o", str(executable)], cwd=ROOT, check=True)
+                    "-framework", "AVFoundation", *[str(p) for p in sorted((ROOT / "modules/audio/core").glob("*.swift"))],
+                    "modules/audio/platforms/macos/AccelerateSpectrumTransform.swift", "tools/macos/MelodyFileProbe.swift", "-o", str(executable)], cwd=ROOT, check=True)
     tracks = []
     for wav in sorted(args.dataset.glob("*.wav")):
         output = wav.with_suffix(".json")
@@ -50,7 +50,7 @@ def main():
         raise ValueError("No ADC2004 WAV/REF pairs found")
     report = {"date": datetime.now(timezone.utc).isoformat(), "dataset": "ADC2004, 20 annotated excerpts",
               "source": "https://www.ee.columbia.edu/~dpwe/LabROSA/projects/melody/",
-              "analyzerSHA256": hashlib.sha256((ROOT / "Miucs/MelodyAnalyzer.swift").read_bytes()).hexdigest(),
+              "analyzerSHA256": hashlib.sha256((ROOT / "modules/audio/core/MelodyAnalyzer.swift").read_bytes()).hexdigest(),
               "method": "nearest reference timestamp; frame-center estimates; 50-cent pitch tolerance; mean over tracks",
               "meanRawPitchAccuracy": float(np.mean([t["rawPitchAccuracy"] for t in tracks])),
               "tracks": tracks,

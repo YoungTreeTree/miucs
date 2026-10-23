@@ -37,7 +37,7 @@ def main():
     frames = capture["frames"]
     report = {"date": datetime.now(timezone.utc).isoformat(), "captureStatus": capture["status"],
               "captureScope": capture.get("captureScope", "system-mix"), "frameCount": len(frames),
-              "analyzerSHA256": hashlib.sha256((ROOT / "Miucs/AudioFeatureAnalyzer.swift").read_bytes()).hexdigest(),
+              "analyzerSHA256": hashlib.sha256((ROOT / "modules/audio/core/AudioFeatureAnalyzer.swift").read_bytes()).hexdigest(),
               "segments": [], "status": "failed", "issues": []}
     report["fixtureSHA256"] = hashlib.sha256(Path(args.manifest).with_suffix(".wav").read_bytes()).hexdigest()
     report["validationMethod"] = "First clean low-tone onset alignment; segment interiors; afplay launch is not audio onset"

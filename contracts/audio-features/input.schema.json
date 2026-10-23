@@ -1,0 +1,102 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "sessionID": {
+      "type": "string",
+      "format": "uuid",
+      "description": "New UUID on capture reset/reconnect, including stopped/connecting transitions."
+    },
+    "state": {
+      "enum": [
+        "stopped",
+        "connecting",
+        "running",
+        "recovering",
+        "suspended",
+        "permissionRequired",
+        "userStopped"
+      ]
+    },
+    "frame": {
+      "anyOf": [
+        {
+          "$ref": "urn:miucs:audio-features:frame:1"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "frameAge": {
+      "anyOf": [
+        {
+          "type": "number",
+          "description": "max(0, consumer host time - frame.receivedAt), seconds; absent without frame.",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "onsets": {
+      "type": "array",
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "sequence": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 18446744073709551615,
+            "description": "Monotonic accepted-frame counter within sessionID. Never compare across sessions."
+          },
+          "time": {
+            "type": "number",
+            "description": "Originating audio analysis-window center, PCM-relative seconds.",
+            "minimum": 0
+          },
+          "receivedAt": {
+            "type": "number",
+            "description": "Host-monotonic receipt time of the originating frame, seconds.",
+            "minimum": 0
+          },
+          "strength": {
+            "type": "number",
+            "description": "Originating raw spectralFlux, dimensionless; rendering response is module-defined.",
+            "minimum": 0,
+            "maximum": 1
+          }
+        },
+        "required": [
+          "sequence",
+          "time",
+          "receivedAt",
+          "strength"
+        ]
+      },
+      "description": "Unread events in sequence order, at most 250ms old; fresh subscription skips historical events."
+    },
+    "spectralFluxPeak": {
+      "type": "number",
+      "description": "Maximum unread non-silent flux in the last 250ms; zero when none. Read-once per subscription.",
+      "minimum": 0,
+      "maximum": 1
+    }
+  },
+  "required": [
+    "version",
+    "sessionID",
+    "state",
+    "onsets",
+    "spectralFluxPeak"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:miucs:audio-features:input:1",
+  "title": "Miucs consumer input v1"
+}

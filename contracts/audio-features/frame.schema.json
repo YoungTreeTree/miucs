@@ -1,0 +1,318 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "sessionID": {
+      "type": "string",
+      "format": "uuid",
+      "description": "New UUID on capture reset/reconnect, including stopped/connecting transitions."
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 18446744073709551615,
+      "description": "Monotonic accepted-frame counter within sessionID. Never compare across sessions."
+    },
+    "receivedAt": {
+      "type": "number",
+      "description": "Host-monotonic receipt time, seconds (macOS systemUptime). Not Unix or PCM time.",
+      "minimum": 0
+    },
+    "audio": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "time": {
+          "type": "number",
+          "description": "PCM analysis-window center, seconds since the current format timeline began.",
+          "minimum": 0
+        },
+        "sampleRate": {
+          "type": "number",
+          "description": "Actual PCM sample rate, Hz; never assume 48000.",
+          "minimum": 1
+        },
+        "channelCount": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2,
+          "description": "Current analyzer supports mono/stereo."
+        },
+        "rms": {
+          "type": "number",
+          "description": "Raw PCM root-mean-square, full-scale amplitude units; may exceed 1.",
+          "minimum": 0
+        },
+        "rmsDBFS": {
+          "type": "number",
+          "description": "20 log10(rms), floored at -240 dBFS; not LUFS or acoustic SPL.",
+          "minimum": -240
+        },
+        "peak": {
+          "type": "number",
+          "description": "Absolute sample peak, full-scale amplitude units; may exceed 1.",
+          "minimum": 0
+        },
+        "crestDB": {
+          "anyOf": [
+            {
+              "type": "number",
+              "description": "20 log10(peak/rms), dB; absent when undefined.",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "envelope": {
+          "type": "number",
+          "description": "RMS envelope, full-scale amplitude units, 25ms attack/200ms release.",
+          "minimum": 0
+        },
+        "isSilent": {
+          "type": "boolean",
+          "description": "-60 dBFS entry for 150ms; -54 dBFS exit. Independent of connection state."
+        },
+        "silenceDuration": {
+          "type": "number",
+          "description": "Observed consecutive time below silence-entry threshold, seconds.",
+          "minimum": 0
+        },
+        "lowEnergy": {
+          "type": "number",
+          "description": "20–250 Hz band power, squared full-scale amplitude units; Nyquist limited.",
+          "minimum": 0
+        },
+        "lowShare": {
+          "anyOf": [
+            {
+              "type": "number",
+              "description": "Fraction of the sum of the three band powers; absent without valid spectrum.",
+              "minimum": 0,
+              "maximum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "midEnergy": {
+          "type": "number",
+          "description": "250–4000 Hz band power, squared full-scale amplitude units; Nyquist limited.",
+          "minimum": 0
+        },
+        "midShare": {
+          "anyOf": [
+            {
+              "type": "number",
+              "description": "Fraction of the sum of the three band powers; absent without valid spectrum.",
+              "minimum": 0,
+              "maximum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "highEnergy": {
+          "type": "number",
+          "description": "4000–20000 Hz band power, squared full-scale amplitude units; Nyquist limited.",
+          "minimum": 0
+        },
+        "highShare": {
+          "anyOf": [
+            {
+              "type": "number",
+              "description": "Fraction of the sum of the three band powers; absent without valid spectrum.",
+              "minimum": 0,
+              "maximum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "centroidHz": {
+          "anyOf": [
+            {
+              "type": "number",
+              "description": "Amplitude-weighted spectral mean, Hz; absent without valid spectrum.",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "bandwidthHz": {
+          "anyOf": [
+            {
+              "type": "number",
+              "description": "Amplitude-weighted spectral standard deviation, Hz.",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "flatness": {
+          "anyOf": [
+            {
+              "type": "number",
+              "description": "Power-spectrum geometric/arithmetic mean, dimensionless; not a noise probability.",
+              "minimum": 0,
+              "maximum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "spectralFlux": {
+          "type": "number",
+          "description": "Positive compressed-amplitude spectral difference/current magnitude sum, dimensionless.",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "onsetThreshold": {
+          "type": "number",
+          "description": "Adaptive spectral-flux threshold; may exceed 1.",
+          "minimum": 0
+        },
+        "isOnset": {
+          "type": "boolean",
+          "description": "Per-analysis-window detection. Consumers trigger from onsets[], not this snapshot flag."
+        },
+        "balance": {
+          "anyOf": [
+            {
+              "type": "number",
+              "description": "Stereo energy balance: -1 left, +1 right.",
+              "minimum": -1,
+              "maximum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sideEnergyRatio": {
+          "anyOf": [
+            {
+              "type": "number",
+              "description": "Side/(Mid+Side) energy; not physical source width.",
+              "minimum": 0,
+              "maximum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "correlation": {
+          "anyOf": [
+            {
+              "type": "number",
+              "description": "DC-centered stereo correlation; absent if undefined.",
+              "minimum": -1,
+              "maximum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "displayBands": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "description": "Display-only normalized band height.",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "minItems": 24,
+          "maxItems": 24,
+          "description": "24 logarithmic display bands; not independent energy measurements."
+        }
+      },
+      "required": [
+        "time",
+        "sampleRate",
+        "channelCount",
+        "rms",
+        "rmsDBFS",
+        "peak",
+        "envelope",
+        "isSilent",
+        "silenceDuration",
+        "lowEnergy",
+        "midEnergy",
+        "highEnergy",
+        "spectralFlux",
+        "onsetThreshold",
+        "isOnset",
+        "displayBands"
+      ]
+    },
+    "melody": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "time": {
+              "type": "number",
+              "description": "Melody analysis-window center in the same PCM timeline as audio.time, seconds.",
+              "minimum": 0
+            },
+            "pitchHz": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "description": "Predominant melody frequency, Hz; absent without reliable pitch.",
+                  "minimum": 1e-12
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "confidence": {
+              "type": "number",
+              "description": "Heuristic salience/tonality, not a calibrated probability.",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "isMelodic": {
+              "type": "boolean",
+              "description": "Reliable melody estimate for this window."
+            }
+          },
+          "required": [
+            "time",
+            "confidence",
+            "isMelodic"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "version",
+    "sessionID",
+    "sequence",
+    "receivedAt",
+    "audio"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:miucs:audio-features:frame:1",
+  "title": "Miucs audio feature frame v1"
+}

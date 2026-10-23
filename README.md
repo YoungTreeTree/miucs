@@ -4,7 +4,7 @@
 
 一个原生 macOS 桌面音乐可视化工具：把正在播放的声音，变成一只在铅笔线稿世界里自动飞行的小鸟。旋律决定高度，节奏带来振翅，管道在靠近时轻轻让开。
 
-`macOS 14+` · `Apple Silicon` · `Swift 6` · `AppKit`
+`macOS 14+` · `Apple Silicon` · `Swift 6` · `AppKit` · `Windows 规划中`
 
 ![Miucs 透明桌面演示：壁纸透过飞鸟画面的留白，框选动画示意鼠标穿透](docs/assets/miucs-desktop-demo.gif)
 
@@ -36,14 +36,17 @@ Miucs 将 Flappy Bird 风格的飞行画面变成音乐的演出。播放音乐�
 | 声音特征 | 画面表现 |
 | --- | --- |
 | 主旋律音高 | 小鸟的目标高度与音名标签 |
-| 起音与音量包络 | 振翅时机、翼幅和身体伸展 |
+| 起音事件 | 振翅时机与羽毛尾迹 |
+| 音量包络 | 小鸟体积、翼幅和身体伸展，越响越大 |
+| 频谱带宽 | 新管道与鸟的水平距离，频谱越宽，出现时越远 |
+| 频谱变化量 | 鸟后冒出铅笔线稿的放屁气团，变化越强越明显 |
 | 低频能量 | 管道笔触轻重与管口脉动 |
 | 中频能量 | 场景前进速度的小幅变化 |
 | 高频能量 | 鸟后方的细点与短线尾迹 |
 | 音色明暗与噪声感 | 背景笔触轻重和尾迹分散程度 |
 | 静音 | 停止生成管道，场景减速，小鸟收翅悬停 |
 
-音量只影响动作力度。高度使用按半音排列的音高坐标，音域会根据最近的可靠旋律缓慢适配。没有可靠旋律时，小鸟保持最后高度，音名标签淡出为 `—`。
+音量改变小鸟大小和动作力度，音高决定高度。高度使用按半音排列的音高坐标，音域会根据最近的可靠旋律缓慢适配。没有可靠旋律时，小鸟保持最后高度，音名标签淡出为 `—`。
 
 ## 构建与启动
 
@@ -63,6 +66,7 @@ open dist/Miucs.app
 | 菜单项 / 操作 | 用途 |
 | --- | --- |
 | 显示拾音器 / 隐藏拾音器 | 控制悬浮画面的显示 |
+| 可视化 | 选择已注册的内置模块，当前提供铅笔飞鸟 |
 | 画面大小 | 选择 80%、100%、125%、150%、200% 缩放 |
 | 调色盘… | 选择配色预设、独立调色或一键整幅同色 |
 | 调整位置与大小… | 暂时接收鼠标，拖动画面移动，拖动右下角缩放 |
@@ -88,10 +92,12 @@ open dist/Miucs.app
 ## 开发与验证
 
 ```sh
+zsh scripts/test-contracts.sh
 zsh scripts/test-melody.sh
 zsh scripts/test-flight.sh
 zsh scripts/test-palette.sh
 zsh scripts/test-audio-recovery.sh
+zsh scripts/test-visualization-host.sh
 zsh scripts/validate-audio.sh
 ```
 
@@ -104,17 +110,25 @@ zsh scripts/measure-performance.sh --cadence
 
 第二条命令会短暂显示测试窗口，测量真实刷新间隔；不采集系统声音或桌面画面。
 
-独立数值参考需要 Python 3、NumPy 和 SciPy；这些仅用于开发验证。
+独立数值参考与契约验证使用 Python 开发依赖，可通过 `python3 -m pip install -r tests/requirements.txt` 安装；应用运行不依赖 Python。
 
 ### 项目结构
 
 ```text
-Miucs/       原生应用、音频分析与铅笔绘制
-Tests/       音频与飞行规则验证
-Tools/       离线演示导出器
-scripts/     构建辅助与测试
-docs/        设计说明、验证记录与演示资源
+contracts/                 语言无关的音频与可视化契约、Schema 和合成样本
+modules/audio/             通用分析与实时通道，及各平台采集和数值后端
+modules/visualizations/    通用模块接口、飞鸟场景及各平台绘制
+apps/                      各平台应用入口、窗口和菜单
+tests/                     契约、音频、场景和平台验证
+tools/                     离线演示、诊断与性能工具
+scripts/                   保持原有构建与验证命令入口
+docs/                      架构、设计说明、验证记录与演示资源
 ```
 
+音频生产与绘制消费通过进程内实时通道连接；连续状态取最新快照，短起音与频谱变化峰值单独保留。可视化模块通过注册接入，一次显示一种，切换不重启音频。Windows 目前仅预留职责说明、接口和合成测试样本，不提供可运行版本，也未指定实现语言。
+
+- [开发、测试与新增模块](CONTRIBUTING.md)
+- [分层架构与依赖边界](docs/architecture.md)
+- [音频数据契约](contracts/audio-features/README.md)
 - [画风、特征映射与验证结果](docs/sound-flight.md)
 - [音频特征定义与提取方法](docs/audio-features.md)
