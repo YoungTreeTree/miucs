@@ -64,7 +64,7 @@ enum StaffNotePreview {
                 try b.representation(using: .png, properties: [:])!.write(to: directory.appendingPathComponent("staff-\(width)-\(name).png"))
             }
         }
-        for (name, scene) in [("E2", sampleScene(midi: 40)), ("C7", sampleScene(midi: 96)), ("idle", StaffNoteScene())] {
+        for (name, scene) in [("G2", sampleScene(midi: 43)), ("C6", sampleScene(midi: 84)), ("idle", StaffNoteScene())] {
             try bitmap(scene: scene, width: 800).representation(using: .png, properties: [:])!
                 .write(to: directory.appendingPathComponent("staff-\(name).png"))
         }

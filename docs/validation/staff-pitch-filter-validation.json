@@ -1,0 +1,82 @@
+{
+  "date": "2026-10-23",
+  "scope": "Narrow staff pitch following and reject short excursions while audio motion and keyboard stars continue independently",
+  "followingRange": {
+    "notes": "G2-C6",
+    "midi": [
+      43,
+      84
+    ],
+    "notationY": [
+      138,
+      42
+    ],
+    "outsideBehavior": "reject; never clamp to an edge"
+  },
+  "jumpConfirmationMinimumMs": {
+    "3-5 semitones": 100,
+    "6-10 semitones": 125,
+    "11+ semitones": 150
+  },
+  "measuredConfirmationMsAt48kHz1024Hop": {
+    "60->64": 106.66666666666667,
+    "60->67": 128,
+    "60->72": 170.66666666666669,
+    "69->64": 106.66666666666667,
+    "72->60": 170.66666666666669,
+    "72->65": 128
+  },
+  "behavior": [
+    "Changes of one or two semitones respond on the first valid frame",
+    "Pending, missing, low-confidence or out-of-range results add no trace points",
+    "Return from an interruption starts a fresh trace segment at the true notation height",
+    "Previous accepted pitch remains the comparison reference through continuing sound even after the 240ms label expiry",
+    "Silence, disconnection, format or session changes and hiding reset the comparison reference",
+    "Shared melody extraction and flight pitch handling are unchanged"
+  ],
+  "tests": {
+    "staff-note-tests": {
+      "passed": 64,
+      "failed": 0
+    },
+    "staff-note-platform-tests": {
+      "passed": 25,
+      "failed": 0
+    },
+    "staff-keyboard-tests": {
+      "passed": 36,
+      "failed": 0
+    },
+    "staff-keyboard-platform-tests": {
+      "passed": 20,
+      "failed": 0
+    },
+    "contract-tests": {
+      "passed": 16,
+      "failed": 0
+    }
+  },
+  "totalPassed": 161,
+  "totalFailed": 0,
+  "sourceSHA256": {
+    "modules/visualizations/staff-note/core/StaffPitch.swift": "381123de7a34d3ce294c5259fa8244c3bd7840ace23e3441b426312b3ccf9642",
+    "modules/visualizations/staff-note/core/StaffPitchTracker.swift": "3fde5ae30b8d0c9d083fc63b0bd0f0044aab68aa6ef76f6b3ce31adbb259ffe2",
+    "modules/visualizations/staff-note/core/StaffNoteScene.swift": "b7b887bd18b2ea96220832409c9b999ed3de3234c35693f233e3856ffbe154e5",
+    "modules/visualizations/staff-note/core/StaffNoteSimulation.swift": "3dabfba0630a37682696975e4d32c14969f3e76ae94cbc3362cf258a5875e9c1",
+    "tests/visualizations/StaffNoteTests.swift": "24b2bfadc51fb5d63cfec9a440262640acd3d7e17571f878224b3c089fa929dd",
+    "tests/platforms/macos/StaffNotePlatformTests.swift": "a55d6754548f28a7cd284ee6606d3850f957f92f7220a5bceea0e2a83e0cd83c",
+    "tools/macos/StaffNotePreview.swift": "ec16d5575ba222f825c69f649506ead22e583625c5de79df61e3fbdaaa122f1a"
+  },
+  "delivery": {
+    "buildCommand": "zsh build.sh",
+    "signaturePassed": true,
+    "installedApp": "/Applications/Miucs.app",
+    "installedMatchesBuild": true,
+    "executableSHA256": "d318d65fa16a485b4df88bb298433128acae2ad318cc08d4faa629ed504b94cd",
+    "backup": "build/Miucs-before-pitch-filter-20261023.app",
+    "restartStatus": "running; native staff window observed after user unlocked the desktop",
+    "runningInstalledPID": 18471,
+    "observedWindowTitle": "Miucs · 五线谱音符"
+  },
+  "listeningTrial": "pending user comparison with the problematic music; no claim of vocal separation or removal of all instrumental interference"
+}

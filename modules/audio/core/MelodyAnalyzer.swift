@@ -1,7 +1,7 @@
 import Foundation
 
 /// Causal predominant-melody approximation: interpolated spectral peaks,
-/// harmonic salience, subharmonic rejection and short contour continuity.
+/// bounded local spectral whitening, harmonic salience and contour continuity.
 /// Does not mistake the spectral centroid or the largest FFT bin for a melody.
 final class MelodyAnalyzer {
     static let windowSize = 4096
@@ -100,14 +100,33 @@ final class MelodyAnalyzer {
             return sum + power[k - 1] + power[k] + power[k + 1]
         }
         let tonality = min(selectedEnergy / max(total, 1e-12), 1)
-        guard tonality > 0.42, let strongest = peaks.first else { return absent() }
+        guard tonality > 0.42, !peaks.isEmpty else { return absent() }
+
+        // Compare peaks against their local spectral envelope, so a loud band
+        // of accompaniment does not dominate every harmonic vote. Keep this
+        // deliberately mild: the 0.1 exponent and relative floor bound gain to
+        // 2.512x, preserve amplitude invariance, and do not boost noise before
+        // the raw-spectrum tonality gate above. No history or look-ahead needed.
+        var cumulativePower = [Double](repeating: 0, count: power.count + 1)
+        for i in power.indices { cumulativePower[i + 1] = cumulativePower[i] + power[i] }
+        for i in peaks.indices {
+            let hz = peaks[i].hz, radius = max(100, hz * 0.3)
+            let low = max(1, Int((hz - radius) / binHz))
+            let high = min(power.count - 1, Int((hz + radius) / binHz))
+            let localPower = (cumulativePower[high + 1] - cumulativePower[low]) / Double(high - low + 1)
+            peaks[i].magnitude *= pow(max(localPower / maximum, 0.0001), -0.1)
+        }
+        peaks.sort { $0.magnitude > $1.magnitude }
+        let strongest = peaks[0]
 
         // 10-cent salience bins, E2...C7. A mild register weighting suppresses
         // bass accompaniment without hard-coding the melody as a high note.
         let minimumMIDI = 40.0, resolution = 10.0, bins = 561
         var salience = [Double](repeating: 0, count: bins)
         for peak in peaks {
-            let magnitude = pow(peak.magnitude / strongest.magnitude, 0.8)
+            // Retain peak contrast after whitening; many weak partials should
+            // not outvote a clearer lead merely by accumulating more votes.
+            let magnitude = pow(peak.magnitude / strongest.magnitude, 1.2)
             for harmonic in 1...10 {
                 let midi = 69 + 12 * log2(peak.hz / Double(harmonic) / 440)
                 let position = (midi - minimumMIDI) * resolution

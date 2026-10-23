@@ -1,0 +1,329 @@
+{
+  "song": "童话 / Tong Hua (光良)",
+  "audio": "MIR-1K amateur karaoke covers; these are not the commercial master recording",
+  "mirror": "https://github.com/ryanwhite04/MIR-1K",
+  "revision": "f7d843ce64e09bc8156fff8a49fecbac92501a01",
+  "datasetPaper": "https://doi.org/10.1109/TASL.2009.2026503",
+  "pitchTimeOriginSeconds": 0.02,
+  "pitchHopSeconds": 0.02,
+  "mix": "(left accompaniment + right vocal) / 2, then scipy.signal.resample_poly 16000 -> 48000 Hz, PCM16; never give separated stems to the tested analyzer",
+  "baselineGitRevision": "7bfa4fbdbdf1dfb69f747ca8377423c789fb1c8b",
+  "baselineAnalyzerSHA256": "ca213364c3ce76a582d3b27361c4a3255a9cb404ea497f288ac0a64b5924fe15",
+  "scoreCheck": {
+    "song": "童话",
+    "composer": "光良",
+    "source": "https://edm01.chiding.com.tw/_files/ugd/91a873_8eff3439c5024e09b9b9bbeb876e63fa.pdf",
+    "pdfPage": 21,
+    "printedPage": 20,
+    "reference": "opening pickup and bars 1-2, lead melody, C-major arrangement",
+    "scoreMIDI": [
+      67,
+      72,
+      71,
+      72,
+      67,
+      67,
+      67,
+      72,
+      71,
+      72,
+      67,
+      67
+    ],
+    "performedTransposeSemitones": -18,
+    "comparison": "C-major score transposed to F# major and down two octaves for these male covers; independently checked against manual pitch labels, never inferred from analyzer output",
+    "clips": {
+      "fdps_2_01": [
+        [
+          1.24,
+          1.66
+        ],
+        [
+          1.74,
+          2.04
+        ],
+        [
+          2.06,
+          2.38
+        ],
+        [
+          2.5,
+          3.04
+        ],
+        [
+          3.26,
+          3.52
+        ],
+        [
+          3.54,
+          4.0
+        ],
+        [
+          4.78,
+          5.14
+        ],
+        [
+          5.16,
+          5.5
+        ],
+        [
+          5.58,
+          5.96
+        ],
+        [
+          6.02,
+          6.46
+        ],
+        [
+          6.58,
+          6.92
+        ],
+        [
+          6.96,
+          7.5
+        ]
+      ],
+      "geniusturtle_4_01": [
+        [
+          0.26,
+          0.78
+        ],
+        [
+          0.84,
+          1.18
+        ],
+        [
+          1.2,
+          1.56
+        ],
+        [
+          1.62,
+          2.3
+        ],
+        [
+          2.42,
+          2.8
+        ],
+        [
+          2.84,
+          3.42
+        ],
+        [
+          3.8,
+          4.2
+        ],
+        [
+          4.26,
+          4.58
+        ],
+        [
+          4.6,
+          4.92
+        ],
+        [
+          4.98,
+          5.46
+        ],
+        [
+          5.56,
+          6.0
+        ],
+        [
+          6.04,
+          6.64
+        ]
+      ]
+    },
+    "alignment": "Manually located note spans using the independent pitch annotations and phrase boundaries before evaluating the held-out cover. No analyzer-dependent time warping or pitch shifting.",
+    "pdfSHA256": "c91f62c3683cf742b84b7cbeeff50e8f0f682c0ffd20a38f865924c34c0949ed",
+    "scope": "12-note opening excerpt in two covers; frame-level metrics elsewhere use MIR-1K human pitch annotations, not this score excerpt."
+  },
+  "tracks": [
+    {
+      "id": "Ani_2_01",
+      "split": "held_out",
+      "audioSHA256": "7e84c731fe2df5db715940bd0ca118781ffa54f9dd3ad55ab6a7916899412d51",
+      "pitchSHA256": "f6137dba0c76bc23afce39c48fd91fccc67b12b77d12db905af296e850189cc3"
+    },
+    {
+      "id": "Ani_2_02",
+      "split": "held_out",
+      "audioSHA256": "234745e2360ddd30cad93287e5f1172c649f1c7fe20dddd95b58f0d414b68a3d",
+      "pitchSHA256": "f825ad6702a379856792d611284c389efd214ade1c86f984acbfac634e3f05a3"
+    },
+    {
+      "id": "Ani_2_03",
+      "split": "held_out",
+      "audioSHA256": "ffb49b0bfa85dad2e08867020128fa2519f809f3b4cca98d8aaf7d0d8b9df4dc",
+      "pitchSHA256": "8bbe3446aee7d5df0bf02ef29dc2088bae4677d0c67d366b3d8cd08ebc129151"
+    },
+    {
+      "id": "Ani_2_04",
+      "split": "held_out",
+      "audioSHA256": "a56894901aad83d4a6931c2abef5cd3fb2c3c77b9159d34e47013c523e865021",
+      "pitchSHA256": "20927fff71c4d56c38f92bbdedd6c1c7fa303a69c0a841c4a565467a0a101687"
+    },
+    {
+      "id": "Ani_2_05",
+      "split": "held_out",
+      "audioSHA256": "5df9cec564c7758d3685d8ad6f8114cd84b059c75166f510486242d8227b2398",
+      "pitchSHA256": "4bea73fb07bdf151c196d0fd12f1a06df7f4b12a72e29a4ed4c279a54737eea7"
+    },
+    {
+      "id": "Ani_2_06",
+      "split": "held_out",
+      "audioSHA256": "0b04101afc30e9e999bbec37fa10c92f11f4ef787fca40cd77382b90f2d265e9",
+      "pitchSHA256": "67e25d4f8465b2526665899e443637c51f10f51a167d3b1d39a1d8d42f06b954"
+    },
+    {
+      "id": "Ani_2_07",
+      "split": "held_out",
+      "audioSHA256": "41faa7e0c146792db980c1b1dcbafc3dd02c9ab7159d4677e83a3e5497529ac7",
+      "pitchSHA256": "4ff8293518f047661c59d3ff1f30a73c97453d5fce71beff78c62cf694b110ce"
+    },
+    {
+      "id": "fdps_2_01",
+      "split": "development",
+      "audioSHA256": "0b0fd9557b7903be2d535da0ff381cfa1d1dc8771aeead4aa3dcee4ceb60c551",
+      "pitchSHA256": "a5a06d673f081b04b0cecf45e10e9b5d18e06e2b7d3af98bc44f0bd29e23623b"
+    },
+    {
+      "id": "fdps_2_02",
+      "split": "development",
+      "audioSHA256": "70f320eb98cfd931d30403e3bdbf97411be633591cd2ab92e0fdcb9e6ac300bc",
+      "pitchSHA256": "4bd872a9500f8a3f4c6054d6b45c8953cca740ac6454ace39802c00296059ab0"
+    },
+    {
+      "id": "fdps_2_03",
+      "split": "development",
+      "audioSHA256": "f16d98ec92896fd1f72da2c44bce2f0c8ed1b523eef6a21cd532b6bc50e520f4",
+      "pitchSHA256": "59a58bd18122abe97baaec5b893d3551f05a98a861e94b0d10e91fcbc3bb64a6"
+    },
+    {
+      "id": "fdps_2_04",
+      "split": "development",
+      "audioSHA256": "b632bd3f01e02b4bcbf2f6406a5c2c42ee298a6fe8e786a180b33f850456d27e",
+      "pitchSHA256": "08bfff486c9005d87d914512351adfb3ca0b4a8d0ebd3f75591337103c483ddf"
+    },
+    {
+      "id": "fdps_2_05",
+      "split": "development",
+      "audioSHA256": "0ccfba8b6cb04b22f00b68037d435ab3cd43fe88ef1b8f6a563a083592c62488",
+      "pitchSHA256": "4ebb2009527a02563ff35b12f68543083c69c9362f10e33d6010fd384d8495e6"
+    },
+    {
+      "id": "fdps_2_06",
+      "split": "development",
+      "audioSHA256": "0cdfa3f59e764df861a5d09cf5c30f2e0766aa9db0258d481b47a19584d78079",
+      "pitchSHA256": "3bd438eba43568d5a971f67d63a95024f7a44a86e8bdb83f12d21f41e873d1ca"
+    },
+    {
+      "id": "fdps_2_07",
+      "split": "development",
+      "audioSHA256": "d1f7ff908d2ffee06075df57d89c910b2f23fc4586908cd35ab892e0d9c04528",
+      "pitchSHA256": "e8f6f8dc14096fef0305372b5728b1b5ec63a119259fc664d9c2824c14501460"
+    },
+    {
+      "id": "fdps_2_08",
+      "split": "development",
+      "audioSHA256": "2c506f4964c225339f730b8a3cf43328dfb3c5e6077d535d174a96f2e5619d6d",
+      "pitchSHA256": "666a812805ff427b0c564ee73ce46b02aa7ac84aa77cebc899b98b1155fae583"
+    },
+    {
+      "id": "fdps_2_09",
+      "split": "development",
+      "audioSHA256": "21ce4e33a23b55e8aac9d04a51f109d2fad93692b42d6bc60e7b80e52ba831e0",
+      "pitchSHA256": "caa0591a2a41750bafece388384128c99efe928338ec352b8d7a4a523079548d"
+    },
+    {
+      "id": "fdps_2_10",
+      "split": "development",
+      "audioSHA256": "19a1049b2ada4d987bacf10fb4ecb5eec7518ac48e40a36aa88a7c1ba511223e",
+      "pitchSHA256": "b87caafe07ebfa392b6800f90438d08f77aac410a3296d1bbef3b6cd7362986e"
+    },
+    {
+      "id": "fdps_2_11",
+      "split": "development",
+      "audioSHA256": "164e840bbea446d7c1e1985365356dee8bbd6648552f97a0597b64a392107977",
+      "pitchSHA256": "dba4fe012a7990a87773e1d02171c9a3302190d32d3e907d3d75ba582338d657"
+    },
+    {
+      "id": "fdps_2_12",
+      "split": "development",
+      "audioSHA256": "b87906826c87e6a4a0d58828e7a2d47428358ff9f26b4c917f16e691e8cf9a53",
+      "pitchSHA256": "5ed74e7c84860006d6a8f40fa9b1714708a1c3274f6b86b69bf7be7447c36420"
+    },
+    {
+      "id": "geniusturtle_4_01",
+      "split": "held_out",
+      "audioSHA256": "be183f2d588e14ed4083007994926f97cdef139651734008c337d84bd6fa9819",
+      "pitchSHA256": "c235b89ad861c4771e3f94df9109b4edf9722ad8d155290b3faab40e1f1de5f8"
+    },
+    {
+      "id": "geniusturtle_4_02",
+      "split": "held_out",
+      "audioSHA256": "25c423440438f96d3cab28b5163779584b661813eed019417c46db01c7b01692",
+      "pitchSHA256": "9eba12601fbc04cae24cd91edbbd4867b3567b937b598e3d5ba6581a7090f393"
+    },
+    {
+      "id": "geniusturtle_4_03",
+      "split": "held_out",
+      "audioSHA256": "fe141a6623f905559acca671a23b12b3bf07d4e401def3de155cd623535e4049",
+      "pitchSHA256": "1fc4319654a8aed3e5c98d0eeac9a334631738ffed17973c89f8be7fe3a3158d"
+    },
+    {
+      "id": "geniusturtle_4_04",
+      "split": "held_out",
+      "audioSHA256": "d123ed2729b1af99d78d9fb8a06c301af442015e144d0b96dfa53daa3fd3292f",
+      "pitchSHA256": "967dd6467316e8f700e9037b768e3787e22c1e40467fdac5a09c34f44dac7701"
+    },
+    {
+      "id": "geniusturtle_4_05",
+      "split": "held_out",
+      "audioSHA256": "469c9c8b4a15789cc9f7ce18aeacf76d133b8b3b8027cfb800cb786f6bc92960",
+      "pitchSHA256": "f2a58d72494e6baf2064dc1c9e24c26961c81f8a3036453fce3ab3c5d0174df3"
+    },
+    {
+      "id": "geniusturtle_4_06",
+      "split": "held_out",
+      "audioSHA256": "8882ebc9162f43746d7473ce9d3d1164803cb687623b80dc6e2c7d17458e105e",
+      "pitchSHA256": "c520046b41115c8cbd44e371ca495b22ddb22f2635c52d9f2fdebb0ba865c68f"
+    },
+    {
+      "id": "geniusturtle_4_07",
+      "split": "held_out",
+      "audioSHA256": "46f94908d0564ad4ce08bbb1f567e22c4afde927c5fc06be01d80a81b61288f1",
+      "pitchSHA256": "0463addf3953039d54b594436deb72c3c92a3f67270e6a46c426fe059db68202"
+    },
+    {
+      "id": "geniusturtle_4_08",
+      "split": "held_out",
+      "audioSHA256": "a9299f0ae3a42eab4471b5df8474b84dcdafc0f63c4ffeea2187e817b60958c2",
+      "pitchSHA256": "720dead9825f261970e1962c7d03c1b5081de869e701f801bd68a4d94ce9a92f"
+    },
+    {
+      "id": "geniusturtle_4_09",
+      "split": "held_out",
+      "audioSHA256": "f9a96d4b163baa1d412e39325d09beb7c766517f6a2f34abf700571d72bab453",
+      "pitchSHA256": "fd6c95b4c5ab1549da9c3f2a1730588c93c64b48f76d485c932e0f6fd9b60c49"
+    },
+    {
+      "id": "geniusturtle_4_10",
+      "split": "held_out",
+      "audioSHA256": "4e613386206734d95b368b0e2c97179bab28adfd40460eb483c0b62350b80537",
+      "pitchSHA256": "4c422723727cf1822c5f9b676171f4888e147dc2957562929ec3eeb57ac89678"
+    },
+    {
+      "id": "geniusturtle_4_11",
+      "split": "held_out",
+      "audioSHA256": "b8e99a4cbb315a079826ea36dee0649ad19a3336db10a472cbf9cb75ab51be6f",
+      "pitchSHA256": "1319db44ce38fae81030c973dd695ce69b8bd552da3a4d60ebad8ef615c83e07"
+    },
+    {
+      "id": "geniusturtle_4_12",
+      "split": "held_out",
+      "audioSHA256": "3790abcaf45916b0ce8d36dab89df1b3d10f850e475e9f4df7df5946561fb5c0",
+      "pitchSHA256": "55f6278f52199acbfe99511d75f1b97f0146723e82d9c4bf7ab9474ecd98517a"
+    }
+  ]
+}

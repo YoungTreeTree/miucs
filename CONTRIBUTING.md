@@ -20,6 +20,8 @@ zsh build.sh
 open dist/Miucs.app
 ```
 
+本地试用 Rapidly 人声分析时使用 `zsh build.sh --rapidly`。SDK 与模型只缓存到 `build/`，源码仓库不包含专有二进制或授权 key；无 key 为含水印试用，个人非商用不自动免授权。[接入、授权文件和性能验证](docs/rapidly-vocals.md)。
+
 只修改模块时优先进入相应 `core/` 或 `platforms/macos/`。`scripts/swift-sources.sh` 通过模块目录通配符定义编译分组；增加目录时也要更新 `project.yml`。应用组合点是 `apps/macos/BuiltInVisualizations.swift`。
 
 离线参考和资源工具需要 Python；应用运行不依赖 Python：
@@ -41,6 +43,8 @@ zsh scripts/test-staff-note-platform.sh # 两种布局、独立偏好、生产�
 zsh scripts/test-staff-keyboard.sh  # ANSI 布局、并行星爆、长按生命周期、原生图层池和五色缩放
 zsh scripts/test-melody.sh          # 合成独奏/伴奏与响应时序
 zsh scripts/test-audio-pipeline.sh  # 分析编排等价与格式切换
+zsh scripts/test-rapidly.sh         # 可选 SDK：实际模型、格式切换、预热、重置与时间对齐
+python3 scripts/benchmark-rapidly.py # 已准备的《童话》混音：分离前后音高、误报及处理耗时
 zsh scripts/test-audio-recovery.sh  # 采集生命周期、退避与迟到回调
 zsh scripts/test-palette.sh         # 颜色存储、真实绘图与调色盘
 zsh scripts/test-appearance.sh      # 全局五色、菜单选择、迁移、模块切换和绘图缓存
@@ -70,6 +74,7 @@ zsh scripts/validate-audio.sh --live
 ```sh
 zsh scripts/analyze-audio-file.sh /absolute/input.wav /absolute/features.json
 python3 scripts/evaluate-melody.py --help
+python3 scripts/benchmark-pop-melody.py --prepare --adc-dataset build/adc2004 --diagnose-vocals
 zsh scripts/measure-performance.sh
 zsh scripts/measure-performance.sh --cadence
 zsh scripts/measure-performance.sh --staff-cadence build/staff-note-cadence.json
@@ -98,3 +103,5 @@ zsh scripts/render-demo.sh --staff
 分别从 [音频适配](modules/audio/platforms/windows/README.md)、[飞鸟绘制](modules/visualizations/pencil-flight/platforms/windows/README.md)、[五线谱绘制](modules/visualizations/staff-note/platforms/windows/README.md) 和 [应用外壳](apps/windows/README.md) 开始。先通过 Schema 与合成样本验证时间、单位、缺失值、事件容量和重连隔离，再做平台采集/恢复、绘制与窗口测试。
 
 Windows 可选择其他语言；优先维持数据语义与可复现数值，不引入 macOS 目录依赖。实际实现确定工具链后补充构建入口与 CI，在真实平台通过验收后更新支持矩阵。预留目录仅放职责说明，不用返回假数据的空实现表示支持。
+
+歌声音高相关改动需运行 `zsh scripts/test-singing-pitch.sh`、`zsh scripts/test-audio-pipeline.sh` 和五线谱回归。`zsh build.sh --rapidly` 同时准备固定校验和的 CREPE Tiny 权重并转换为 Core ML，Python 只在构建时使用。识别质量用 `python3 scripts/benchmark-singing-pitch.py` 做同一分离 PCM 上的配对对照，不能将单元测试通过数当作识谱准确率。

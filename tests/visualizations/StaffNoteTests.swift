@@ -43,20 +43,22 @@ enum StaffNoteTests {
         } && StaffPitch(midi: 66)?.name == "F♯4")
         check("Octaves preserve seven diatonic steps and 28 points", abs(StaffPitch(midi: 72)!.y - StaffPitch(midi: 60)!.y) == 28)
         check("E2 and C7 fit the fixed 160-point canvas", StaffPitch(midi: 40)!.y == 146 && StaffPitch(midi: 96)!.y == 14)
-        check("Ledger lines include all lines between the staff and the head", StaffPitch(midi: 60)!.ledgerYs == [98] &&
-            StaffPitch(midi: 62)!.ledgerYs.isEmpty && StaffPitch(midi: 40)!.ledgerYs == [98, 106, 114, 122, 130, 138, 146] &&
-            StaffPitch(midi: 96)!.ledgerYs == [50, 42, 34, 26, 18])
         var bad = melody(0, 60); bad.confidence = 0.47
         var nan = melody(0, 60); nan.pitchHz = .nan
         check("Absent, invalid, low confidence and out-of-range pitches are rejected", StaffPitch.resolve(bad, previous: nil) == nil &&
             StaffPitch.resolve(nan, previous: nil) == nil && StaffPitch.resolve(melody(0, 39), previous: nil) == nil &&
             StaffPitch.resolve(melody(0, 97), previous: nil) == nil)
+        check("Staff following accepts G2 through C6 and rejects neighboring notes without clamping",
+            StaffPitch.resolve(melody(0, 43), previous: nil)?.midi == 43 &&
+            StaffPitch.resolve(melody(0, 84), previous: nil)?.midi == 84 &&
+            [40.0, 42, 85, 96].allSatisfy { StaffPitch.resolve(melody(0, $0), previous: nil) == nil })
         check("Hysteresis prevents semitone boundary chatter", StaffPitch.resolve(melody(0, 60.6), previous: StaffPitch(midi: 60))?.midi == 60 &&
             StaffPitch.resolve(melody(0, 60.7), previous: StaffPitch(midi: 60))?.midi == 61)
         var idle = StaffNoteScene()
         check("First missing melody waits faintly on B4", idle.pitch == nil && idle.baseY == 74 && idle.opacity == 0.22 && idle.labelOpacity == 0)
         var immediate = true, smooth = true, remaining = 0.0
-        for midi in [40.0, 96, 60, 61, 72, 72, 48] {
+        for midi in [43.0, 84, 60, 61, 72, 72, 48] {
+            idle.resetInput(clearHistory: false)
             idle.receive(audio: audio(idle.elapsed)); let before = idle.baseY
             idle.receive(melody: melody(idle.elapsed, midi))
             immediate = immediate && idle.baseY == before && idle.targetY == StaffPitch(midi: Int(midi))!.y
@@ -75,7 +77,8 @@ enum StaffNoteTests {
         check("Accepted targets and repeated notes settle within 150ms", remaining < 0.05)
 
         var spikeFree = true, rawExcursions = 0.0, filteredExcursions = 0.0
-        for burst in [[57.0], [81], [57, 57], [81, 81], [64], [74]] {
+        for burst in [[57.0], [81], [57, 57], [81, 81], [64], [74],
+                      [64, 64, 64, 64, 64], [76, 76, 76, 76, 76], [81, 81, 81, 81, 81]] {
             var scene = StaffNoteScene()
             feed(&scene, 69, after: 0)
             var rawY = StaffPitch(midi: 69)!.y, filteredY = rawY
@@ -87,7 +90,71 @@ enum StaffNoteTests {
                 spikeFree = spikeFree && scene.pitch?.midi == 69 && scene.isPitchReliable
             }
         }
-        check("High-confidence isolated notes and two-frame octave intrusions leave no spikes", spikeFree && rawExcursions > 200 && filteredExcursions == 0)
+        check("High-confidence intrusions lasting up to five frames leave no pitch spikes", spikeFree && rawExcursions > 200 && filteredExcursions == 0)
+
+        var rejected = StaffNoteScene()
+        feed(&rejected, 69, after: 0)
+        let acceptedTrace = rejected.trace
+        for midi in [96.0, 40, 85, 42, 96] { feed(&rejected, midi) }
+        check("Brief out-of-range bursts hold the last pitch and add no trace or edge notes",
+            rejected.pitch?.midi == 69 && rejected.targetY == 78 && rejected.isPitchReliable && rejected.trace == acceptedTrace)
+        feed(&rejected, 69)
+        check("Returning from a brief rejected range keeps a continuous trace without adding rejected samples",
+            rejected.trace.count == 2 && rejected.trace.last?.segment == acceptedTrace.last?.segment && rejected.trace.last?.y == 78)
+        for _ in 0..<20 { feed(&rejected, 96) }
+        check("Persistent out-of-range sound expires the label without moving or extending the trail",
+            !rejected.isPitchReliable && rejected.pitch?.midi == 69 && rejected.targetY == 78 && rejected.trace.count == 2)
+        var outsideOnly = StaffNoteScene()
+        for midi in [40.0, 42, 85, 96] { feed(&outsideOnly, midi) }
+        check("Out-of-range sound at startup does not invent a boundary note", outsideOnly.pitch == nil && outsideOnly.trace.isEmpty)
+
+        var pendingTrace = StaffNoteScene()
+        feed(&pendingTrace, 60, after: 0)
+        let beforePending = pendingTrace.trace
+        for _ in 0..<5 { feed(&pendingTrace, 72) }
+        check("Unconfirmed jumps pause the trail instead of appending held or guessed pitches",
+            pendingTrace.pitch?.midi == 60 && pendingTrace.trace == beforePending && pendingTrace.hasContinuousTraceTail)
+        for _ in 0..<4 { feed(&pendingTrace, 72) }
+        check("Confirmed jumps join the previous reliable point across a short confirmation interval",
+            pendingTrace.pitch?.midi == 72 && pendingTrace.trace.count == 2 &&
+            pendingTrace.trace.last?.segment == beforePending.last?.segment && abs(pendingTrace.trace.last!.y - 70) < 0.02)
+
+        var longGap = StaffNoteScene()
+        feed(&longGap, 69, after: 0)
+        let oldSegment = longGap.trace.last!.segment
+        for _ in 0..<60 {
+            longGap.advance(seconds: 0.02); longGap.receive(audio: audio(longGap.elapsed)); longGap.receive(melody: nil)
+        }
+        check("Missing pitch expires its live tail even while accompaniment continues",
+            !longGap.hasContinuousTraceTail && longGap.trace.count == 1 && !longGap.isPitchReliable)
+        feed(&longGap, 69)
+        check("Pitch after a stale gap starts a fresh trace segment", longGap.trace.last?.segment != oldSegment)
+        let beforeSilence = longGap.trace.last!.segment
+        longGap.receive(audio: audio(longGap.elapsed, silent: true)); feed(&longGap, 71)
+        check("Real silence still breaks the trace immediately", longGap.trace.last?.segment != beforeSilence)
+
+        var filteredPhrase = StaffNoteScene(), staysConnected = true
+        feed(&filteredPhrase, 69, after: 0)
+        for gap in [6, 18, 40, 60] {
+            let count = filteredPhrase.trace.count, segment = filteredPhrase.trace.last!.segment
+            for tick in 0..<gap {
+                filteredPhrase.advance(seconds: 0.02)
+                filteredPhrase.receive(audio: audio(filteredPhrase.elapsed))
+                var candidate = melody(filteredPhrase.elapsed, tick.isMultiple(of: 2) ? 96 : 71)
+                if !tick.isMultiple(of: 2) { candidate.confidence = 0.1 }
+                filteredPhrase.receive(melody: tick.isMultiple(of: 3) ? nil : candidate)
+            }
+            staysConnected = staysConnected && filteredPhrase.trace.count == count && (gap < 12 ? filteredPhrase.hasContinuousTraceTail : !filteredPhrase.hasContinuousTraceTail)
+            feed(&filteredPhrase, 69)
+            staysConnected = staysConnected && (gap < 12 ? filteredPhrase.trace.last?.segment == segment : filteredPhrase.trace.last?.segment != segment)
+        }
+        check("Brief filtering gaps stay connected; stale input never draws a held-note tail", staysConnected)
+        for _ in 0..<410 {
+            filteredPhrase.advance(seconds: 0.02)
+            filteredPhrase.receive(audio: audio(filteredPhrase.elapsed)); filteredPhrase.receive(melody: nil)
+        }
+        check("A continuous visual tail expires with its eight-second history instead of persisting indefinitely",
+            filteredPhrase.trace.isEmpty && !filteredPhrase.hasContinuousTraceTail)
 
         var steps = StaffNoteScene(), immediateSteps = true
         for midi in [69.0, 70, 72, 71, 69, 67, 69, 71, 72] {
@@ -97,31 +164,31 @@ enum StaffNoteTests {
         check("Semitone and whole-tone vocal motion changes the target on its first frame", immediateSteps)
 
         var delays = [String: Double](), timelyJumps = true, preservesOctaves = true
-        for (from, to, limit) in [(60.0, 64.0, 0.03), (69, 64, 0.03), (60, 67, 0.05),
-                                  (72, 65, 0.05), (60, 72, 0.075), (72, 60, 0.075)] {
+        for (from, to, minimum, limit) in [(60.0, 64.0, 0.10, 0.12), (69, 64, 0.10, 0.12), (60, 67, 0.125, 0.14),
+                                           (72, 65, 0.125, 0.14), (60, 72, 0.15, 0.18), (72, 60, 0.15, 0.18)] {
             var scene = StaffNoteScene()
             feed(&scene, from, after: 0)
             let firstCandidateTime = 1024.0 / 48_000
             var delay: Double?
-            for _ in 0..<12 {
+            for _ in 0..<16 {
                 feed(&scene, to)
                 if delay == nil, scene.pitch?.midi == Int(to) { delay = scene.elapsed - firstCandidateTime }
             }
             delays["\(Int(from))->\(Int(to))"] = (delay ?? 999) * 1000
-            timelyJumps = timelyJumps && (delay ?? 999) <= limit
+            timelyJumps = timelyJumps && (delay ?? 999) >= minimum && (delay ?? 999) <= limit
             preservesOctaves = preservesOctaves && scene.targetY == StaffPitch(midi: Int(to))!.y &&
                 abs(scene.trace.last!.y - scene.targetY) < 0.1
         }
-        check("Sustained thirds, fifths and octaves confirm within 30, 50 and 75ms at 48kHz", timelyJumps)
+        check("Sustained thirds, fifths and octaves require 100, 125 and 150ms and confirm within one hop", timelyJumps)
         check("Confirmed jumps keep their full staff distance and the trail reaches the true note", preservesOctaves)
 
         var fastPhrase = StaffNoteScene(), followsPhrase = true
         feed(&fastPhrase, 60, after: 0)
         for midi in [64.0, 67, 72, 69, 64, 60] {
-            for _ in 0..<5 { feed(&fastPhrase, midi) }
+            for _ in 0..<10 { feed(&fastPhrase, midi) }
             followsPhrase = followsPhrase && fastPhrase.pitch?.midi == Int(midi)
         }
-        check("A quick melodic phrase with thirds and fourths keeps every sustained note", followsPhrase)
+        check("A melodic phrase with thirds and fourths keeps notes sustained beyond confirmation", followsPhrase)
 
         var alternating = StaffNoteScene(), rejectsAlternating = true
         feed(&alternating, 69, after: 0)
@@ -133,7 +200,7 @@ enum StaffNoteTests {
 
         var vibrato = StaffNoteScene()
         feed(&vibrato, 60, after: 0)
-        for midi in [72.0, 73, 72, 73] { feed(&vibrato, midi) }
+        for midi in [72.0, 73, 72, 73, 72, 73, 72, 73, 72, 73] { feed(&vibrato, midi) }
         check("A sustained new register can confirm despite nearby semitone variation", vibrato.pitch?.midi == 73)
 
         var duplicate = StaffNoteScene()
@@ -158,14 +225,29 @@ enum StaffNoteTests {
         for i in 0..<10 { feed(&held, i.isMultiple(of: 2) ? 57 : 81) }
         held.advance(seconds: 0.03)
         check("Unconfirmed candidates do not keep an old reliable pitch alive indefinitely", !held.isPitchReliable && held.pitch?.midi == 69)
+        let heldCount = held.trace.count
         held.receive(audio: audio(held.elapsed)); held.receive(melody: melody(held.elapsed, 57))
-        check("The first fresh pitch after expiry starts a new segment immediately", held.pitch?.midi == 57 && held.trace.last?.y == StaffPitch(midi: 57)!.y)
+        check("Label expiry cannot bypass jump confirmation during continuing sound", held.pitch?.midi == 69 && held.trace.count == heldCount)
+        for _ in 0..<8 { feed(&held, 57) }
+        check("A sustained new pitch can confirm after the old label expires", held.pitch?.midi == 57 && held.isPitchReliable &&
+            abs(held.trace.last!.y - StaffPitch(midi: 57)!.y) < 0.02)
 
         var interrupted = StaffNoteScene()
         feed(&interrupted, 69, after: 0); feed(&interrupted, 81); feed(&interrupted, 81)
         interrupted.receive(melody: nil); feed(&interrupted, 57)
-        check("Missing melody clears pending confirmation and starts the next trace at its true height", interrupted.pitch?.midi == 57 &&
-            interrupted.trace.first?.segment != interrupted.trace.last?.segment && interrupted.trace.last?.y == StaffPitch(midi: 57)!.y)
+        check("A brief missing result holds the old note and cannot turn a new jump into an immediate note", interrupted.pitch?.midi == 69 &&
+            interrupted.isPitchReliable && interrupted.trace.count == 1)
+        for _ in 0..<8 { feed(&interrupted, 57) }
+        check("Missing melody clears pending candidates but a confirmed note joins the audible phrase", interrupted.pitch?.midi == 57 &&
+            interrupted.trace.first?.segment == interrupted.trace.last?.segment && abs(interrupted.trace.last!.y - StaffPitch(midi: 57)!.y) < 0.02)
+
+        var brokenCandidate = StaffNoteScene()
+        feed(&brokenCandidate, 60, after: 0)
+        for _ in 0..<4 { feed(&brokenCandidate, 72) }
+        feed(&brokenCandidate, 96)
+        for _ in 0..<5 { feed(&brokenCandidate, 72) }
+        check("A rejected range interrupts candidate continuity rather than joining two short bursts",
+            brokenCandidate.pitch?.midi == 60 && brokenCandidate.trace.count == 1)
 
         var softened = StaffNoteScene()
         feed(&softened, 69, after: 0); feed(&softened, 71)
@@ -174,6 +256,43 @@ enum StaffNoteTests {
         check("The trail softens its first corner and reaches 95 percent of a small change within 90ms",
             softened.pitch?.midi == 71 && firstTrailY > 74 && firstTrailY < 78 && abs(softened.trace.last!.y - 74) < 0.2 &&
             softened.trace.allSatisfy { (74...78).contains($0.y) })
+
+        var fixedPositions = true
+        for midi in StaffPitch.followingMIDI {
+            var scene = StaffNoteScene()
+            feed(&scene, Double(midi), after: 0)
+            let expected = StaffPitch(midi: midi)!.y
+            for _ in 0..<60 { feed(&scene, Double(midi), after: 1.0 / 60) }
+            fixedPositions = fixedPositions && scene.pitch?.midi == midi && scene.targetY == expected &&
+                abs(scene.noteY - expected) < 0.001 && abs(scene.trace.last!.y - expected) < 0.001
+        }
+        check("Every accepted G2-C6 pitch settles at its fixed absolute treble-staff height", fixedPositions)
+
+        var sameC4 = true, heldStable = true
+        for preceding in [43.0, 48, 71, 84] {
+            var phrase = StaffNoteScene()
+            for _ in 0..<150 { feed(&phrase, preceding, after: 0.02) }
+            for _ in 0..<50 { feed(&phrase, 60, after: 0.02) }
+            sameC4 = sameC4 && phrase.pitch?.name == "C4" && phrase.targetY == 98 && abs(phrase.noteY - 98) < 0.001
+            for _ in 0..<200 {
+                feed(&phrase, 60, after: 0.02)
+                heldStable = heldStable && phrase.targetY == 98 && abs(phrase.noteY - 98) < 0.001
+            }
+            phrase.resetInput(clearHistory: true)
+            for _ in 0..<50 { feed(&phrase, 60, after: 0.02) }
+            sameC4 = sameC4 && phrase.targetY == 98 && abs(phrase.noteY - 98) < 0.001
+        }
+        check("C4 returns to the same height after low/high phrases and input resets", sameC4)
+        check("Holding C4 for four more seconds never recenters the note or its target", heldStable)
+
+        var fixedHistory = StaffNoteScene()
+        for _ in 0..<50 { feed(&fixedHistory, 60, after: 0.02) }
+        let stored = fixedHistory.trace.last!
+        for _ in 0..<150 { feed(&fixedHistory, 48, after: 0.02) }
+        let preserved = fixedHistory.trace.first { $0.time == stored.time }
+        check("A later low phrase cannot shift existing C4 history or compress its octave distance",
+            preserved == stored && abs(stored.y - 98) < 0.001 &&
+            abs(fixedHistory.trace.last!.y - stored.y - 28) < 0.001)
 
         var volume = StaffVolumeTracker()
         volume.receive(envelope: 0.05, time: 0)
@@ -267,9 +386,32 @@ enum StaffNoteTests {
         simulation.update(input: input(10, 96, generation: generation, state: .recovering, onset: true), deltaTime: 0.2)
         check("Disconnected state holds height and lets existing history fade", simulation.scene.targetY == 70 && simulation.scene.trace.count == 1 && !simulation.scene.canSway)
         var segmented = StaffNoteScene()
-        segmented.receive(audio: audio(0)); segmented.receive(melody: melody(0, 60)); segmented.receive(melody: nil)
-        segmented.receive(melody: melody(0.1, 72))
-        check("Missing melody breaks the drawn trajectory between reliable segments", segmented.trace.count == 2 && segmented.trace[0].segment != segmented.trace[1].segment)
+        feed(&segmented, 60, after: 0); segmented.receive(melody: nil)
+        feed(&segmented, 62)
+        check("Brief missing melody keeps the reliable trajectory connected", segmented.trace.count == 2 && segmented.trace[0].segment == segmented.trace[1].segment)
+
+        var vocalPause = StaffNoteScene()
+        feed(&vocalPause, 60, after: 0)
+        let beforePause = vocalPause.trace
+        vocalPause.receive(melody: MelodyFrame(time: 0.02, pitchHz: nil, confidence: 0.1,
+                                               isMelodic: false, estimator: .crepe))
+        check("Explicit unvoiced singing stops the label, sway and live tail while accompaniment continues",
+              !vocalPause.isPitchReliable && !vocalPause.canSway && !vocalPause.hasContinuousTraceTail &&
+              vocalPause.trace == beforePause && vocalPause.targetY == 98)
+        vocalPause.advance(seconds: 0.2); vocalPause.receive(audio: audio(0.22))
+        check("A vocal rest does not create history or reposition the last note", vocalPause.trace == beforePause && vocalPause.labelOpacity < 0.02)
+        var returnNote = melody(0.24, 72); returnNote.estimator = .crepe
+        vocalPause.receive(melody: returnNote)
+        check("The next sung phrase starts at its real pitch with no bridge across the rest",
+              vocalPause.pitch?.midi == 72 && vocalPause.trace.last?.segment != beforePause.last?.segment)
+        var neuralJump = StaffNoteScene()
+        feed(&neuralJump, 60, after: 0)
+        for i in 1...3 {
+            neuralJump.advance(seconds: 0.02); neuralJump.receive(audio: audio(neuralJump.elapsed))
+            var next = melody(Double(i) * 0.02, 67); next.estimator = .crepe
+            neuralJump.receive(melody: next)
+        }
+        check("Gated neural pitch confirms a normal leap in 40ms without the old 125ms hold", neuralJump.pitch?.midi == 67)
 
         let channel = FeatureChannel(), channelID = UUID(), registry = VisualizationRegistry()
         channel.reset(sessionID: channelID, state: .running)
@@ -284,16 +426,17 @@ enum StaffNoteTests {
         channel.publish(audio: audio(0.02), melody: melody(0.02, 72), sessionID: channelID)
         controller.tick(deltaTime: 1.0 / 60)
         check("New channel onsets animate immediately while a large pitch jump is pending", mounted.scene.swayAngle < 0 && mounted.scene.targetY == 98)
-        for (time, midi) in [(0.04, 72.0), (0.06, 72), (0.08, 72)] {
-            channel.publish(audio: audio(time), melody: melody(time, midi), sessionID: channelID)
+        for tick in 2...9 {
+            let time = Double(tick) * 0.02
+            channel.publish(audio: audio(time), melody: melody(time, 72), sessionID: channelID)
             controller.tick(deltaTime: 0.02)
         }
         check("A sustained octave is confirmed through the production feature channel", mounted.scene.targetY == 70)
         controller.pause()
-        channel.publish(audio: audio(0.1), melody: melody(0.1, 96), sessionID: channelID)
+        channel.publish(audio: audio(0.2), melody: melody(0.2, 84), sessionID: channelID)
         let pausedSway = mounted.scene.swayAngle
         controller.resume(); controller.tick(deltaTime: 1.0 / 60)
-        check("Hidden channel events are skipped and only current pitch starts fresh history", mounted.scene.trace.count == 1 && mounted.scene.trace[0].pitch.midi == 96 && abs(mounted.scene.swayAngle) < abs(pausedSway))
+        check("Hidden channel events are skipped and only current pitch starts fresh history", mounted.scene.trace.count == 1 && mounted.scene.trace[0].pitch.midi == 84 && abs(mounted.scene.swayAngle) < abs(pausedSway))
         channel.publish(audio: audio(9), melody: melody(9, 60), sessionID: channelID)
         controller.tick(deltaTime: 9)
         check("Long render stalls expire old history while retaining the fresh current sample", mounted.scene.trace.count == 1 && mounted.scene.trace[0].pitch.midi == 60 && mounted.scene.traceX(mounted.scene.trace[0]) > 639)

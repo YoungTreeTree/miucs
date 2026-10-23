@@ -16,6 +16,7 @@ struct StaffNoteScene {
     static let maximumSwayAngle = 20.0 * Double.pi / 180
     private(set) var elapsed = 0.0
     private(set) var pitch: StaffPitch?
+    /// Absolute treble-clef position: prior phrases never transpose an accepted pitch.
     private(set) var targetY = StaffPitch.middleY
     private(set) var baseY = StaffPitch.middleY
     /// Radians around the note head center; the head itself never translates sideways.
@@ -30,12 +31,18 @@ struct StaffNoteScene {
     private var melodyAge = Double.infinity, audioAge = Double.infinity
     private var sounding = false, loudness = 0.0
     private var segment = 0
+    /// Pitch filtering must not turn one audible phrase into disconnected visual fragments.
+    private var referencePitch: StaffPitch?
     private var pitchTracker = StaffPitchTracker()
     private var volumeTracker = StaffVolumeTracker()
     private var lastTraceMelodyTime: Double?
     var noteCenterX: Double { Self.noteX }
     var noteY: Double { baseY }
-    var canSway: Bool { sounding && audioAge < 0.4 && pitch != nil }
+    var hasContinuousTraceTail: Bool {
+        sounding && isPitchReliable && audioAge < 0.4 && lastTraceMelodyTime != nil &&
+            trace.last.map { $0.segment == segment } == true
+    }
+    var canSway: Bool { sounding && isPitchReliable && audioAge < 0.4 && pitch != nil }
     var needsMotionUpdates: Bool {
         !trace.isEmpty || abs(baseY - targetY) > 0.001 || abs(velocity) > 0.01 ||
         abs(swayAngle) > 0.001 || abs(angularVelocity) > 0.01 ||
@@ -48,7 +55,7 @@ struct StaffNoteScene {
     mutating func receive(audio: AudioFeatures?, age: Double = 0) {
         guard let audio, age.isFinite, age >= 0, age < 0.4 else {
             sounding = false; audioAge = .infinity; volumeTracker.reset()
-            invalidatePitch(); stopSway(); return
+            resetMelodyInput(); stopSway(); return
         }
         audioAge = age; sounding = !audio.isSilent
         let envelope = audio.envelope.isFinite ? max(0, audio.envelope) : 0
@@ -56,21 +63,31 @@ struct StaffNoteScene {
         if sounding {
             volumeTracker.receive(envelope: envelope, time: audio.time)
         } else {
-            volumeTracker.reset(); invalidatePitch(); stopSway()
+            volumeTracker.reset(); resetMelodyInput(); stopSway()
         }
     }
 
     /// Called once per new melody analysis result, with its age in the PCM/host timeline.
     mutating func receive(melody: MelodyFrame?, age: Double = 0) {
-        guard sounding, age.isFinite, age >= 0, age < 0.24, let melody,
-              let resolved = StaffPitch.resolve(melody, previous: isPitchReliable ? pitch : nil) else {
-            invalidatePitch(); return
+        guard sounding, age.isFinite, age >= 0, age < 0.24 else {
+            invalidatePitch(); breakTrace(); pitchTracker.reset(); return
         }
-        switch pitchTracker.receive(resolved, time: melody.time, previous: isPitchReliable ? pitch : nil) {
+        // An explicit unvoiced result is a musical rest, even while accompaniment
+        // is loud. Do not bridge it with the previous note or a horizontal tail.
+        if let melody, !melody.isMelodic || melody.pitchHz == nil {
+            resetMelodyInput(); stopSway(); return
+        }
+        guard let melody, melody.time.isFinite,
+              let resolved = StaffPitch.resolve(melody, previous: referencePitch) else {
+            // Do not move to an edge, extend history, or let a dropout bypass jump confirmation.
+            pitchTracker.reset(); return
+        }
+        switch pitchTracker.receive(resolved, time: melody.time, previous: referencePitch, singingModel: melody.estimator == .crepe) {
         case .ignored: return
-        case .hold: break // Do not let unconfirmed candidates renew the last reliable pitch.
+        case .hold: return
         case .accept(let accepted):
-            pitch = accepted; targetY = accepted.y; melodyAge = age; isPitchReliable = true
+            pitch = accepted; referencePitch = accepted
+            targetY = accepted.y; melodyAge = age; isPitchReliable = true
         }
         guard isPitchReliable, let pitch else { return }
         let time = elapsed - age
@@ -102,10 +119,14 @@ struct StaffNoteScene {
         if clearHistory { trace.removeAll(keepingCapacity: true) }
     }
     private mutating func invalidatePitch() {
-        if isPitchReliable { segment += 1 }
         isPitchReliable = false
-        pitchTracker.reset()
+    }
+    private mutating func breakTrace() {
+        if lastTraceMelodyTime != nil { segment += 1 }
         lastTraceMelodyTime = nil
+    }
+    private mutating func resetMelodyInput() {
+        invalidatePitch(); breakTrace(); pitchTracker.reset(); referencePitch = nil
     }
     private mutating func stopSway() {
         // Cancel outward impulses while preserving a smooth return to the upright angle.
@@ -121,8 +142,10 @@ struct StaffNoteScene {
         guard seconds.isFinite, seconds > 0 else { return }
         elapsed += seconds; audioAge += seconds; melodyAge += seconds
         if audioAge >= 0.4 { sounding = false; stopSway() }
-        if melodyAge >= 0.24 || !sounding { invalidatePitch() }
+        if !sounding { resetMelodyInput() }
+        else if melodyAge >= 0.24 { invalidatePitch(); breakTrace() }
         trace.removeAll { elapsed - $0.time >= Self.historyDuration }
+        if trace.isEmpty { breakTrace() }
         // Long scheduling gaps age history in full, without simulating old actions.
         if seconds > 0.25 { stopSway() }
     }

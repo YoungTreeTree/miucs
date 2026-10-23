@@ -53,7 +53,10 @@ enum StaffKeyboardPlatformTests {
         let root = view.layer!.sublayers!.first!, starLayer = root.sublayers!.first { $0.name == "keyboard-stars" }!
         let pool = starLayer.sublayers!, identities = pool.map(ObjectIdentifier.init)
         let starIndex = root.sublayers!.firstIndex(of: starLayer)!, noteIndex = root.sublayers!.firstIndex { $0.name == "music-note" }!
-        check("Stars sit above the staff/trail and below the ledger, note and text layers", starIndex == 5 && noteIndex == 9 && root.sublayers!.suffix(2).allSatisfy { $0 is CATextLayer })
+        let trailIndex = root.sublayers!.firstIndex { $0.name == "melody-trail" }!
+        let textIndices = root.sublayers!.indices.filter { root.sublayers![$0] is CATextLayer }
+        check("Stars sit above the staff/trail and below the note and text layers", trailIndex < starIndex &&
+            starIndex < noteIndex && textIndices.count == 2 && textIndices.allSatisfy { $0 > starIndex })
         check("The retained pool allocates exactly 112 two-stroke vector stars", pool.count == 112 && pool.allSatisfy { $0.sublayers?.count == 2 && $0.sublayers!.allSatisfy { $0 is CAShapeLayer } })
         let path = (pool[0].sublayers![0] as! CAShapeLayer).path!
         var lines = 0, moves = 0, closures = 0

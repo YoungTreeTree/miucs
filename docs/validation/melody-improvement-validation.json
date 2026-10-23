@@ -1,0 +1,33 @@
+{
+  "benchmark": "docs/validation/tong-hua-benchmark.json",
+  "checks": [
+    {
+      "report": "docs/validation/melody-tests.json",
+      "passed": 17,
+      "failed": 0
+    },
+    {
+      "report": "docs/validation/audio-pipeline-tests.json",
+      "passed": 3,
+      "failed": 0
+    },
+    {
+      "report": "docs/validation/flight-world-tests.json",
+      "passed": 15,
+      "failed": 0
+    },
+    {
+      "report": "docs/validation/staff-note-tests.json",
+      "passed": 72,
+      "failed": 0
+    }
+  ],
+  "passed": 107,
+  "dependencyBoundaries": "passed",
+  "build": "passed",
+  "signature": "codesign --verify --deep --strict passed",
+  "installed": false,
+  "reasonNotInstalled": "Small aggregate accuracy gain, unchanged 12-note score check and continuing accompaniment errors; running application preserved.",
+  "candidateExecutableSHA256": "3d5a391efb8f2db0795b242ff8847aee1d903c16823ee06efe19701c03cc90a3",
+  "runningInstallExecutableSHA256": "7a6470acf1d51a23b092ebaaf8c7517b06987b8f781ed321d64c04ddf4cdb254"
+}

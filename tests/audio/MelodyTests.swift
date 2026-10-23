@@ -83,6 +83,42 @@ struct MelodyTests {
             }
             return (same, ["comparedFrames": loud.count])
         }
+        check("Mixed-spectrum pitch is invariant to gain and polarity") {
+            let lead = tone(329.6276, 0.14, partials: [0.25, 1, 0.65, 0.3, 0.2])
+            let bass = tone(110, 0.08, partials: [1, 0.4, 0.2])
+            let chord = tone(195.9977, 0.035)
+            let mixture = lead.indices.map { lead[$0] + bass[$0] + chord[$0] }
+            let loud = try analyze(mixture)
+            let quiet = try analyze(mixture.map { -$0 * 0.05 })
+            let same = zip(loud, quiet).allSatisfy { a, b in
+                a.isMelodic == b.isMelodic && abs(a.confidence - b.confidence) < 0.001 &&
+                (a.midi.flatMap { x in b.midi.map { abs(x - $0) < 0.15 } } ?? (b.midi == nil))
+            }
+            return (same && loud.contains(where: \.isMelodic), ["comparedFrames": loud.count])
+        }
+        check("Melody survives opposite-phase stereo") {
+            let samples = tone(220, 0.2, partials: [0.4, 1, 0.5, 0.2])
+            let mono = try MelodyAnalyzer().process(channels: [samples], sampleRate: rate)
+            let stereo = try MelodyAnalyzer().process(channels: [samples, samples.map { -$0 }], sampleRate: rate)
+            let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys]
+            return (try encoder.encode(mono) == encoder.encode(stereo), ["frames": mono.count])
+        }
+        check("Mixed-spectrum melody at 44.1, 48 and 96 kHz") {
+            var accuracies = [Double]()
+            for sampleRate in [44_100.0, 48_000.0, 96_000.0] {
+                let samples = (0..<Int(sampleRate * 0.7)).map { i -> Float in
+                    let t = Double(i) / sampleRate
+                    let lead = [0.25, 1.0, 0.65, 0.3, 0.2].enumerated().reduce(0.0) {
+                        $0 + 0.14 * $1.element * sin(2 * .pi * 329.6276 * Double($1.offset + 1) * t)
+                    }
+                    return Float(lead + 0.08 * sin(2 * .pi * 110 * t) + 0.035 * sin(2 * .pi * 195.9977 * t))
+                }
+                let frames = try MelodyAnalyzer().process(channels: [samples], sampleRate: sampleRate)
+                let hits = frames.filter { $0.pitchHz.map { abs(1200 * log2($0 / 329.6276)) < 35 } ?? false }.count
+                accuracies.append(Double(hits) / Double(max(frames.count, 1)))
+            }
+            return (accuracies.allSatisfy { $0 >= 0.95 }, ["accuracyWithin35Cents": accuracies])
+        }
         check("Silence and broadband percussion reject melody") {
             var state: UInt64 = 123
             let noise = (0..<Int(rate * 3)).map { i -> Float in

@@ -81,6 +81,54 @@
       "passed" : true
     },
     {
+      "name" : "Native and reference renderers place low and high notes at fixed absolute staff heights",
+      "passed" : true
+    },
+    {
+      "name" : "Fixed staff positions keep their true sounding pitch labels",
+      "passed" : true
+    },
+    {
+      "name" : "The treble clef has no changing octave-transposition label",
+      "passed" : true
+    },
+    {
+      "name" : "The rendered C4 head uses the same height after low and high musical contexts",
+      "passed" : true
+    },
+    {
+      "name" : "A later low phrase leaves old C4 pixels at their original staff height",
+      "passed" : true
+    },
+    {
+      "name" : "The rendered live contour reaches the note while a brief invalid sample is filtered",
+      "passed" : true
+    },
+    {
+      "name" : "The native trace has one continuous subpath across a short filtered interval",
+      "passed" : true
+    },
+    {
+      "name" : "The native contour joins live motion but stops extending when pitch becomes stale",
+      "passed" : true
+    },
+    {
+      "name" : "Resuming pitch after a stale gap starts a new native subpath",
+      "passed" : true
+    },
+    {
+      "name" : "The native trace also separates actual silence",
+      "passed" : true
+    },
+    {
+      "name" : "High and low notes have no extra short horizontal lines in either renderer at all three sizes",
+      "passed" : true
+    },
+    {
+      "name" : "Removing ledger strokes preserves all five main staff lines",
+      "passed" : true
+    },
+    {
       "name" : "Identical scene redraws have byte-identical pencil marks",
       "passed" : true
     },
@@ -93,7 +141,7 @@
       "passed" : true
     },
     {
-      "name" : "E2 and C7 note bodies, stems and flags remain inside the canvas",
+      "name" : "G2 and C6 note bodies, stems and flags remain inside the canvas",
       "passed" : true
     },
     {
@@ -102,5 +150,5 @@
     }
   ],
   "failed" : 0,
-  "passed" : 25
+  "passed" : 37
 }

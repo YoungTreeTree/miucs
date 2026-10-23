@@ -1,0 +1,83 @@
+{
+  "reason": "Investigate the slow fdps_2_05 block from the full evaluation; all three repeats retained, not a replacement for the original measurements.",
+  "runs": [
+    {
+      "audioSeconds": 7.3600625,
+      "firstOutputAfterInputSeconds": 0.08533333333333333,
+      "firstPitchAfterInputSeconds": 0.16,
+      "initializationMilliseconds": 13.861208222806454,
+      "mode": "Rapidly 试用 · 含水印",
+      "model": "CREPE tiny",
+      "pitchMilliseconds": {
+        "max": 1.3031251728534698,
+        "p50": 0.00012479722499847412,
+        "p95": 0.7804580964148045
+      },
+      "processingMilliseconds": 1072.633244562894,
+      "sampleRate": 48000,
+      "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+      "totalAnalysisMilliseconds": {
+        "max": 4.129333421587944,
+        "p50": 0.7239999249577522,
+        "p95": 3.276124596595764
+      },
+      "windowCenterAgeSeconds": {
+        "max": 0.1280000000000001,
+        "p50": 0.11866666666666603,
+        "p95": 0.1279999999999999
+      }
+    },
+    {
+      "audioSeconds": 7.3600625,
+      "firstOutputAfterInputSeconds": 0.08533333333333333,
+      "firstPitchAfterInputSeconds": 0.16,
+      "initializationMilliseconds": 6.590958219021559,
+      "mode": "Rapidly 试用 · 含水印",
+      "model": "CREPE tiny",
+      "pitchMilliseconds": {
+        "max": 2.2829584777355194,
+        "p50": 0.00020815059542655945,
+        "p95": 0.9758332744240761
+      },
+      "processingMilliseconds": 1447.373959235847,
+      "sampleRate": 48000,
+      "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+      "totalAnalysisMilliseconds": {
+        "max": 8.891625329852104,
+        "p50": 1.207458321005106,
+        "p95": 4.515708424150944
+      },
+      "windowCenterAgeSeconds": {
+        "max": 0.1280000000000001,
+        "p50": 0.11866666666666603,
+        "p95": 0.1279999999999999
+      }
+    },
+    {
+      "audioSeconds": 7.3600625,
+      "firstOutputAfterInputSeconds": 0.08533333333333333,
+      "firstPitchAfterInputSeconds": 0.16,
+      "initializationMilliseconds": 8.076332975178957,
+      "mode": "Rapidly 试用 · 含水印",
+      "model": "CREPE tiny",
+      "pitchMilliseconds": {
+        "max": 4.2657083831727505,
+        "p50": 0.000250060111284256,
+        "p95": 1.1848337016999722
+      },
+      "processingMilliseconds": 1859.2670373618603,
+      "sampleRate": 48000,
+      "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+      "totalAnalysisMilliseconds": {
+        "max": 68.38450022041798,
+        "p50": 2.26304167881608,
+        "p95": 5.426750052720308
+      },
+      "windowCenterAgeSeconds": {
+        "max": 0.1280000000000001,
+        "p50": 0.11866666666666603,
+        "p95": 0.1279999999999999
+      }
+    }
+  ]
+}

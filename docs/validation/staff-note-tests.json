@@ -17,11 +17,11 @@
       "passed" : true
     },
     {
-      "name" : "Ledger lines include all lines between the staff and the head",
+      "name" : "Absent, invalid, low confidence and out-of-range pitches are rejected",
       "passed" : true
     },
     {
-      "name" : "Absent, invalid, low confidence and out-of-range pitches are rejected",
+      "name" : "Staff following accepts G2 through C6 and rejects neighboring notes without clamping",
       "passed" : true
     },
     {
@@ -41,7 +41,51 @@
       "passed" : true
     },
     {
-      "name" : "High-confidence isolated notes and two-frame octave intrusions leave no spikes",
+      "name" : "High-confidence intrusions lasting up to five frames leave no pitch spikes",
+      "passed" : true
+    },
+    {
+      "name" : "Brief out-of-range bursts hold the last pitch and add no trace or edge notes",
+      "passed" : true
+    },
+    {
+      "name" : "Returning from a brief rejected range keeps a continuous trace without adding rejected samples",
+      "passed" : true
+    },
+    {
+      "name" : "Persistent out-of-range sound expires the label without moving or extending the trail",
+      "passed" : true
+    },
+    {
+      "name" : "Out-of-range sound at startup does not invent a boundary note",
+      "passed" : true
+    },
+    {
+      "name" : "Unconfirmed jumps pause the trail instead of appending held or guessed pitches",
+      "passed" : true
+    },
+    {
+      "name" : "Confirmed jumps join the previous reliable point across a short confirmation interval",
+      "passed" : true
+    },
+    {
+      "name" : "Missing pitch expires its live tail even while accompaniment continues",
+      "passed" : true
+    },
+    {
+      "name" : "Pitch after a stale gap starts a fresh trace segment",
+      "passed" : true
+    },
+    {
+      "name" : "Real silence still breaks the trace immediately",
+      "passed" : true
+    },
+    {
+      "name" : "Brief filtering gaps stay connected; stale input never draws a held-note tail",
+      "passed" : true
+    },
+    {
+      "name" : "A continuous visual tail expires with its eight-second history instead of persisting indefinitely",
       "passed" : true
     },
     {
@@ -49,7 +93,7 @@
       "passed" : true
     },
     {
-      "name" : "Sustained thirds, fifths and octaves confirm within 30, 50 and 75ms at 48kHz",
+      "name" : "Sustained thirds, fifths and octaves require 100, 125 and 150ms and confirm within one hop",
       "passed" : true
     },
     {
@@ -57,7 +101,7 @@
       "passed" : true
     },
     {
-      "name" : "A quick melodic phrase with thirds and fourths keeps every sustained note",
+      "name" : "A melodic phrase with thirds and fourths keeps notes sustained beyond confirmation",
       "passed" : true
     },
     {
@@ -81,15 +125,43 @@
       "passed" : true
     },
     {
-      "name" : "The first fresh pitch after expiry starts a new segment immediately",
+      "name" : "Label expiry cannot bypass jump confirmation during continuing sound",
       "passed" : true
     },
     {
-      "name" : "Missing melody clears pending confirmation and starts the next trace at its true height",
+      "name" : "A sustained new pitch can confirm after the old label expires",
+      "passed" : true
+    },
+    {
+      "name" : "A brief missing result holds the old note and cannot turn a new jump into an immediate note",
+      "passed" : true
+    },
+    {
+      "name" : "Missing melody clears pending candidates but a confirmed note joins the audible phrase",
+      "passed" : true
+    },
+    {
+      "name" : "A rejected range interrupts candidate continuity rather than joining two short bursts",
       "passed" : true
     },
     {
       "name" : "The trail softens its first corner and reaches 95 percent of a small change within 90ms",
+      "passed" : true
+    },
+    {
+      "name" : "Every accepted G2-C6 pitch settles at its fixed absolute treble-staff height",
+      "passed" : true
+    },
+    {
+      "name" : "C4 returns to the same height after low\/high phrases and input resets",
+      "passed" : true
+    },
+    {
+      "name" : "Holding C4 for four more seconds never recenters the note or its target",
+      "passed" : true
+    },
+    {
+      "name" : "A later low phrase cannot shift existing C4 history or compress its octave distance",
       "passed" : true
     },
     {
@@ -193,7 +265,23 @@
       "passed" : true
     },
     {
-      "name" : "Missing melody breaks the drawn trajectory between reliable segments",
+      "name" : "Brief missing melody keeps the reliable trajectory connected",
+      "passed" : true
+    },
+    {
+      "name" : "Explicit unvoiced singing stops the label, sway and live tail while accompaniment continues",
+      "passed" : true
+    },
+    {
+      "name" : "A vocal rest does not create history or reposition the last note",
+      "passed" : true
+    },
+    {
+      "name" : "The next sung phrase starts at its real pitch with no bridge across the rest",
+      "passed" : true
+    },
+    {
+      "name" : "Gated neural pitch confirms a normal leap in 40ms without the old 125ms hold",
       "passed" : true
     },
     {
@@ -218,18 +306,18 @@
     }
   ],
   "failed" : 0,
-  "maximumRemainingFractionAt150ms" : 0.017351537314028782,
-  "passed" : 54,
+  "maximumRemainingFractionAt150ms" : 0.017351562048803712,
+  "passed" : 76,
   "pitchConfirmationMillisecondsAt48kHz" : {
-    "60->64" : 21.333333333333332,
-    "60->67" : 42.666666666666671,
-    "60->72" : 64,
-    "69->64" : 21.333333333333332,
-    "72->60" : 64,
-    "72->65" : 42.666666666666671
+    "60->64" : 106.66666666666667,
+    "60->67" : 128,
+    "60->72" : 170.66666666666669,
+    "69->64" : 106.66666666666667,
+    "72->60" : 170.66666666666669,
+    "72->65" : 128
   },
   "syntheticIntrusions" : {
     "filteredVerticalTravel" : 0,
-    "rawVerticalTravel" : 272
+    "rawVerticalTravel" : 384
   }
 }

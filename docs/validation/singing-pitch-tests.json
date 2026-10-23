@@ -1,0 +1,62 @@
+{
+  "checks" : [
+    {
+      "name" : "Voicing starts only after two consecutive supported observations",
+      "passed" : true
+    },
+    {
+      "name" : "Low reliability ends voicing immediately instead of holding a pitch",
+      "passed" : true
+    },
+    {
+      "name" : "One isolated reliable spike cannot restart a note",
+      "passed" : true
+    },
+    {
+      "name" : "Quiet audio defeats even a confident prediction",
+      "passed" : true
+    },
+    {
+      "name" : "Long input gaps do not complete an old pending onset",
+      "passed" : true
+    },
+    {
+      "name" : "Invalid pitch and reliability never enter the voiced state",
+      "passed" : true
+    },
+    {
+      "name" : "Capture block sizes do not change results at 8\/16\/44.1\/48\/96\/192kHz",
+      "passed" : true
+    },
+    {
+      "name" : "64ms model windows retain original sample timestamps and a 20ms hop",
+      "passed" : true
+    },
+    {
+      "name" : "Resampling preserves vocal energy and rejects frequencies above the model Nyquist limit",
+      "passed" : true
+    },
+    {
+      "name" : "Silence never enters neural inference and always publishes absent pitch",
+      "passed" : true
+    },
+    {
+      "name" : "A formerly voiced signal releases after the analysis window drains",
+      "passed" : true
+    },
+    {
+      "name" : "Format changes discard both resampler history and voicing state",
+      "passed" : true
+    },
+    {
+      "name" : "Nonfinite PCM is rejected before the model",
+      "passed" : true
+    },
+    {
+      "name" : "Reset starts a fresh timeline with no previously confirmed onset",
+      "passed" : true
+    }
+  ],
+  "failed" : 0,
+  "passed" : 14
+}

@@ -40,7 +40,7 @@
 | `displayBands` | 24 个 0…1 的显示值 | 静音为零；不能当作能量比例 |
 | `melody.pitchHz`、`confidence`、`isMelodic` | Hz、0…1 启发式置信度、有效标记 | 旋律不可确认时音高缺失；首次不足一窗时整个 `melody` 缺失 |
 
-MIDI 半音数由 `69 + 12 log2(pitchHz/440)` 派生，不重复存入 JSON。置信度不是校准概率，当前旋律算法不等于声源分离。
+MIDI 半音数由 `69 + 12 log2(pitchHz/440)` 派生，不重复存入 JSON。置信度不是校准概率。可选 `melody.estimator=crepe` 表示歌声模型，缺失表示旧频谱算法；`isMelodic` 已包含该算法自己的门控。消费者须将明确的 `isMelodic=false` 当作无有效音高，即使原始混音 `audio.isSilent=false`。不能用伴奏响度延续一个已结束的音。
 
 ## 消费规则
 

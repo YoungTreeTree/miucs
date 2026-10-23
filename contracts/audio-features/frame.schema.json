@@ -284,13 +284,24 @@
             },
             "confidence": {
               "type": "number",
-              "description": "Heuristic salience/tonality, not a calibrated probability.",
+              "description": "Estimator-specific reliability, not a calibrated voice probability.",
               "minimum": 0,
               "maximum": 1
             },
             "isMelodic": {
               "type": "boolean",
               "description": "Reliable melody estimate for this window."
+            },
+            "estimator": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "enum": [
+                "crepe",
+                null
+              ],
+              "description": "Optional pitch estimator identity; absent for the legacy spectral method. isMelodic includes the estimator-specific voicing gate."
             }
           },
           "required": [

@@ -138,6 +138,129 @@ enum StaffNotePlatformTests {
         check("Retained native layers preserve the same pivot and rotating stem", layerHeadFixed && layerStemChanges > 100 &&
             layerUpright.colorAt(x: 1280, y: 148)!.alphaComponent > 0.9)
 
+        var fixedHeights = true, trueNames = true, fixedClef = true
+        for midi in [43, 48, 55, 60, 71, 84] {
+            let fixed = StaffNotePreview.sampleScene(midi: Double(midi)), expected = StaffPitch(midi: midi)!.y
+            let v = StaffNoteView(preview: fixed); v.wantsLayer = true; v.updateLayer()
+            let layers = v.layer!.sublayers!.first!.sublayers!
+            let head = layers.first { $0.name == "music-note" }!
+            let marker = layers.first { $0.name == "pitch-marker" }!
+            let name = layers.first { $0.name == "pitch-label" } as! CATextLayer
+            fixedHeights = fixedHeights && abs(head.position.y - expected) < 0.001 && marker.position.y == expected
+            trueNames = trueNames && (name.string as? NSAttributedString)?.string == StaffPitch(midi: midi)?.name
+            fixedClef = fixedClef && !layers.contains { $0.name == "clef-octave" } && layers.filter { $0 is CATextLayer }.count == 2
+            for retained in [false, true] {
+                let b = StaffNotePreview.bitmap(scene: fixed, width: 800, retainedLayers: retained)
+                fixedHeights = fixedHeights && b.colorAt(x: 1280, y: Int(expected * 2))!.alphaComponent > 0.9
+            }
+        }
+        check("Native and reference renderers place low and high notes at fixed absolute staff heights", fixedHeights)
+        check("Fixed staff positions keep their true sounding pitch labels", trueNames)
+        check("The treble clef has no changing octave-transposition label", fixedClef)
+
+        var repeatedC4 = true, historyFixed = true
+        for preceding in [43.0, 84] {
+            var phrase = StaffNotePreview.sampleScene(midi: preceding)
+            for _ in 0..<120 {
+                phrase.advance(seconds: 1.0 / 60); phrase.receive(audio: StaffNotePreview.audio(phrase.elapsed))
+                phrase.receive(melody: StaffNotePreview.melody(phrase.elapsed, midi: 60))
+            }
+            let v = StaffNoteView(preview: phrase); v.wantsLayer = true; v.updateLayer()
+            let root = v.layer!.sublayers!.first!, head = root.sublayers!.first { $0.name == "music-note" }!
+            repeatedC4 = repeatedC4 && abs(head.position.y - 98) < 0.001
+            let oldC4 = phrase.trace.last!
+            for _ in 0..<180 {
+                phrase.advance(seconds: 1.0 / 60); phrase.receive(audio: StaffNotePreview.audio(phrase.elapsed))
+                phrase.receive(melody: StaffNotePreview.melody(phrase.elapsed, midi: 48))
+            }
+            v.updatePreview(phrase); v.updateLayer()
+            let trail = root.sublayers!.first { $0.name == "melody-trail" }!
+            let path = (trail.sublayers!.last as! CAShapeLayer).path!
+            let oldX = phrase.traceX(oldC4) - 80
+            var hasOriginalHeight = false
+            path.applyWithBlock { element in
+                if element.pointee.type == .addLineToPoint || element.pointee.type == .moveToPoint {
+                    let p = element.pointee.points[0]
+                    if abs(p.x - oldX) < 0.001 && abs(p.y - 98) < 0.001 { hasOriginalHeight = true }
+                }
+            }
+            historyFixed = historyFixed && hasOriginalHeight
+        }
+        check("The rendered C4 head uses the same height after low and high musical contexts", repeatedC4)
+        check("A later low phrase leaves old C4 pixels at their original staff height", historyFixed)
+
+        var bridging = StaffNoteScene()
+        bridging.receive(audio: StaffNotePreview.audio(0)); bridging.receive(melody: StaffNotePreview.melody(0, midi: 71))
+        bridging.advance(seconds: 0.1); bridging.receive(audio: StaffNotePreview.audio(0.1)); bridging.receive(melody: nil)
+        let contourView = StaffNoteView(preview: bridging); contourView.wantsLayer = true; contourView.updateLayer()
+        func contourPath() -> CGPath {
+            let root = contourView.layer!.sublayers!.first!
+            let trail = root.sublayers!.first { $0.name == "melody-trail" }!
+            return (trail.sublayers!.last as! CAShapeLayer).path!
+        }
+        func segments(_ path: CGPath) -> Int {
+            var count = 0
+            path.applyWithBlock { if $0.pointee.type == .moveToPoint { count += 1 } }
+            return count
+        }
+        check("The rendered live contour reaches the note while a brief invalid sample is filtered",
+            contourPath().currentPoint == CGPoint(x: 560, y: 74) && bridging.trace.count == 1)
+        bridging.advance(seconds: 0.02); bridging.receive(audio: StaffNotePreview.audio(0.12))
+        bridging.receive(melody: StaffNotePreview.melody(0.12, midi: 72))
+        contourView.updatePreview(bridging); contourView.updateLayer()
+        check("The native trace has one continuous subpath across a short filtered interval", segments(contourPath()) == 1)
+        var followsHead = true
+        for tick in 0..<45 {
+            bridging.advance(seconds: 1.0 / 60); bridging.receive(audio: StaffNotePreview.audio(bridging.elapsed))
+            bridging.receive(melody: tick < 12 ? StaffNotePreview.melody(bridging.elapsed, midi: 72) : nil)
+            contourView.updatePreview(bridging); contourView.updateLayer()
+            followsHead = followsHead && (bridging.hasContinuousTraceTail ?
+                contourPath().currentPoint == CGPoint(x: 560, y: bridging.noteY) : contourPath().currentPoint.x < 560) && segments(contourPath()) == 1
+        }
+        check("The native contour joins live motion but stops extending when pitch becomes stale", followsHead && !bridging.hasContinuousTraceTail)
+        bridging.receive(melody: StaffNotePreview.melody(bridging.elapsed, midi: 71))
+        contourView.updatePreview(bridging); contourView.updateLayer()
+        check("Resuming pitch after a stale gap starts a new native subpath", segments(contourPath()) == 2)
+        // Give this phrase a real line segment. CGPath coalesces consecutive
+        // move-only subpaths, so a single sample is not a drawable segment.
+        bridging.advance(seconds: 0.02); bridging.receive(audio: StaffNotePreview.audio(bridging.elapsed))
+        bridging.receive(melody: StaffNotePreview.melody(bridging.elapsed, midi: 71))
+        bridging.receive(audio: StaffNotePreview.audio(bridging.elapsed, silent: true))
+        bridging.advance(seconds: 0.02); bridging.receive(audio: StaffNotePreview.audio(bridging.elapsed))
+        bridging.receive(melody: StaffNotePreview.melody(bridging.elapsed, midi: 71))
+        contourView.updatePreview(bridging); contourView.updateLayer()
+        check("The native trace also separates actual silence", segments(contourPath()) == 3)
+
+        var extraLinesAbsent = true, keepsFiveLines = true
+        for midi in [48.0, 84] {
+            var outside = StaffNotePreview.sampleScene(midi: 71)
+            for _ in 0..<20 {
+                outside.advance(seconds: 1.0 / 60)
+                outside.receive(audio: StaffNotePreview.audio(outside.elapsed))
+                outside.receive(melody: StaffNotePreview.melody(outside.elapsed, midi: midi))
+            }
+            // High and low notes retain their real staff height without extra ledger strokes.
+            extraLinesAbsent = extraLinesAbsent && outside.pitch?.midi == Int(midi) && outside.targetY == StaffPitch(midi: Int(midi))!.y
+            for width in [600, 800, 1600] {
+                for retained in [false, true] {
+                    let b = StaffNotePreview.bitmap(scene: outside, width: width, retainedLayers: retained)
+                    let scale = Double(width) / 400
+                    for y in midi < 71 ? [98.0, 106, 114] : [50.0] {
+                        extraLinesAbsent = extraLinesAbsent && b.colorAt(x: Int(631 * scale), y: Int(y * scale))!.alphaComponent == 0
+                    }
+                    for y in [58.0, 66, 74, 82, 90] {
+                        keepsFiveLines = keepsFiveLines && b.colorAt(x: Int(750 * scale), y: Int(y * scale))!.alphaComponent > 0.1
+                    }
+                    if width == 800 {
+                        let file = "build/staff-no-ledgers-\(Int(midi))-\(retained ? "native" : "reference").png"
+                        try b.representation(using: .png, properties: [:])!.write(to: URL(fileURLWithPath: file))
+                    }
+                }
+            }
+        }
+        check("High and low notes have no extra short horizontal lines in either renderer at all three sizes", extraLinesAbsent)
+        check("Removing ledger strokes preserves all five main staff lines", keepsFiveLines)
+
         let scene = StaffNotePreview.sampleScene()
         let bitmap = StaffNotePreview.bitmap(scene: scene, width: 800)
         let repeated = StaffNotePreview.bitmap(scene: scene, width: 800)
@@ -159,14 +282,16 @@ enum StaffNotePlatformTests {
         let darkLine = dark.colorAt(x: 1000, y: 148)!.usingColorSpace(.deviceRGB)!
         check("Graphite and pale underlines are visible on light and dark backgrounds", lightLine.redComponent < 0.85 && darkLine.redComponent > 0.16)
         var withinCanvas = true
-        for midi in [40.0, 96] {
-            let edge = StaffNotePreview.bitmap(scene: StaffNotePreview.sampleScene(midi: midi), width: 800)
+        for midi in [43.0, 84] {
+            let edgeScene = StaffNotePreview.sampleScene(midi: midi)
+            withinCanvas = withinCanvas && edgeScene.pitch?.midi == Int(midi)
+            let edge = StaffNotePreview.bitmap(scene: edgeScene, width: 800)
             // Check the character's strip only; staff lines intentionally span the drawing.
             for x in 1230..<1330 {
                 for y in [0, 1, 318, 319] { withinCanvas = withinCanvas && edge.colorAt(x: x, y: y)!.alphaComponent == 0 }
             }
         }
-        check("E2 and C7 note bodies, stems and flags remain inside the canvas", withinCanvas)
+        check("G2 and C6 note bodies, stems and flags remain inside the canvas", withinCanvas)
         let small = StaffNotePreview.bitmap(scene: scene, width: 600)
         let large = StaffNotePreview.bitmap(scene: scene, width: 1600)
         check("Minimum and maximum sizes render uniformly at 2x backing scale", small.pixelsWide == 1200 && small.pixelsHigh == 240 && large.pixelsWide == 3200 && large.pixelsHigh == 640)

@@ -1,0 +1,42 @@
+{
+  "date": "2026-10-24",
+  "mode": "Rapidly v1.1.0 unlicensed demo; watermark intact",
+  "sdkRevision": "a75155656556b38709fe77a706958dcbe1f13624",
+  "modelSHA256": "584bcd6c2f20c48d4758ff35b6e06b3468cbc0e47ce8209b7031633c9e2ebb04",
+  "machine": "MacBook Air M4 / 32 GB",
+  "tests": {
+    "audio-pipeline-tests": {
+      "passed": 8,
+      "failed": 0
+    },
+    "audio-recovery-tests": {
+      "passed": 21,
+      "failed": 0
+    },
+    "rapidly-vocal-tests": {
+      "passed": 10,
+      "failed": 0
+    },
+    "staff-note-tests": {
+      "passed": 72,
+      "failed": 0
+    },
+    "contract-tests": {
+      "passed": 16,
+      "failed": 0
+    }
+  },
+  "totalPassed": 127,
+  "installedBinarySHA256": "59d0ddd5e28550021a97c1d0a56a3ccdcdfc076d6c1ad638abd621087f537f2a",
+  "installation": "/Applications/Miucs.app; previous application backed up in ignored build/",
+  "capture": "Production log confirms Rapidly demo, capture started, 960-sample stereo planar PCM at 48000 Hz",
+  "visualCheck": "CUA observed updated note label and melody trace during short test-file playback; no desktop screenshot committed",
+  "keyboard": "Existing keyboard path unchanged; no new physical-keyboard acceptance claimed",
+  "benchmark": "rapidly-benchmark.json; source hashes match final adapter and analyzer",
+  "limitations": [
+    "No licensed model quality measured",
+    "Not capture-to-screen latency",
+    "Demo repeated runs vary slightly",
+    "Unvoiced false positives remain high and score comparison did not improve"
+  ]
+}

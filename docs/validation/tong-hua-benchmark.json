@@ -1,0 +1,2797 @@
+{
+  "date": "2026-10-23T16:43:35.472669+00:00",
+  "song": "童话 / Tong Hua (光良)",
+  "fixture": "tests/fixtures/melody/tong-hua.json",
+  "fixtureSHA256": "2807cc5a870eef44b695dc9a43c4f4fff6b8814f45b7ca3eb86e06b68f2ce21d",
+  "audio": "MIR-1K amateur karaoke covers; these are not the commercial master recording",
+  "mixture": "(left accompaniment + right vocal) / 2, then scipy.signal.resample_poly 16000 -> 48000 Hz, PCM16; never give separated stems to the tested analyzer",
+  "baselineAnalyzerSHA256": "ca213364c3ce76a582d3b27361c4a3255a9cb404ea497f288ac0a64b5924fe15",
+  "currentAnalyzerSHA256": "b0ab87ca59ea900e992a1c303277921bc576e6706f85fb06e87175ea170f48e1",
+  "evaluatorSHA256": "49be0c8f375ff17806cfa492607063c5d4470afe4ac28392b6d8daa7a68c502c",
+  "probeSHA256": "b2e4cf82b9672e64b8510b3c21532ae2785b4b550b268e03d2028fd9bc3e69f2",
+  "environment": {
+    "python": "3.10.11",
+    "numpy": "2.2.6",
+    "scipy": "1.15.3",
+    "macOS": "26.6.2",
+    "architecture": "arm64"
+  },
+  "method": "Nearest human reference at frame center; 50-cent tolerance; macro mean over clips; no optimized offset, transposition, or DTW against predictions. Missing voiced frames count as errors.",
+  "durationSeconds": 230.82018749999995,
+  "summary": {
+    "baseline": {
+      "rawPitchAccuracy": 0.7523258888425712,
+      "rawChromaAccuracy": 0.773180635808597,
+      "octaveErrorRate": 0.020854746966025715,
+      "otherPitchErrorRate": 0.22600671545022463,
+      "missRate": 0.0008126487411783803,
+      "voicingFalseAlarm": 0.9887828372095678,
+      "overallAccuracy": 0.5798449877535515
+    },
+    "current": {
+      "rawPitchAccuracy": 0.7694404750981654,
+      "rawChromaAccuracy": 0.7964174911357417,
+      "octaveErrorRate": 0.02697701603757601,
+      "otherPitchErrorRate": 0.2025603921716766,
+      "missRate": 0.0010221166925818155,
+      "voicingFalseAlarm": 0.9891334683456128,
+      "overallAccuracy": 0.5930156342980882
+    }
+  },
+  "splits": {
+    "development": {
+      "baseline": {
+        "rawPitchAccuracy": 0.7150310204394731,
+        "rawChromaAccuracy": 0.7399938416293371,
+        "octaveErrorRate": 0.024962821189864065,
+        "otherPitchErrorRate": 0.259709598465562,
+        "missRate": 0.00029655990510083033,
+        "voicingFalseAlarm": 0.988379713651946,
+        "overallAccuracy": 0.5199134864166618
+      },
+      "current": {
+        "rawPitchAccuracy": 0.7335713951907875,
+        "rawChromaAccuracy": 0.7672580274866113,
+        "octaveErrorRate": 0.033686632295823776,
+        "otherPitchErrorRate": 0.23244541260828785,
+        "missRate": 0.00029655990510083033,
+        "voicingFalseAlarm": 0.988379713651946,
+        "overallAccuracy": 0.5341039671516895
+      }
+    },
+    "held_out": {
+      "baseline": {
+        "rawPitchAccuracy": 0.7758805425708438,
+        "rawChromaAccuracy": 0.7941407163428664,
+        "octaveErrorRate": 0.018260173772022555,
+        "otherPitchErrorRate": 0.20472068407211683,
+        "missRate": 0.0011385995850168328,
+        "voicingFalseAlarm": 0.9890374415617501,
+        "overallAccuracy": 0.6176964622821135
+      },
+      "current": {
+        "rawPitchAccuracy": 0.7920946308291412,
+        "rawChromaAccuracy": 0.814833994493087,
+        "octaveErrorRate": 0.022739363663945855,
+        "otherPitchErrorRate": 0.18368564242223792,
+        "missRate": 0.0014803630846750692,
+        "voicingFalseAlarm": 0.9896095239416128,
+        "overallAccuracy": 0.63022300302213
+      }
+    }
+  },
+  "tracks": [
+    {
+      "track": "Ani_2_01",
+      "split": "held_out",
+      "mixtureSHA256": "fbcac7ca3b890c3da3241ddf172385c5ed3e809bd85e6458c131f21b971c62f1",
+      "baseline": {
+        "frames": 291,
+        "referenceVoicedFrames": 166,
+        "referenceUnvoicedFrames": 125,
+        "rawPitchAccuracy": 0.8975903614457831,
+        "rawChromaAccuracy": 0.9036144578313253,
+        "octaveErrorRate": 0.006024096385542169,
+        "otherPitchErrorRate": 0.0963855421686747,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.5120274914089347
+      },
+      "baselinePerformance": {
+        "analysisMillisecondsMax": 0.19804155454039574,
+        "analysisMillisecondsP50": 0.07595820352435112,
+        "analysisMillisecondsP95": 0.16087526455521584,
+        "audioSeconds": 6.272,
+        "frames": 291,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      },
+      "current": {
+        "frames": 291,
+        "referenceVoicedFrames": 166,
+        "referenceUnvoicedFrames": 125,
+        "rawPitchAccuracy": 0.9096385542168675,
+        "rawChromaAccuracy": 0.9156626506024096,
+        "octaveErrorRate": 0.006024096385542169,
+        "otherPitchErrorRate": 0.08433734939759036,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.5189003436426117
+      },
+      "currentPerformance": {
+        "analysisMillisecondsMax": 0.2660420723259449,
+        "analysisMillisecondsP50": 0.08004158735275269,
+        "analysisMillisecondsP95": 0.15929155051708221,
+        "audioSeconds": 6.272,
+        "frames": 291,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      }
+    },
+    {
+      "track": "Ani_2_02",
+      "split": "held_out",
+      "mixtureSHA256": "8db7f41f7e7689be4572fa05f00a982f3fefb02a91f55dbad401dcb22dfcbd13",
+      "baseline": {
+        "frames": 430,
+        "referenceVoicedFrames": 291,
+        "referenceUnvoicedFrames": 139,
+        "rawPitchAccuracy": 0.8006872852233677,
+        "rawChromaAccuracy": 0.8281786941580757,
+        "octaveErrorRate": 0.027491408934707903,
+        "otherPitchErrorRate": 0.1718213058419244,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 0.9784172661870504,
+        "overallAccuracy": 0.5488372093023256
+      },
+      "baselinePerformance": {
+        "analysisMillisecondsMax": 0.4699584096670151,
+        "analysisMillisecondsP50": 0.07587531581521034,
+        "analysisMillisecondsP95": 0.08845841512084007,
+        "audioSeconds": 9.2480625,
+        "frames": 430,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      },
+      "current": {
+        "frames": 430,
+        "referenceVoicedFrames": 291,
+        "referenceUnvoicedFrames": 139,
+        "rawPitchAccuracy": 0.8075601374570447,
+        "rawChromaAccuracy": 0.8350515463917526,
+        "octaveErrorRate": 0.027491408934707903,
+        "otherPitchErrorRate": 0.16494845360824742,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 0.9784172661870504,
+        "overallAccuracy": 0.5534883720930233
+      },
+      "currentPerformance": {
+        "analysisMillisecondsMax": 0.11245813220739365,
+        "analysisMillisecondsP50": 0.07933331653475761,
+        "analysisMillisecondsP95": 0.08704187348484993,
+        "audioSeconds": 9.2480625,
+        "frames": 430,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      }
+    },
+    {
+      "track": "Ani_2_03",
+      "split": "held_out",
+      "mixtureSHA256": "bf96872bca8df5df6448950b259c858d9088cd7efd2475273f80f643af604887",
+      "baseline": {
+        "frames": 328,
+        "referenceVoicedFrames": 259,
+        "referenceUnvoicedFrames": 69,
+        "rawPitchAccuracy": 0.8108108108108109,
+        "rawChromaAccuracy": 0.8108108108108109,
+        "octaveErrorRate": 0.0,
+        "otherPitchErrorRate": 0.18532818532818532,
+        "missRate": 0.003861003861003861,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.6402439024390244
+      },
+      "baselinePerformance": {
+        "analysisMillisecondsMax": 0.17520831897854805,
+        "analysisMillisecondsP50": 0.07845833897590637,
+        "analysisMillisecondsP95": 0.09962497279047966,
+        "audioSeconds": 7.072,
+        "frames": 328,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      },
+      "current": {
+        "frames": 328,
+        "referenceVoicedFrames": 259,
+        "referenceUnvoicedFrames": 69,
+        "rawPitchAccuracy": 0.7992277992277992,
+        "rawChromaAccuracy": 0.7992277992277992,
+        "octaveErrorRate": 0.0,
+        "otherPitchErrorRate": 0.1969111969111969,
+        "missRate": 0.003861003861003861,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.6310975609756098
+      },
+      "currentPerformance": {
+        "analysisMillisecondsMax": 0.1826668158173561,
+        "analysisMillisecondsP50": 0.08124997839331627,
+        "analysisMillisecondsP95": 0.09179161861538887,
+        "audioSeconds": 7.072,
+        "frames": 328,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      }
+    },
+    {
+      "track": "Ani_2_04",
+      "split": "held_out",
+      "mixtureSHA256": "f444d4ceba2c985496a725ff61fc2f36a3e4a9f5c375d64d49827dd6674ca176",
+      "baseline": {
+        "frames": 295,
+        "referenceVoicedFrames": 249,
+        "referenceUnvoicedFrames": 46,
+        "rawPitchAccuracy": 0.8232931726907631,
+        "rawChromaAccuracy": 0.8232931726907631,
+        "octaveErrorRate": 0.0,
+        "otherPitchErrorRate": 0.1686746987951807,
+        "missRate": 0.008032128514056224,
+        "voicingFalseAlarm": 0.9130434782608695,
+        "overallAccuracy": 0.7084745762711865
+      },
+      "baselinePerformance": {
+        "analysisMillisecondsMax": 0.11004135012626648,
+        "analysisMillisecondsP50": 0.07487507537007332,
+        "analysisMillisecondsP95": 0.08466653525829315,
+        "audioSeconds": 6.3680625,
+        "frames": 295,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      },
+      "current": {
+        "frames": 295,
+        "referenceVoicedFrames": 249,
+        "referenceUnvoicedFrames": 46,
+        "rawPitchAccuracy": 0.8433734939759037,
+        "rawChromaAccuracy": 0.8795180722891566,
+        "octaveErrorRate": 0.03614457831325301,
+        "otherPitchErrorRate": 0.11244979919678715,
+        "missRate": 0.008032128514056224,
+        "voicingFalseAlarm": 0.9130434782608695,
+        "overallAccuracy": 0.7254237288135593
+      },
+      "currentPerformance": {
+        "analysisMillisecondsMax": 0.11741649359464645,
+        "analysisMillisecondsP50": 0.07804157212376595,
+        "analysisMillisecondsP95": 0.08708331733942032,
+        "audioSeconds": 6.3680625,
+        "frames": 295,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      }
+    },
+    {
+      "track": "Ani_2_05",
+      "split": "held_out",
+      "mixtureSHA256": "be97d7bba0fb034235eaff141b4f79f4e0b97df57788ea8efd525fa6e6b22fc0",
+      "baseline": {
+        "frames": 529,
+        "referenceVoicedFrames": 381,
+        "referenceUnvoicedFrames": 148,
+        "rawPitchAccuracy": 0.6824146981627297,
+        "rawChromaAccuracy": 0.7086614173228346,
+        "octaveErrorRate": 0.026246719160104987,
+        "otherPitchErrorRate": 0.29133858267716534,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.4914933837429111
+      },
+      "baselinePerformance": {
+        "analysisMillisecondsMax": 0.19449973478913307,
+        "analysisMillisecondsP50": 0.0754999928176403,
+        "analysisMillisecondsP95": 0.08408306166529655,
+        "audioSeconds": 11.36,
+        "frames": 529,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      },
+      "current": {
+        "frames": 529,
+        "referenceVoicedFrames": 381,
+        "referenceUnvoicedFrames": 148,
+        "rawPitchAccuracy": 0.7086614173228346,
+        "rawChromaAccuracy": 0.7165354330708661,
+        "octaveErrorRate": 0.007874015748031496,
+        "otherPitchErrorRate": 0.28346456692913385,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.5103969754253308
+      },
+      "currentPerformance": {
+        "analysisMillisecondsMax": 0.12958329170942307,
+        "analysisMillisecondsP50": 0.07933331653475761,
+        "analysisMillisecondsP95": 0.08637504652142525,
+        "audioSeconds": 11.36,
+        "frames": 529,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      }
+    },
+    {
+      "track": "Ani_2_06",
+      "split": "held_out",
+      "mixtureSHA256": "9f5758eeab393d8b17b480038925a8ada4add7b6ef09c1150e902bace40ff3f2",
+      "baseline": {
+        "frames": 505,
+        "referenceVoicedFrames": 381,
+        "referenceUnvoicedFrames": 124,
+        "rawPitchAccuracy": 0.821522309711286,
+        "rawChromaAccuracy": 0.8267716535433071,
+        "octaveErrorRate": 0.005249343832020997,
+        "otherPitchErrorRate": 0.1732283464566929,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.6198019801980198
+      },
+      "baselinePerformance": {
+        "analysisMillisecondsMax": 0.12045865878462791,
+        "analysisMillisecondsP50": 0.07524993270635605,
+        "analysisMillisecondsP95": 0.08237455040216446,
+        "audioSeconds": 10.8480625,
+        "frames": 505,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      },
+      "current": {
+        "frames": 505,
+        "referenceVoicedFrames": 381,
+        "referenceUnvoicedFrames": 124,
+        "rawPitchAccuracy": 0.8398950131233596,
+        "rawChromaAccuracy": 0.8451443569553806,
+        "octaveErrorRate": 0.005249343832020997,
+        "otherPitchErrorRate": 0.15485564304461943,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.6336633663366337
+      },
+      "currentPerformance": {
+        "analysisMillisecondsMax": 0.13025011867284775,
+        "analysisMillisecondsP50": 0.08212495595216751,
+        "analysisMillisecondsP95": 0.08866656571626663,
+        "audioSeconds": 10.8480625,
+        "frames": 505,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      }
+    },
+    {
+      "track": "Ani_2_07",
+      "split": "held_out",
+      "mixtureSHA256": "201a734f7c928e88e58a8ae9d3a24b4571d5746b892f6a362accc4a5d96d69fb",
+      "baseline": {
+        "frames": 349,
+        "referenceVoicedFrames": 228,
+        "referenceUnvoicedFrames": 121,
+        "rawPitchAccuracy": 0.8289473684210527,
+        "rawChromaAccuracy": 0.8333333333333334,
+        "octaveErrorRate": 0.0043859649122807015,
+        "otherPitchErrorRate": 0.16666666666666666,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.5415472779369628
+      },
+      "baselinePerformance": {
+        "analysisMillisecondsMax": 0.10358355939388275,
+        "analysisMillisecondsP50": 0.07504178211092949,
+        "analysisMillisecondsP95": 0.08120853453874588,
+        "audioSeconds": 7.514875,
+        "frames": 349,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      },
+      "current": {
+        "frames": 349,
+        "referenceVoicedFrames": 228,
+        "referenceUnvoicedFrames": 121,
+        "rawPitchAccuracy": 0.868421052631579,
+        "rawChromaAccuracy": 0.8728070175438597,
+        "octaveErrorRate": 0.0043859649122807015,
+        "otherPitchErrorRate": 0.12719298245614036,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.5673352435530086
+      },
+      "currentPerformance": {
+        "analysisMillisecondsMax": 0.11079199612140656,
+        "analysisMillisecondsP50": 0.07866695523262024,
+        "analysisMillisecondsP95": 0.08616689592599869,
+        "audioSeconds": 7.514875,
+        "frames": 349,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      }
+    },
+    {
+      "track": "fdps_2_01",
+      "split": "development",
+      "mixtureSHA256": "5db33772d9fc2ebf994032ecd1fa8a51491a643c6df6cbfc6dea0bb360bb0ea5",
+      "baseline": {
+        "frames": 352,
+        "referenceVoicedFrames": 232,
+        "referenceUnvoicedFrames": 120,
+        "rawPitchAccuracy": 0.6422413793103449,
+        "rawChromaAccuracy": 0.7025862068965517,
+        "octaveErrorRate": 0.0603448275862069,
+        "otherPitchErrorRate": 0.2974137931034483,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.42329545454545453
+      },
+      "baselinePerformance": {
+        "analysisMillisecondsMax": 0.11650007218122482,
+        "analysisMillisecondsP50": 0.06708363071084023,
+        "analysisMillisecondsP95": 0.07970863953232765,
+        "audioSeconds": 7.584,
+        "frames": 352,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      },
+      "baselineScoreCheck": {
+        "notes": [
+          {
+            "start": 1.24,
+            "end": 1.66,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 48.9,
+            "performedMedianMIDI": 48.54835,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 1.74,
+            "end": 2.04,
+            "expectedMIDI": 54,
+            "estimatedMedianMIDI": 53.35,
+            "performedMedianMIDI": 53.5043,
+            "matchesScore": false,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 2.06,
+            "end": 2.38,
+            "expectedMIDI": 53,
+            "estimatedMedianMIDI": 52.2,
+            "performedMedianMIDI": 52.1935,
+            "matchesScore": false,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 2.5,
+            "end": 3.04,
+            "expectedMIDI": 54,
+            "estimatedMedianMIDI": 53.9,
+            "performedMedianMIDI": 53.8978,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 3.26,
+            "end": 3.52,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 59.05,
+            "performedMedianMIDI": 47.3489,
+            "matchesScore": false,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 3.54,
+            "end": 4.0,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 48.9,
+            "performedMedianMIDI": 48.9173,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 4.78,
+            "end": 5.14,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 49.05,
+            "performedMedianMIDI": 48.6214,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 5.16,
+            "end": 5.5,
+            "expectedMIDI": 54,
+            "estimatedMedianMIDI": 54.0,
+            "performedMedianMIDI": 53.8978,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 5.58,
+            "end": 5.96,
+            "expectedMIDI": 53,
+            "estimatedMedianMIDI": 61.1,
+            "performedMedianMIDI": 53.5043,
+            "matchesScore": false,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 6.02,
+            "end": 6.46,
+            "expectedMIDI": 54,
+            "estimatedMedianMIDI": 54.1,
+            "performedMedianMIDI": 54.0979,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 6.58,
+            "end": 6.92,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 58.1,
+            "performedMedianMIDI": 47.4857,
+            "matchesScore": false,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 6.96,
+            "end": 7.5,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 49.3,
+            "performedMedianMIDI": 49.2184,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          }
+        ],
+        "correct": 7,
+        "total": 12,
+        "performanceCorrect": 8
+      },
+      "current": {
+        "frames": 352,
+        "referenceVoicedFrames": 232,
+        "referenceUnvoicedFrames": 120,
+        "rawPitchAccuracy": 0.625,
+        "rawChromaAccuracy": 0.7025862068965517,
+        "octaveErrorRate": 0.07758620689655173,
+        "otherPitchErrorRate": 0.2974137931034483,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.4119318181818182
+      },
+      "currentPerformance": {
+        "analysisMillisecondsMax": 0.1215832307934761,
+        "analysisMillisecondsP50": 0.06991671398282051,
+        "analysisMillisecondsP95": 0.08237501606345177,
+        "audioSeconds": 7.584,
+        "frames": 352,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      },
+      "currentScoreCheck": {
+        "notes": [
+          {
+            "start": 1.24,
+            "end": 1.66,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 48.9,
+            "performedMedianMIDI": 48.54835,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 1.74,
+            "end": 2.04,
+            "expectedMIDI": 54,
+            "estimatedMedianMIDI": 53.35,
+            "performedMedianMIDI": 53.5043,
+            "matchesScore": false,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 2.06,
+            "end": 2.38,
+            "expectedMIDI": 53,
+            "estimatedMedianMIDI": 52.2,
+            "performedMedianMIDI": 52.1935,
+            "matchesScore": false,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 2.5,
+            "end": 3.04,
+            "expectedMIDI": 54,
+            "estimatedMedianMIDI": 53.9,
+            "performedMedianMIDI": 53.8978,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 3.26,
+            "end": 3.52,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 59.25,
+            "performedMedianMIDI": 47.3489,
+            "matchesScore": false,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 3.54,
+            "end": 4.0,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 48.9,
+            "performedMedianMIDI": 48.9173,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 4.78,
+            "end": 5.14,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 49.0,
+            "performedMedianMIDI": 48.6214,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 5.16,
+            "end": 5.5,
+            "expectedMIDI": 54,
+            "estimatedMedianMIDI": 54.0,
+            "performedMedianMIDI": 53.8978,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 5.58,
+            "end": 5.96,
+            "expectedMIDI": 53,
+            "estimatedMedianMIDI": 61.1,
+            "performedMedianMIDI": 53.5043,
+            "matchesScore": false,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 6.02,
+            "end": 6.46,
+            "expectedMIDI": 54,
+            "estimatedMedianMIDI": 54.1,
+            "performedMedianMIDI": 54.0979,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 6.58,
+            "end": 6.92,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 58.05,
+            "performedMedianMIDI": 47.4857,
+            "matchesScore": false,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 6.96,
+            "end": 7.5,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 49.3,
+            "performedMedianMIDI": 49.2184,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          }
+        ],
+        "correct": 7,
+        "total": 12,
+        "performanceCorrect": 8
+      }
+    },
+    {
+      "track": "fdps_2_02",
+      "split": "development",
+      "mixtureSHA256": "3578010d6b8037a4b35309965ecd5473c21172f590e167ee5f832107eda4b593",
+      "baseline": {
+        "frames": 334,
+        "referenceVoicedFrames": 208,
+        "referenceUnvoicedFrames": 126,
+        "rawPitchAccuracy": 0.6586538461538461,
+        "rawChromaAccuracy": 0.7067307692307693,
+        "octaveErrorRate": 0.04807692307692308,
+        "otherPitchErrorRate": 0.2932692307692308,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.4101796407185629
+      },
+      "baselinePerformance": {
+        "analysisMillisecondsMax": 0.12308312579989433,
+        "analysisMillisecondsP50": 0.07337518036365509,
+        "analysisMillisecondsP95": 0.08366629481315613,
+        "audioSeconds": 7.2000625,
+        "frames": 334,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      },
+      "current": {
+        "frames": 334,
+        "referenceVoicedFrames": 208,
+        "referenceUnvoicedFrames": 126,
+        "rawPitchAccuracy": 0.7019230769230769,
+        "rawChromaAccuracy": 0.75,
+        "octaveErrorRate": 0.04807692307692308,
+        "otherPitchErrorRate": 0.25,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.437125748502994
+      },
+      "currentPerformance": {
+        "analysisMillisecondsMax": 0.11404184624552727,
+        "analysisMillisecondsP50": 0.07591675966978073,
+        "analysisMillisecondsP95": 0.08745817467570305,
+        "audioSeconds": 7.2000625,
+        "frames": 334,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      }
+    },
+    {
+      "track": "fdps_2_03",
+      "split": "development",
+      "mixtureSHA256": "524d06c08270bb4401e60fae29b8db649dab571013b9bc20d1ac6f28d0745b00",
+      "baseline": {
+        "frames": 337,
+        "referenceVoicedFrames": 232,
+        "referenceUnvoicedFrames": 105,
+        "rawPitchAccuracy": 0.7112068965517241,
+        "rawChromaAccuracy": 0.7413793103448276,
+        "octaveErrorRate": 0.03017241379310345,
+        "otherPitchErrorRate": 0.25862068965517243,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.4896142433234421
+      },
+      "baselinePerformance": {
+        "analysisMillisecondsMax": 0.11533359065651894,
+        "analysisMillisecondsP50": 0.07200008258223534,
+        "analysisMillisecondsP95": 0.08345860987901688,
+        "audioSeconds": 7.2640625,
+        "frames": 337,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      },
+      "current": {
+        "frames": 337,
+        "referenceVoicedFrames": 232,
+        "referenceUnvoicedFrames": 105,
+        "rawPitchAccuracy": 0.6724137931034483,
+        "rawChromaAccuracy": 0.7801724137931034,
+        "octaveErrorRate": 0.10775862068965517,
+        "otherPitchErrorRate": 0.21982758620689655,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.4629080118694362
+      },
+      "currentPerformance": {
+        "analysisMillisecondsMax": 0.11833338066935539,
+        "analysisMillisecondsP50": 0.07375003769993782,
+        "analysisMillisecondsP95": 0.08858321234583855,
+        "audioSeconds": 7.2640625,
+        "frames": 337,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      }
+    },
+    {
+      "track": "fdps_2_04",
+      "split": "development",
+      "mixtureSHA256": "667cb2f3974617c2d77c7d77190cdb59dc8431999027f740b0ce175f45e9e097",
+      "baseline": {
+        "frames": 324,
+        "referenceVoicedFrames": 246,
+        "referenceUnvoicedFrames": 78,
+        "rawPitchAccuracy": 0.6504065040650406,
+        "rawChromaAccuracy": 0.6504065040650406,
+        "octaveErrorRate": 0.0,
+        "otherPitchErrorRate": 0.34959349593495936,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.49382716049382713
+      },
+      "baselinePerformance": {
+        "analysisMillisecondsMax": 0.08541671559214592,
+        "analysisMillisecondsP50": 0.05858344957232475,
+        "analysisMillisecondsP95": 0.07625017315149307,
+        "audioSeconds": 6.9760625,
+        "frames": 324,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      },
+      "current": {
+        "frames": 324,
+        "referenceVoicedFrames": 246,
+        "referenceUnvoicedFrames": 78,
+        "rawPitchAccuracy": 0.6504065040650406,
+        "rawChromaAccuracy": 0.6504065040650406,
+        "octaveErrorRate": 0.0,
+        "otherPitchErrorRate": 0.34959349593495936,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.49382716049382713
+      },
+      "currentPerformance": {
+        "analysisMillisecondsMax": 0.09529152885079384,
+        "analysisMillisecondsP50": 0.06145797669887543,
+        "analysisMillisecondsP95": 0.08033355697989464,
+        "audioSeconds": 6.9760625,
+        "frames": 324,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      }
+    },
+    {
+      "track": "fdps_2_05",
+      "split": "development",
+      "mixtureSHA256": "c2d58360c71793a45047508b78912c2cb5558c9fe6398f3ebe1196c40397f09b",
+      "baseline": {
+        "frames": 342,
+        "referenceVoicedFrames": 233,
+        "referenceUnvoicedFrames": 109,
+        "rawPitchAccuracy": 0.776824034334764,
+        "rawChromaAccuracy": 0.8412017167381974,
+        "octaveErrorRate": 0.06437768240343347,
+        "otherPitchErrorRate": 0.15879828326180256,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.5292397660818714
+      },
+      "baselinePerformance": {
+        "analysisMillisecondsMax": 0.11212518438696861,
+        "analysisMillisecondsP50": 0.0749579630792141,
+        "analysisMillisecondsP95": 0.08262507617473602,
+        "audioSeconds": 7.3600625,
+        "frames": 342,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      },
+      "current": {
+        "frames": 342,
+        "referenceVoicedFrames": 233,
+        "referenceUnvoicedFrames": 109,
+        "rawPitchAccuracy": 0.7982832618025751,
+        "rawChromaAccuracy": 0.8583690987124464,
+        "octaveErrorRate": 0.060085836909871244,
+        "otherPitchErrorRate": 0.14163090128755365,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.543859649122807
+      },
+      "currentPerformance": {
+        "analysisMillisecondsMax": 0.10679196566343307,
+        "analysisMillisecondsP50": 0.07837498560547829,
+        "analysisMillisecondsP95": 0.08616643026471138,
+        "audioSeconds": 7.3600625,
+        "frames": 342,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      }
+    },
+    {
+      "track": "fdps_2_06",
+      "split": "development",
+      "mixtureSHA256": "f8430a362c5127f2946eae825af5de5ce997407cec6c42f1f7dcf40f4efed2b7",
+      "baseline": {
+        "frames": 291,
+        "referenceVoicedFrames": 233,
+        "referenceUnvoicedFrames": 58,
+        "rawPitchAccuracy": 0.6781115879828327,
+        "rawChromaAccuracy": 0.6909871244635193,
+        "octaveErrorRate": 0.012875536480686695,
+        "otherPitchErrorRate": 0.3090128755364807,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 0.9482758620689655,
+        "overallAccuracy": 0.5532646048109966
+      },
+      "baselinePerformance": {
+        "analysisMillisecondsMax": 0.14966679736971855,
+        "analysisMillisecondsP50": 0.07570814341306686,
+        "analysisMillisecondsP95": 0.08516665548086166,
+        "audioSeconds": 6.2720625,
+        "frames": 291,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      },
+      "current": {
+        "frames": 291,
+        "referenceVoicedFrames": 233,
+        "referenceUnvoicedFrames": 58,
+        "rawPitchAccuracy": 0.6952789699570815,
+        "rawChromaAccuracy": 0.7124463519313304,
+        "octaveErrorRate": 0.017167381974248927,
+        "otherPitchErrorRate": 0.2875536480686695,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 0.9482758620689655,
+        "overallAccuracy": 0.5670103092783505
+      },
+      "currentPerformance": {
+        "analysisMillisecondsMax": 0.12562517076730728,
+        "analysisMillisecondsP50": 0.07983343675732613,
+        "analysisMillisecondsP95": 0.08825026452541351,
+        "audioSeconds": 6.2720625,
+        "frames": 291,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      }
+    },
+    {
+      "track": "fdps_2_07",
+      "split": "development",
+      "mixtureSHA256": "c1b51097e9c5efc42ff3e021e7e2a9047c12c88575129eace15187f9ce6282c7",
+      "baseline": {
+        "frames": 406,
+        "referenceVoicedFrames": 281,
+        "referenceUnvoicedFrames": 125,
+        "rawPitchAccuracy": 0.7864768683274022,
+        "rawChromaAccuracy": 0.797153024911032,
+        "octaveErrorRate": 0.010676156583629894,
+        "otherPitchErrorRate": 0.199288256227758,
+        "missRate": 0.0035587188612099642,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.5443349753694581
+      },
+      "baselinePerformance": {
+        "analysisMillisecondsMax": 0.15637511387467384,
+        "analysisMillisecondsP50": 0.07633352652192116,
+        "analysisMillisecondsP95": 0.08458318188786507,
+        "audioSeconds": 8.7360625,
+        "frames": 406,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      },
+      "current": {
+        "frames": 406,
+        "referenceVoicedFrames": 281,
+        "referenceUnvoicedFrames": 125,
+        "rawPitchAccuracy": 0.8149466192170819,
+        "rawChromaAccuracy": 0.8220640569395018,
+        "octaveErrorRate": 0.0071174377224199285,
+        "otherPitchErrorRate": 0.17437722419928825,
+        "missRate": 0.0035587188612099642,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.5640394088669951
+      },
+      "currentPerformance": {
+        "analysisMillisecondsMax": 0.11783326044678688,
+        "analysisMillisecondsP50": 0.07954146713018417,
+        "analysisMillisecondsP95": 0.0882917083799839,
+        "audioSeconds": 8.7360625,
+        "frames": 406,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      }
+    },
+    {
+      "track": "fdps_2_08",
+      "split": "development",
+      "mixtureSHA256": "f9169c2f175c9a741258a8ec60261f2877ee242a7dc465cd3b83e613cb97699b",
+      "baseline": {
+        "frames": 291,
+        "referenceVoicedFrames": 234,
+        "referenceUnvoicedFrames": 57,
+        "rawPitchAccuracy": 0.8717948717948718,
+        "rawChromaAccuracy": 0.8846153846153846,
+        "octaveErrorRate": 0.01282051282051282,
+        "otherPitchErrorRate": 0.11538461538461539,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 0.9122807017543859,
+        "overallAccuracy": 0.718213058419244
+      },
+      "baselinePerformance": {
+        "analysisMillisecondsMax": 0.10700011625885963,
+        "analysisMillisecondsP50": 0.07508322596549988,
+        "analysisMillisecondsP95": 0.08391682058572769,
+        "audioSeconds": 6.2720625,
+        "frames": 291,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      },
+      "current": {
+        "frames": 291,
+        "referenceVoicedFrames": 234,
+        "referenceUnvoicedFrames": 57,
+        "rawPitchAccuracy": 0.8717948717948718,
+        "rawChromaAccuracy": 0.9102564102564102,
+        "octaveErrorRate": 0.038461538461538464,
+        "otherPitchErrorRate": 0.08974358974358974,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 0.9122807017543859,
+        "overallAccuracy": 0.718213058419244
+      },
+      "currentPerformance": {
+        "analysisMillisecondsMax": 0.11058337986469269,
+        "analysisMillisecondsP50": 0.07804203778505325,
+        "analysisMillisecondsP95": 0.08841697126626968,
+        "audioSeconds": 6.2720625,
+        "frames": 291,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      }
+    },
+    {
+      "track": "fdps_2_09",
+      "split": "development",
+      "mixtureSHA256": "dba255093c04b95bef733ec308618a8d6c0453348edf4afae299eaf0390d4d08",
+      "baseline": {
+        "frames": 325,
+        "referenceVoicedFrames": 244,
+        "referenceUnvoicedFrames": 81,
+        "rawPitchAccuracy": 0.7213114754098361,
+        "rawChromaAccuracy": 0.75,
+        "octaveErrorRate": 0.028688524590163935,
+        "otherPitchErrorRate": 0.25,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.5415384615384615
+      },
+      "baselinePerformance": {
+        "analysisMillisecondsMax": 0.12187473475933075,
+        "analysisMillisecondsP50": 0.07616681978106499,
+        "analysisMillisecondsP95": 0.08362485095858574,
+        "audioSeconds": 7.0080625,
+        "frames": 325,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      },
+      "current": {
+        "frames": 325,
+        "referenceVoicedFrames": 244,
+        "referenceUnvoicedFrames": 81,
+        "rawPitchAccuracy": 0.7868852459016393,
+        "rawChromaAccuracy": 0.7950819672131147,
+        "octaveErrorRate": 0.00819672131147541,
+        "otherPitchErrorRate": 0.20491803278688525,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.5907692307692308
+      },
+      "currentPerformance": {
+        "analysisMillisecondsMax": 0.11429144069552422,
+        "analysisMillisecondsP50": 0.07954146713018417,
+        "analysisMillisecondsP95": 0.0877082347869873,
+        "audioSeconds": 7.0080625,
+        "frames": 325,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      }
+    },
+    {
+      "track": "fdps_2_10",
+      "split": "development",
+      "mixtureSHA256": "7aac531203af2d370c0c9f80492daed098e8e54b0954614aa2d0ec84829d0ba2",
+      "baseline": {
+        "frames": 309,
+        "referenceVoicedFrames": 270,
+        "referenceUnvoicedFrames": 39,
+        "rawPitchAccuracy": 0.5888888888888889,
+        "rawChromaAccuracy": 0.6,
+        "octaveErrorRate": 0.011111111111111112,
+        "otherPitchErrorRate": 0.4,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.5145631067961165
+      },
+      "baselinePerformance": {
+        "analysisMillisecondsMax": 0.10487483814358711,
+        "analysisMillisecondsP50": 0.07566669955849648,
+        "analysisMillisecondsP95": 0.08279131725430489,
+        "audioSeconds": 6.6560625,
+        "frames": 309,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      },
+      "current": {
+        "frames": 309,
+        "referenceVoicedFrames": 270,
+        "referenceUnvoicedFrames": 39,
+        "rawPitchAccuracy": 0.662962962962963,
+        "rawChromaAccuracy": 0.6703703703703704,
+        "octaveErrorRate": 0.007407407407407408,
+        "otherPitchErrorRate": 0.3296296296296296,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.5792880258899676
+      },
+      "currentPerformance": {
+        "analysisMillisecondsMax": 0.12320838868618011,
+        "analysisMillisecondsP50": 0.07916660979390144,
+        "analysisMillisecondsP95": 0.08612498641014099,
+        "audioSeconds": 6.6560625,
+        "frames": 309,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      }
+    },
+    {
+      "track": "fdps_2_11",
+      "split": "development",
+      "mixtureSHA256": "97159f409e517fae07c99917eac8bd34430c7d4ed2a0c46b985b9faba04b52c5",
+      "baseline": {
+        "frames": 364,
+        "referenceVoicedFrames": 258,
+        "referenceUnvoicedFrames": 106,
+        "rawPitchAccuracy": 0.7054263565891473,
+        "rawChromaAccuracy": 0.7131782945736435,
+        "octaveErrorRate": 0.007751937984496124,
+        "otherPitchErrorRate": 0.2868217054263566,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.5
+      },
+      "baselinePerformance": {
+        "analysisMillisecondsMax": 0.109916552901268,
+        "analysisMillisecondsP50": 0.07579149678349495,
+        "analysisMillisecondsP95": 0.0827917829155922,
+        "audioSeconds": 7.8400625,
+        "frames": 364,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      },
+      "current": {
+        "frames": 364,
+        "referenceVoicedFrames": 258,
+        "referenceUnvoicedFrames": 106,
+        "rawPitchAccuracy": 0.7170542635658915,
+        "rawChromaAccuracy": 0.7325581395348837,
+        "octaveErrorRate": 0.015503875968992248,
+        "otherPitchErrorRate": 0.26744186046511625,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.5082417582417582
+      },
+      "currentPerformance": {
+        "analysisMillisecondsMax": 0.11412519961595535,
+        "analysisMillisecondsP50": 0.0788331963121891,
+        "analysisMillisecondsP95": 0.08504185825586319,
+        "audioSeconds": 7.8400625,
+        "frames": 364,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      }
+    },
+    {
+      "track": "fdps_2_12",
+      "split": "development",
+      "mixtureSHA256": "52dda1cbc38fbb59414eda3b3c8ff65ce163e1df51548631d93e97151c956ba3",
+      "baseline": {
+        "frames": 359,
+        "referenceVoicedFrames": 237,
+        "referenceUnvoicedFrames": 122,
+        "rawPitchAccuracy": 0.7890295358649789,
+        "rawChromaAccuracy": 0.8016877637130801,
+        "octaveErrorRate": 0.012658227848101266,
+        "otherPitchErrorRate": 0.19831223628691982,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.520891364902507
+      },
+      "baselinePerformance": {
+        "analysisMillisecondsMax": 0.10574981570243835,
+        "analysisMillisecondsP50": 0.075541902333498,
+        "analysisMillisecondsP95": 0.08237501606345177,
+        "audioSeconds": 7.7394375,
+        "frames": 359,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      },
+      "current": {
+        "frames": 359,
+        "referenceVoicedFrames": 237,
+        "referenceUnvoicedFrames": 122,
+        "rawPitchAccuracy": 0.8059071729957806,
+        "rawChromaAccuracy": 0.8227848101265823,
+        "octaveErrorRate": 0.016877637130801686,
+        "otherPitchErrorRate": 0.17721518987341772,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.532033426183844
+      },
+      "currentPerformance": {
+        "analysisMillisecondsMax": 0.1555001363158226,
+        "analysisMillisecondsP50": 0.07866648957133293,
+        "analysisMillisecondsP95": 0.08708331733942032,
+        "audioSeconds": 7.7394375,
+        "frames": 359,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      }
+    },
+    {
+      "track": "geniusturtle_4_01",
+      "split": "held_out",
+      "mixtureSHA256": "a834f247b25ac1c73fe9af787fac5589e4b18ff40a413428b479927ea4cd6808",
+      "baseline": {
+        "frames": 334,
+        "referenceVoicedFrames": 271,
+        "referenceUnvoicedFrames": 63,
+        "rawPitchAccuracy": 0.6826568265682657,
+        "rawChromaAccuracy": 0.7269372693726938,
+        "octaveErrorRate": 0.04428044280442804,
+        "otherPitchErrorRate": 0.2730627306273063,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.5538922155688623
+      },
+      "baselinePerformance": {
+        "analysisMillisecondsMax": 0.09933346882462502,
+        "analysisMillisecondsP50": 0.05579134449362755,
+        "analysisMillisecondsP95": 0.08070841431617737,
+        "audioSeconds": 7.2,
+        "frames": 334,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      },
+      "baselineScoreCheck": {
+        "notes": [
+          {
+            "start": 0.26,
+            "end": 0.78,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 65.0,
+            "performedMedianMIDI": 48.25855,
+            "matchesScore": false,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 0.84,
+            "end": 1.18,
+            "expectedMIDI": 54,
+            "estimatedMedianMIDI": 53.2,
+            "performedMedianMIDI": 53.3109,
+            "matchesScore": false,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 1.2,
+            "end": 1.56,
+            "expectedMIDI": 53,
+            "estimatedMedianMIDI": 53.0,
+            "performedMedianMIDI": 52.9304,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 1.62,
+            "end": 2.3,
+            "expectedMIDI": 54,
+            "estimatedMedianMIDI": 54.150000000000006,
+            "performedMedianMIDI": 54.0979,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 2.42,
+            "end": 2.8,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 56.55,
+            "performedMedianMIDI": 48.115449999999996,
+            "matchesScore": false,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 2.84,
+            "end": 3.42,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 48.6,
+            "performedMedianMIDI": 48.6214,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 3.8,
+            "end": 4.2,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 49.1,
+            "performedMedianMIDI": 49.0672,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 4.26,
+            "end": 4.58,
+            "expectedMIDI": 54,
+            "estimatedMedianMIDI": 54.0,
+            "performedMedianMIDI": 53.3109,
+            "matchesScore": true,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 4.6,
+            "end": 4.92,
+            "expectedMIDI": 53,
+            "estimatedMedianMIDI": 54.1,
+            "performedMedianMIDI": 52.3748,
+            "matchesScore": false,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 4.98,
+            "end": 5.46,
+            "expectedMIDI": 54,
+            "estimatedMedianMIDI": 53.9,
+            "performedMedianMIDI": 53.8978,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 5.56,
+            "end": 6.0,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 57.9,
+            "performedMedianMIDI": 48.54835,
+            "matchesScore": false,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 6.04,
+            "end": 6.64,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 49.0,
+            "performedMedianMIDI": 48.9173,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          }
+        ],
+        "correct": 7,
+        "total": 12,
+        "performanceCorrect": 7
+      },
+      "current": {
+        "frames": 334,
+        "referenceVoicedFrames": 271,
+        "referenceUnvoicedFrames": 63,
+        "rawPitchAccuracy": 0.7084870848708487,
+        "rawChromaAccuracy": 0.7638376383763837,
+        "octaveErrorRate": 0.055350553505535055,
+        "otherPitchErrorRate": 0.23616236162361623,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.5748502994011976
+      },
+      "currentPerformance": {
+        "analysisMillisecondsMax": 0.10437518358230591,
+        "analysisMillisecondsP50": 0.05829194560647011,
+        "analysisMillisecondsP95": 0.08616689592599869,
+        "audioSeconds": 7.2,
+        "frames": 334,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      },
+      "currentScoreCheck": {
+        "notes": [
+          {
+            "start": 0.26,
+            "end": 0.78,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 65.0,
+            "performedMedianMIDI": 48.25855,
+            "matchesScore": false,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 0.84,
+            "end": 1.18,
+            "expectedMIDI": 54,
+            "estimatedMedianMIDI": 53.2,
+            "performedMedianMIDI": 53.3109,
+            "matchesScore": false,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 1.2,
+            "end": 1.56,
+            "expectedMIDI": 53,
+            "estimatedMedianMIDI": 53.0,
+            "performedMedianMIDI": 52.9304,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 1.62,
+            "end": 2.3,
+            "expectedMIDI": 54,
+            "estimatedMedianMIDI": 54.150000000000006,
+            "performedMedianMIDI": 54.0979,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 2.42,
+            "end": 2.8,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 56.1,
+            "performedMedianMIDI": 48.115449999999996,
+            "matchesScore": false,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 2.84,
+            "end": 3.42,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 48.7,
+            "performedMedianMIDI": 48.6214,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 3.8,
+            "end": 4.2,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 49.1,
+            "performedMedianMIDI": 49.0672,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 4.26,
+            "end": 4.58,
+            "expectedMIDI": 54,
+            "estimatedMedianMIDI": 54.0,
+            "performedMedianMIDI": 53.3109,
+            "matchesScore": true,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 4.6,
+            "end": 4.92,
+            "expectedMIDI": 53,
+            "estimatedMedianMIDI": 54.1,
+            "performedMedianMIDI": 52.3748,
+            "matchesScore": false,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 4.98,
+            "end": 5.46,
+            "expectedMIDI": 54,
+            "estimatedMedianMIDI": 53.9,
+            "performedMedianMIDI": 53.8978,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 5.56,
+            "end": 6.0,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 57.9,
+            "performedMedianMIDI": 48.54835,
+            "matchesScore": false,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 6.04,
+            "end": 6.64,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 49.05,
+            "performedMedianMIDI": 48.9173,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          }
+        ],
+        "correct": 7,
+        "total": 12,
+        "performanceCorrect": 7
+      }
+    },
+    {
+      "track": "geniusturtle_4_02",
+      "split": "held_out",
+      "mixtureSHA256": "5404760257d76b00f7f1c2e092a698414e055bb27cf7a7148b6944d38731d330",
+      "baseline": {
+        "frames": 306,
+        "referenceVoicedFrames": 255,
+        "referenceUnvoicedFrames": 51,
+        "rawPitchAccuracy": 0.7372549019607844,
+        "rawChromaAccuracy": 0.7647058823529411,
+        "octaveErrorRate": 0.027450980392156862,
+        "otherPitchErrorRate": 0.23529411764705882,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.6143790849673203
+      },
+      "baselinePerformance": {
+        "analysisMillisecondsMax": 0.10833330452442169,
+        "analysisMillisecondsP50": 0.07029157131910324,
+        "analysisMillisecondsP95": 0.08258363232016563,
+        "audioSeconds": 6.5920625,
+        "frames": 306,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      },
+      "current": {
+        "frames": 306,
+        "referenceVoicedFrames": 255,
+        "referenceUnvoicedFrames": 51,
+        "rawPitchAccuracy": 0.7686274509803922,
+        "rawChromaAccuracy": 0.792156862745098,
+        "octaveErrorRate": 0.023529411764705882,
+        "otherPitchErrorRate": 0.20784313725490197,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.6405228758169934
+      },
+      "currentPerformance": {
+        "analysisMillisecondsMax": 0.11224998161196709,
+        "analysisMillisecondsP50": 0.07391674444079399,
+        "analysisMillisecondsP95": 0.08537480607628822,
+        "audioSeconds": 6.5920625,
+        "frames": 306,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      }
+    },
+    {
+      "track": "geniusturtle_4_03",
+      "split": "held_out",
+      "mixtureSHA256": "7c73881d1154b11bdbf96b01f1d86c66335b6f8ed95821fe1566a48ec4c2b0c3",
+      "baseline": {
+        "frames": 342,
+        "referenceVoicedFrames": 290,
+        "referenceUnvoicedFrames": 52,
+        "rawPitchAccuracy": 0.7413793103448276,
+        "rawChromaAccuracy": 0.7758620689655172,
+        "octaveErrorRate": 0.034482758620689655,
+        "otherPitchErrorRate": 0.22413793103448276,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.6286549707602339
+      },
+      "baselinePerformance": {
+        "analysisMillisecondsMax": 0.10020844638347626,
+        "analysisMillisecondsP50": 0.06970809772610664,
+        "analysisMillisecondsP95": 0.0855415128171444,
+        "audioSeconds": 7.3600625,
+        "frames": 342,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      },
+      "current": {
+        "frames": 342,
+        "referenceVoicedFrames": 290,
+        "referenceUnvoicedFrames": 52,
+        "rawPitchAccuracy": 0.7137931034482758,
+        "rawChromaAccuracy": 0.7793103448275862,
+        "octaveErrorRate": 0.06551724137931035,
+        "otherPitchErrorRate": 0.2206896551724138,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.6052631578947368
+      },
+      "currentPerformance": {
+        "analysisMillisecondsMax": 0.11741649359464645,
+        "analysisMillisecondsP50": 0.07279170677065849,
+        "analysisMillisecondsP95": 0.08724955841898918,
+        "audioSeconds": 7.3600625,
+        "frames": 342,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      }
+    },
+    {
+      "track": "geniusturtle_4_04",
+      "split": "held_out",
+      "mixtureSHA256": "92ecd45797d9ba79f2ea86366d10636ced4419d5d09f13d2aea7941d0e1c39d4",
+      "baseline": {
+        "frames": 309,
+        "referenceVoicedFrames": 278,
+        "referenceUnvoicedFrames": 31,
+        "rawPitchAccuracy": 0.6654676258992805,
+        "rawChromaAccuracy": 0.737410071942446,
+        "octaveErrorRate": 0.07194244604316546,
+        "otherPitchErrorRate": 0.26258992805755393,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.598705501618123
+      },
+      "baselinePerformance": {
+        "analysisMillisecondsMax": 0.10116677731275558,
+        "analysisMillisecondsP50": 0.054541509598493576,
+        "analysisMillisecondsP95": 0.07754191756248474,
+        "audioSeconds": 6.6560625,
+        "frames": 309,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      },
+      "current": {
+        "frames": 309,
+        "referenceVoicedFrames": 278,
+        "referenceUnvoicedFrames": 31,
+        "rawPitchAccuracy": 0.6942446043165468,
+        "rawChromaAccuracy": 0.7805755395683454,
+        "octaveErrorRate": 0.08633093525179857,
+        "otherPitchErrorRate": 0.21942446043165467,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.6245954692556634
+      },
+      "currentPerformance": {
+        "analysisMillisecondsMax": 0.11449959129095078,
+        "analysisMillisecondsP50": 0.05850009620189667,
+        "analysisMillisecondsP95": 0.07900036871433258,
+        "audioSeconds": 6.6560625,
+        "frames": 309,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      }
+    },
+    {
+      "track": "geniusturtle_4_05",
+      "split": "held_out",
+      "mixtureSHA256": "3487db1f1cbbce2eb2126f77974e3aa3d991a30c4da58e96da5ae59dca712b80",
+      "baseline": {
+        "frames": 349,
+        "referenceVoicedFrames": 303,
+        "referenceUnvoicedFrames": 46,
+        "rawPitchAccuracy": 0.8613861386138614,
+        "rawChromaAccuracy": 0.8646864686468647,
+        "octaveErrorRate": 0.0033003300330033004,
+        "otherPitchErrorRate": 0.1353135313531353,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.7478510028653295
+      },
+      "baselinePerformance": {
+        "analysisMillisecondsMax": 0.08874991908669472,
+        "analysisMillisecondsP50": 0.07404200732707977,
+        "analysisMillisecondsP95": 0.08212495595216751,
+        "audioSeconds": 7.5200625,
+        "frames": 349,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      },
+      "current": {
+        "frames": 349,
+        "referenceVoicedFrames": 303,
+        "referenceUnvoicedFrames": 46,
+        "rawPitchAccuracy": 0.858085808580858,
+        "rawChromaAccuracy": 0.8646864686468647,
+        "octaveErrorRate": 0.006600660066006601,
+        "otherPitchErrorRate": 0.1353135313531353,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.7449856733524355
+      },
+      "currentPerformance": {
+        "analysisMillisecondsMax": 0.128875020891428,
+        "analysisMillisecondsP50": 0.07762480527162552,
+        "analysisMillisecondsP95": 0.08804164826869965,
+        "audioSeconds": 7.5200625,
+        "frames": 349,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      }
+    },
+    {
+      "track": "geniusturtle_4_06",
+      "split": "held_out",
+      "mixtureSHA256": "8903741ae6451b4b727779fe9ec2246a6fe0371a17e129333de7fdeaed1cfa26",
+      "baseline": {
+        "frames": 307,
+        "referenceVoicedFrames": 259,
+        "referenceUnvoicedFrames": 48,
+        "rawPitchAccuracy": 0.8494208494208494,
+        "rawChromaAccuracy": 0.8532818532818532,
+        "octaveErrorRate": 0.003861003861003861,
+        "otherPitchErrorRate": 0.14671814671814673,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 0.9791666666666666,
+        "overallAccuracy": 0.7198697068403909
+      },
+      "baselinePerformance": {
+        "analysisMillisecondsMax": 0.10558310896158218,
+        "analysisMillisecondsP50": 0.07537519559264183,
+        "analysisMillisecondsP95": 0.08362485095858574,
+        "audioSeconds": 6.6240625,
+        "frames": 307,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      },
+      "current": {
+        "frames": 307,
+        "referenceVoicedFrames": 259,
+        "referenceUnvoicedFrames": 48,
+        "rawPitchAccuracy": 0.8687258687258688,
+        "rawChromaAccuracy": 0.8725868725868726,
+        "octaveErrorRate": 0.003861003861003861,
+        "otherPitchErrorRate": 0.1274131274131274,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 0.9791666666666666,
+        "overallAccuracy": 0.7361563517915309
+      },
+      "currentPerformance": {
+        "analysisMillisecondsMax": 0.10929163545370102,
+        "analysisMillisecondsP50": 0.0782916322350502,
+        "analysisMillisecondsP95": 0.08649984374642372,
+        "audioSeconds": 6.6240625,
+        "frames": 307,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      }
+    },
+    {
+      "track": "geniusturtle_4_07",
+      "split": "held_out",
+      "mixtureSHA256": "93fc36eb7742b5933ef737dc52d6a2554f54774a075c64b4fa293462b1ba5471",
+      "baseline": {
+        "frames": 328,
+        "referenceVoicedFrames": 308,
+        "referenceUnvoicedFrames": 20,
+        "rawPitchAccuracy": 0.8246753246753247,
+        "rawChromaAccuracy": 0.8311688311688312,
+        "octaveErrorRate": 0.006493506493506494,
+        "otherPitchErrorRate": 0.1590909090909091,
+        "missRate": 0.00974025974025974,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.774390243902439
+      },
+      "baselinePerformance": {
+        "analysisMillisecondsMax": 0.12291688472032547,
+        "analysisMillisecondsP50": 0.07575005292892456,
+        "analysisMillisecondsP95": 0.08449982851743698,
+        "audioSeconds": 7.0720625,
+        "frames": 328,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      },
+      "current": {
+        "frames": 328,
+        "referenceVoicedFrames": 308,
+        "referenceUnvoicedFrames": 20,
+        "rawPitchAccuracy": 0.8181818181818182,
+        "rawChromaAccuracy": 0.827922077922078,
+        "octaveErrorRate": 0.00974025974025974,
+        "otherPitchErrorRate": 0.15584415584415584,
+        "missRate": 0.016233766233766232,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.7682926829268293
+      },
+      "currentPerformance": {
+        "analysisMillisecondsMax": 0.12345844879746437,
+        "analysisMillisecondsP50": 0.08254172280430794,
+        "analysisMillisecondsP95": 0.0916249118745327,
+        "audioSeconds": 7.0720625,
+        "frames": 328,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      }
+    },
+    {
+      "track": "geniusturtle_4_08",
+      "split": "held_out",
+      "mixtureSHA256": "c2062c63425f3722b728fb7783a05aa45a134358b89c89ca79a42fda9a2b81c8",
+      "baseline": {
+        "frames": 333,
+        "referenceVoicedFrames": 241,
+        "referenceUnvoicedFrames": 92,
+        "rawPitchAccuracy": 0.8713692946058091,
+        "rawChromaAccuracy": 0.8796680497925311,
+        "octaveErrorRate": 0.008298755186721992,
+        "otherPitchErrorRate": 0.12033195020746888,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 0.9347826086956522,
+        "overallAccuracy": 0.6486486486486487
+      },
+      "baselinePerformance": {
+        "analysisMillisecondsMax": 0.11258339509367943,
+        "analysisMillisecondsP50": 0.07379194721579552,
+        "analysisMillisecondsP95": 0.08370866999030113,
+        "audioSeconds": 7.1680625,
+        "frames": 333,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      },
+      "current": {
+        "frames": 333,
+        "referenceVoicedFrames": 241,
+        "referenceUnvoicedFrames": 92,
+        "rawPitchAccuracy": 0.9004149377593361,
+        "rawChromaAccuracy": 0.9087136929460581,
+        "octaveErrorRate": 0.008298755186721992,
+        "otherPitchErrorRate": 0.0912863070539419,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 0.9456521739130435,
+        "overallAccuracy": 0.6666666666666666
+      },
+      "currentPerformance": {
+        "analysisMillisecondsMax": 0.10437518358230591,
+        "analysisMillisecondsP50": 0.07679173722863197,
+        "analysisMillisecondsP95": 0.08704187348484993,
+        "audioSeconds": 7.1680625,
+        "frames": 333,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      }
+    },
+    {
+      "track": "geniusturtle_4_09",
+      "split": "held_out",
+      "mixtureSHA256": "c40ef27d55ec9373341bc6530d3c6132df75920789e3ad2c0542bec61d49d53a",
+      "baseline": {
+        "frames": 342,
+        "referenceVoicedFrames": 294,
+        "referenceUnvoicedFrames": 48,
+        "rawPitchAccuracy": 0.7074829931972789,
+        "rawChromaAccuracy": 0.7414965986394558,
+        "octaveErrorRate": 0.034013605442176874,
+        "otherPitchErrorRate": 0.2585034013605442,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.6081871345029239
+      },
+      "baselinePerformance": {
+        "analysisMillisecondsMax": 0.11908356100320816,
+        "analysisMillisecondsP50": 0.07583340629935265,
+        "analysisMillisecondsP95": 0.08487515151500702,
+        "audioSeconds": 7.3600625,
+        "frames": 342,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      },
+      "current": {
+        "frames": 342,
+        "referenceVoicedFrames": 294,
+        "referenceUnvoicedFrames": 48,
+        "rawPitchAccuracy": 0.7074829931972789,
+        "rawChromaAccuracy": 0.7414965986394558,
+        "octaveErrorRate": 0.034013605442176874,
+        "otherPitchErrorRate": 0.2585034013605442,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.6081871345029239
+      },
+      "currentPerformance": {
+        "analysisMillisecondsMax": 0.13641687110066414,
+        "analysisMillisecondsP50": 0.07912516593933105,
+        "analysisMillisecondsP95": 0.08595827966928482,
+        "audioSeconds": 7.3600625,
+        "frames": 342,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      }
+    },
+    {
+      "track": "geniusturtle_4_10",
+      "split": "held_out",
+      "mixtureSHA256": "0da3a40eafcb9bbc873c3044b5ac45c4a417983048f3bce856db29154a41d9d3",
+      "baseline": {
+        "frames": 289,
+        "referenceVoicedFrames": 266,
+        "referenceUnvoicedFrames": 23,
+        "rawPitchAccuracy": 0.631578947368421,
+        "rawChromaAccuracy": 0.6353383458646616,
+        "octaveErrorRate": 0.0037593984962406013,
+        "otherPitchErrorRate": 0.36466165413533835,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.5813148788927336
+      },
+      "baselinePerformance": {
+        "analysisMillisecondsMax": 0.12641679495573044,
+        "analysisMillisecondsP50": 0.07587531581521034,
+        "analysisMillisecondsP95": 0.08408306166529655,
+        "audioSeconds": 6.2400625,
+        "frames": 289,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      },
+      "current": {
+        "frames": 289,
+        "referenceVoicedFrames": 266,
+        "referenceUnvoicedFrames": 23,
+        "rawPitchAccuracy": 0.6729323308270677,
+        "rawChromaAccuracy": 0.6766917293233082,
+        "octaveErrorRate": 0.0037593984962406013,
+        "otherPitchErrorRate": 0.3233082706766917,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.6193771626297578
+      },
+      "currentPerformance": {
+        "analysisMillisecondsMax": 0.1121247187256813,
+        "analysisMillisecondsP50": 0.07858360186219215,
+        "analysisMillisecondsP95": 0.08666655048727989,
+        "audioSeconds": 6.2400625,
+        "frames": 289,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      }
+    },
+    {
+      "track": "geniusturtle_4_11",
+      "split": "held_out",
+      "mixtureSHA256": "8fa26ba3261f656078bb1c158b227a75c3aa47a0259105db7749622209f69319",
+      "baseline": {
+        "frames": 382,
+        "referenceVoicedFrames": 309,
+        "referenceUnvoicedFrames": 73,
+        "rawPitchAccuracy": 0.7022653721682848,
+        "rawChromaAccuracy": 0.7152103559870551,
+        "octaveErrorRate": 0.012944983818770227,
+        "otherPitchErrorRate": 0.284789644012945,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.5680628272251309
+      },
+      "baselinePerformance": {
+        "analysisMillisecondsMax": 0.11879159137606621,
+        "analysisMillisecondsP50": 0.07541663944721222,
+        "analysisMillisecondsP95": 0.08116662502288818,
+        "audioSeconds": 8.2240625,
+        "frames": 382,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      },
+      "current": {
+        "frames": 382,
+        "referenceVoicedFrames": 309,
+        "referenceUnvoicedFrames": 73,
+        "rawPitchAccuracy": 0.7605177993527508,
+        "rawChromaAccuracy": 0.7702265372168284,
+        "octaveErrorRate": 0.009708737864077669,
+        "otherPitchErrorRate": 0.2297734627831715,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.6151832460732984
+      },
+      "currentPerformance": {
+        "analysisMillisecondsMax": 0.1221667043864727,
+        "analysisMillisecondsP50": 0.07858313620090485,
+        "analysisMillisecondsP95": 0.08591637015342712,
+        "audioSeconds": 8.2240625,
+        "frames": 382,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      }
+    },
+    {
+      "track": "geniusturtle_4_12",
+      "split": "held_out",
+      "mixtureSHA256": "91000c673d9a176fb6cc9b780a388899ca1085c9c5f819570cfa15cfbc60a317",
+      "baseline": {
+        "frames": 335,
+        "referenceVoicedFrames": 262,
+        "referenceUnvoicedFrames": 73,
+        "rawPitchAccuracy": 0.8015267175572519,
+        "rawChromaAccuracy": 0.8282442748091603,
+        "octaveErrorRate": 0.026717557251908396,
+        "otherPitchErrorRate": 0.1717557251908397,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 0.9863013698630136,
+        "overallAccuracy": 0.6298507462686567
+      },
+      "baselinePerformance": {
+        "analysisMillisecondsMax": 0.12199999764561653,
+        "analysisMillisecondsP50": 0.07520848885178566,
+        "analysisMillisecondsP95": 0.08195871487259865,
+        "audioSeconds": 7.2124375,
+        "frames": 335,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      },
+      "current": {
+        "frames": 335,
+        "referenceVoicedFrames": 262,
+        "referenceUnvoicedFrames": 73,
+        "rawPitchAccuracy": 0.8015267175572519,
+        "rawChromaAccuracy": 0.8396946564885496,
+        "octaveErrorRate": 0.03816793893129771,
+        "otherPitchErrorRate": 0.16030534351145037,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 0.9863013698630136,
+        "overallAccuracy": 0.6298507462686567
+      },
+      "currentPerformance": {
+        "analysisMillisecondsMax": 0.11120829731225967,
+        "analysisMillisecondsP50": 0.07879175245761871,
+        "analysisMillisecondsP95": 0.0877082347869873,
+        "audioSeconds": 7.2124375,
+        "frames": 335,
+        "sampleRate": 48000,
+        "scope": "MelodyAnalyzer.process on one-hop PCM blocks; excludes file decoding, capture, UI and display latency"
+      }
+    }
+  ],
+  "limitations": [
+    "Three amateur covers of one song, at one mixing ratio; not the commercial master or an all-song accuracy claim.",
+    "Two cover performers were held out during tuning; the song itself was used for development.",
+    "Full-clip frame metrics use independent manual performed-pitch labels. The separate score check covers only the 12-note opening in two recordings, not the whole score.",
+    "A predominant-melody heuristic is not a singing-voice detector; accompaniment-only sections can still yield pitches.",
+    "Frame-center accuracy does not measure live capture/display latency; timings cover the analyzer only."
+  ],
+  "isolatedVocalDiagnostic": {
+    "scope": "Baseline analyzer, development singer only, original right-channel vocals; NEVER included in mixed-audio scores or claimed as real-time source separation",
+    "meanRawPitchAccuracy": 0.9596453129959609,
+    "tracks": [
+      {
+        "track": "fdps_2_01",
+        "frames": 352,
+        "referenceVoicedFrames": 232,
+        "referenceUnvoicedFrames": 120,
+        "rawPitchAccuracy": 0.9051724137931034,
+        "rawChromaAccuracy": 0.9698275862068966,
+        "octaveErrorRate": 0.06465517241379311,
+        "otherPitchErrorRate": 0.02586206896551724,
+        "missRate": 0.004310344827586207,
+        "voicingFalseAlarm": 0.9666666666666667,
+        "overallAccuracy": 0.6079545454545454
+      },
+      {
+        "track": "fdps_2_02",
+        "frames": 334,
+        "referenceVoicedFrames": 208,
+        "referenceUnvoicedFrames": 126,
+        "rawPitchAccuracy": 0.9423076923076923,
+        "rawChromaAccuracy": 0.9855769230769231,
+        "octaveErrorRate": 0.04326923076923077,
+        "otherPitchErrorRate": 0.014423076923076924,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 0.9285714285714286,
+        "overallAccuracy": 0.6137724550898204
+      },
+      {
+        "track": "fdps_2_03",
+        "frames": 337,
+        "referenceVoicedFrames": 232,
+        "referenceUnvoicedFrames": 105,
+        "rawPitchAccuracy": 0.9181034482758621,
+        "rawChromaAccuracy": 0.9612068965517241,
+        "octaveErrorRate": 0.04310344827586207,
+        "otherPitchErrorRate": 0.03879310344827586,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 0.9142857142857143,
+        "overallAccuracy": 0.658753709198813
+      },
+      {
+        "track": "fdps_2_04",
+        "frames": 324,
+        "referenceVoicedFrames": 246,
+        "referenceUnvoicedFrames": 78,
+        "rawPitchAccuracy": 0.9349593495934959,
+        "rawChromaAccuracy": 0.975609756097561,
+        "octaveErrorRate": 0.04065040650406504,
+        "otherPitchErrorRate": 0.024390243902439025,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.7098765432098766
+      },
+      {
+        "track": "fdps_2_05",
+        "frames": 342,
+        "referenceVoicedFrames": 233,
+        "referenceUnvoicedFrames": 109,
+        "rawPitchAccuracy": 0.9742489270386266,
+        "rawChromaAccuracy": 0.9785407725321889,
+        "octaveErrorRate": 0.004291845493562232,
+        "otherPitchErrorRate": 0.017167381974248927,
+        "missRate": 0.004291845493562232,
+        "voicingFalseAlarm": 0.9724770642201835,
+        "overallAccuracy": 0.672514619883041
+      },
+      {
+        "track": "fdps_2_06",
+        "frames": 291,
+        "referenceVoicedFrames": 233,
+        "referenceUnvoicedFrames": 58,
+        "rawPitchAccuracy": 0.9957081545064378,
+        "rawChromaAccuracy": 0.9957081545064378,
+        "octaveErrorRate": 0.0,
+        "otherPitchErrorRate": 0.004291845493562232,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.7972508591065293
+      },
+      {
+        "track": "fdps_2_07",
+        "frames": 406,
+        "referenceVoicedFrames": 281,
+        "referenceUnvoicedFrames": 125,
+        "rawPitchAccuracy": 0.9679715302491103,
+        "rawChromaAccuracy": 0.9786476868327402,
+        "octaveErrorRate": 0.010676156583629894,
+        "otherPitchErrorRate": 0.014234875444839857,
+        "missRate": 0.0071174377224199285,
+        "voicingFalseAlarm": 0.96,
+        "overallAccuracy": 0.6822660098522167
+      },
+      {
+        "track": "fdps_2_08",
+        "frames": 291,
+        "referenceVoicedFrames": 234,
+        "referenceUnvoicedFrames": 57,
+        "rawPitchAccuracy": 0.9871794871794872,
+        "rawChromaAccuracy": 0.9871794871794872,
+        "octaveErrorRate": 0.0,
+        "otherPitchErrorRate": 0.01282051282051282,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 0.9473684210526315,
+        "overallAccuracy": 0.8041237113402062
+      },
+      {
+        "track": "fdps_2_09",
+        "frames": 325,
+        "referenceVoicedFrames": 244,
+        "referenceUnvoicedFrames": 81,
+        "rawPitchAccuracy": 0.9713114754098361,
+        "rawChromaAccuracy": 0.9713114754098361,
+        "octaveErrorRate": 0.0,
+        "otherPitchErrorRate": 0.020491803278688523,
+        "missRate": 0.00819672131147541,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.7292307692307692
+      },
+      {
+        "track": "fdps_2_10",
+        "frames": 309,
+        "referenceVoicedFrames": 270,
+        "referenceUnvoicedFrames": 39,
+        "rawPitchAccuracy": 0.9666666666666667,
+        "rawChromaAccuracy": 0.9666666666666667,
+        "octaveErrorRate": 0.0,
+        "otherPitchErrorRate": 0.03333333333333333,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.8446601941747572
+      },
+      {
+        "track": "fdps_2_11",
+        "frames": 364,
+        "referenceVoicedFrames": 258,
+        "referenceUnvoicedFrames": 106,
+        "rawPitchAccuracy": 0.9689922480620154,
+        "rawChromaAccuracy": 0.9689922480620154,
+        "octaveErrorRate": 0.0,
+        "otherPitchErrorRate": 0.031007751937984496,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 1.0,
+        "overallAccuracy": 0.6868131868131868
+      },
+      {
+        "track": "fdps_2_12",
+        "frames": 359,
+        "referenceVoicedFrames": 237,
+        "referenceUnvoicedFrames": 122,
+        "rawPitchAccuracy": 0.9831223628691983,
+        "rawChromaAccuracy": 0.9831223628691983,
+        "octaveErrorRate": 0.0,
+        "otherPitchErrorRate": 0.016877637130801686,
+        "missRate": 0.0,
+        "voicingFalseAlarm": 0.9836065573770492,
+        "overallAccuracy": 0.6545961002785515
+      }
+    ]
+  },
+  "adc2004": {
+    "summary": {
+      "baseline": {
+        "rawPitchAccuracy": 0.7364772487663042,
+        "rawChromaAccuracy": 0.7912564149689347,
+        "octaveErrorRate": 0.054779166202630514,
+        "otherPitchErrorRate": 0.17274115465221088,
+        "missRate": 0.03600243037885439,
+        "voicingFalseAlarm": 0.9438607797675921,
+        "overallAccuracy": 0.6400954249723187
+      },
+      "current": {
+        "rawPitchAccuracy": 0.7559917270646104,
+        "rawChromaAccuracy": 0.8028341199200895,
+        "octaveErrorRate": 0.04684239285547904,
+        "otherPitchErrorRate": 0.17555084112168542,
+        "missRate": 0.021615038958225113,
+        "voicingFalseAlarm": 0.9612053043877569,
+        "overallAccuracy": 0.6554491283321331
+      }
+    },
+    "tracks": [
+      {
+        "track": "daisy1",
+        "split": "held_out",
+        "baseline": {
+          "frames": 905,
+          "referenceVoicedFrames": 693,
+          "referenceUnvoicedFrames": 212,
+          "rawPitchAccuracy": 0.9365079365079365,
+          "rawChromaAccuracy": 0.9624819624819625,
+          "octaveErrorRate": 0.025974025974025976,
+          "otherPitchErrorRate": 0.03751803751803752,
+          "missRate": 0.0,
+          "voicingFalseAlarm": 1.0,
+          "overallAccuracy": 0.7171270718232045
+        },
+        "current": {
+          "frames": 905,
+          "referenceVoicedFrames": 693,
+          "referenceUnvoicedFrames": 212,
+          "rawPitchAccuracy": 0.9365079365079365,
+          "rawChromaAccuracy": 0.9624819624819625,
+          "octaveErrorRate": 0.025974025974025976,
+          "otherPitchErrorRate": 0.03751803751803752,
+          "missRate": 0.0,
+          "voicingFalseAlarm": 1.0,
+          "overallAccuracy": 0.7171270718232045
+        }
+      },
+      {
+        "track": "daisy2",
+        "split": "development",
+        "baseline": {
+          "frames": 944,
+          "referenceVoicedFrames": 793,
+          "referenceUnvoicedFrames": 151,
+          "rawPitchAccuracy": 0.9445145018915511,
+          "rawChromaAccuracy": 0.9583858764186634,
+          "octaveErrorRate": 0.013871374527112233,
+          "otherPitchErrorRate": 0.0416141235813367,
+          "missRate": 0.0,
+          "voicingFalseAlarm": 1.0,
+          "overallAccuracy": 0.7934322033898306
+        },
+        "current": {
+          "frames": 944,
+          "referenceVoicedFrames": 793,
+          "referenceUnvoicedFrames": 151,
+          "rawPitchAccuracy": 0.9394703656998739,
+          "rawChromaAccuracy": 0.9546027742749055,
+          "octaveErrorRate": 0.015132408575031526,
+          "otherPitchErrorRate": 0.04539722572509458,
+          "missRate": 0.0,
+          "voicingFalseAlarm": 1.0,
+          "overallAccuracy": 0.7891949152542372
+        }
+      },
+      {
+        "track": "daisy3",
+        "split": "development",
+        "baseline": {
+          "frames": 730,
+          "referenceVoicedFrames": 730,
+          "referenceUnvoicedFrames": 0,
+          "rawPitchAccuracy": 0.9835616438356164,
+          "rawChromaAccuracy": 0.9835616438356164,
+          "octaveErrorRate": 0.0,
+          "otherPitchErrorRate": 0.01643835616438356,
+          "missRate": 0.0,
+          "voicingFalseAlarm": null,
+          "overallAccuracy": 0.9835616438356164
+        },
+        "current": {
+          "frames": 730,
+          "referenceVoicedFrames": 730,
+          "referenceUnvoicedFrames": 0,
+          "rawPitchAccuracy": 0.9876712328767123,
+          "rawChromaAccuracy": 0.9876712328767123,
+          "octaveErrorRate": 0.0,
+          "otherPitchErrorRate": 0.012328767123287671,
+          "missRate": 0.0,
+          "voicingFalseAlarm": null,
+          "overallAccuracy": 0.9876712328767123
+        }
+      },
+      {
+        "track": "daisy4",
+        "split": "held_out",
+        "baseline": {
+          "frames": 634,
+          "referenceVoicedFrames": 634,
+          "referenceUnvoicedFrames": 0,
+          "rawPitchAccuracy": 0.9227129337539433,
+          "rawChromaAccuracy": 0.9794952681388013,
+          "octaveErrorRate": 0.056782334384858045,
+          "otherPitchErrorRate": 0.02050473186119874,
+          "missRate": 0.0,
+          "voicingFalseAlarm": null,
+          "overallAccuracy": 0.9227129337539433
+        },
+        "current": {
+          "frames": 634,
+          "referenceVoicedFrames": 634,
+          "referenceUnvoicedFrames": 0,
+          "rawPitchAccuracy": 0.9747634069400631,
+          "rawChromaAccuracy": 0.9763406940063092,
+          "octaveErrorRate": 0.0015772870662460567,
+          "otherPitchErrorRate": 0.02365930599369085,
+          "missRate": 0.0,
+          "voicingFalseAlarm": null,
+          "overallAccuracy": 0.9747634069400631
+        }
+      },
+      {
+        "track": "jazz1",
+        "split": "held_out",
+        "baseline": {
+          "frames": 716,
+          "referenceVoicedFrames": 655,
+          "referenceUnvoicedFrames": 61,
+          "rawPitchAccuracy": 0.8595419847328244,
+          "rawChromaAccuracy": 0.9206106870229007,
+          "octaveErrorRate": 0.061068702290076333,
+          "otherPitchErrorRate": 0.07938931297709924,
+          "missRate": 0.0,
+          "voicingFalseAlarm": 0.9508196721311475,
+          "overallAccuracy": 0.7905027932960894
+        },
+        "current": {
+          "frames": 716,
+          "referenceVoicedFrames": 655,
+          "referenceUnvoicedFrames": 61,
+          "rawPitchAccuracy": 0.8595419847328244,
+          "rawChromaAccuracy": 0.8885496183206106,
+          "octaveErrorRate": 0.02900763358778626,
+          "otherPitchErrorRate": 0.11145038167938931,
+          "missRate": 0.0,
+          "voicingFalseAlarm": 1.0,
+          "overallAccuracy": 0.7863128491620112
+        }
+      },
+      {
+        "track": "jazz2",
+        "split": "development",
+        "baseline": {
+          "frames": 662,
+          "referenceVoicedFrames": 598,
+          "referenceUnvoicedFrames": 64,
+          "rawPitchAccuracy": 0.8494983277591973,
+          "rawChromaAccuracy": 0.862876254180602,
+          "octaveErrorRate": 0.013377926421404682,
+          "otherPitchErrorRate": 0.1354515050167224,
+          "missRate": 0.0016722408026755853,
+          "voicingFalseAlarm": 1.0,
+          "overallAccuracy": 0.7673716012084593
+        },
+        "current": {
+          "frames": 662,
+          "referenceVoicedFrames": 598,
+          "referenceUnvoicedFrames": 64,
+          "rawPitchAccuracy": 0.8511705685618729,
+          "rawChromaAccuracy": 0.8645484949832776,
+          "octaveErrorRate": 0.013377926421404682,
+          "otherPitchErrorRate": 0.1354515050167224,
+          "missRate": 0.0,
+          "voicingFalseAlarm": 1.0,
+          "overallAccuracy": 0.7688821752265861
+        }
+      },
+      {
+        "track": "jazz3",
+        "split": "development",
+        "baseline": {
+          "frames": 635,
+          "referenceVoicedFrames": 408,
+          "referenceUnvoicedFrames": 227,
+          "rawPitchAccuracy": 0.9411764705882353,
+          "rawChromaAccuracy": 0.946078431372549,
+          "octaveErrorRate": 0.004901960784313725,
+          "otherPitchErrorRate": 0.04411764705882353,
+          "missRate": 0.00980392156862745,
+          "voicingFalseAlarm": 0.9383259911894273,
+          "overallAccuracy": 0.6267716535433071
+        },
+        "current": {
+          "frames": 635,
+          "referenceVoicedFrames": 408,
+          "referenceUnvoicedFrames": 227,
+          "rawPitchAccuracy": 0.9485294117647058,
+          "rawChromaAccuracy": 0.9534313725490197,
+          "octaveErrorRate": 0.004901960784313725,
+          "otherPitchErrorRate": 0.041666666666666664,
+          "missRate": 0.004901960784313725,
+          "voicingFalseAlarm": 0.9779735682819384,
+          "overallAccuracy": 0.6173228346456693
+        }
+      },
+      {
+        "track": "jazz4",
+        "split": "held_out",
+        "baseline": {
+          "frames": 430,
+          "referenceVoicedFrames": 332,
+          "referenceUnvoicedFrames": 98,
+          "rawPitchAccuracy": 0.8554216867469879,
+          "rawChromaAccuracy": 0.8795180722891566,
+          "octaveErrorRate": 0.024096385542168676,
+          "otherPitchErrorRate": 0.11746987951807229,
+          "missRate": 0.0030120481927710845,
+          "voicingFalseAlarm": 0.9489795918367347,
+          "overallAccuracy": 0.672093023255814
+        },
+        "current": {
+          "frames": 430,
+          "referenceVoicedFrames": 332,
+          "referenceUnvoicedFrames": 98,
+          "rawPitchAccuracy": 0.8614457831325302,
+          "rawChromaAccuracy": 0.8825301204819277,
+          "octaveErrorRate": 0.02108433734939759,
+          "otherPitchErrorRate": 0.11746987951807229,
+          "missRate": 0.0,
+          "voicingFalseAlarm": 0.9591836734693877,
+          "overallAccuracy": 0.6744186046511628
+        }
+      },
+      {
+        "track": "midi1",
+        "split": "development",
+        "baseline": {
+          "frames": 825,
+          "referenceVoicedFrames": 779,
+          "referenceUnvoicedFrames": 46,
+          "rawPitchAccuracy": 0.3594351732991014,
+          "rawChromaAccuracy": 0.441591784338896,
+          "octaveErrorRate": 0.0821566110397946,
+          "otherPitchErrorRate": 0.25417201540436457,
+          "missRate": 0.3042362002567394,
+          "voicingFalseAlarm": 0.8043478260869565,
+          "overallAccuracy": 0.3503030303030303
+        },
+        "current": {
+          "frames": 825,
+          "referenceVoicedFrames": 779,
+          "referenceUnvoicedFrames": 46,
+          "rawPitchAccuracy": 0.4711168164313222,
+          "rawChromaAccuracy": 0.5815147625160462,
+          "octaveErrorRate": 0.110397946084724,
+          "otherPitchErrorRate": 0.2631578947368421,
+          "missRate": 0.15532734274711169,
+          "voicingFalseAlarm": 0.8043478260869565,
+          "overallAccuracy": 0.45575757575757575
+        }
+      },
+      {
+        "track": "midi2",
+        "split": "development",
+        "baseline": {
+          "frames": 712,
+          "referenceVoicedFrames": 712,
+          "referenceUnvoicedFrames": 0,
+          "rawPitchAccuracy": 0.8890449438202247,
+          "rawChromaAccuracy": 0.9550561797752809,
+          "octaveErrorRate": 0.06601123595505617,
+          "otherPitchErrorRate": 0.04353932584269663,
+          "missRate": 0.0014044943820224719,
+          "voicingFalseAlarm": null,
+          "overallAccuracy": 0.8890449438202247
+        },
+        "current": {
+          "frames": 712,
+          "referenceVoicedFrames": 712,
+          "referenceUnvoicedFrames": 0,
+          "rawPitchAccuracy": 0.9283707865168539,
+          "rawChromaAccuracy": 0.9634831460674157,
+          "octaveErrorRate": 0.0351123595505618,
+          "otherPitchErrorRate": 0.0351123595505618,
+          "missRate": 0.0014044943820224719,
+          "voicingFalseAlarm": null,
+          "overallAccuracy": 0.9283707865168539
+        }
+      },
+      {
+        "track": "midi3",
+        "split": "held_out",
+        "baseline": {
+          "frames": 1090,
+          "referenceVoicedFrames": 1072,
+          "referenceUnvoicedFrames": 18,
+          "rawPitchAccuracy": 0.6511194029850746,
+          "rawChromaAccuracy": 0.7098880597014925,
+          "octaveErrorRate": 0.058768656716417914,
+          "otherPitchErrorRate": 0.29011194029850745,
+          "missRate": 0.0,
+          "voicingFalseAlarm": 0.9444444444444444,
+          "overallAccuracy": 0.6412844036697247
+        },
+        "current": {
+          "frames": 1090,
+          "referenceVoicedFrames": 1072,
+          "referenceUnvoicedFrames": 18,
+          "rawPitchAccuracy": 0.7005597014925373,
+          "rawChromaAccuracy": 0.7332089552238806,
+          "octaveErrorRate": 0.03264925373134328,
+          "otherPitchErrorRate": 0.2667910447761194,
+          "missRate": 0.0,
+          "voicingFalseAlarm": 0.9444444444444444,
+          "overallAccuracy": 0.689908256880734
+        }
+      },
+      {
+        "track": "midi4",
+        "split": "held_out",
+        "baseline": {
+          "frames": 824,
+          "referenceVoicedFrames": 680,
+          "referenceUnvoicedFrames": 144,
+          "rawPitchAccuracy": 0.4338235294117647,
+          "rawChromaAccuracy": 0.5470588235294118,
+          "octaveErrorRate": 0.11323529411764706,
+          "otherPitchErrorRate": 0.25,
+          "missRate": 0.20294117647058824,
+          "voicingFalseAlarm": 0.5902777777777778,
+          "overallAccuracy": 0.42961165048543687
+        },
+        "current": {
+          "frames": 824,
+          "referenceVoicedFrames": 680,
+          "referenceUnvoicedFrames": 144,
+          "rawPitchAccuracy": 0.5661764705882353,
+          "rawChromaAccuracy": 0.6720588235294118,
+          "octaveErrorRate": 0.10588235294117647,
+          "otherPitchErrorRate": 0.25,
+          "missRate": 0.07794117647058824,
+          "voicingFalseAlarm": 0.7361111111111112,
+          "overallAccuracy": 0.5133495145631068
+        }
+      },
+      {
+        "track": "opera_fem2",
+        "split": "development",
+        "baseline": {
+          "frames": 690,
+          "referenceVoicedFrames": 539,
+          "referenceUnvoicedFrames": 151,
+          "rawPitchAccuracy": 0.6178107606679035,
+          "rawChromaAccuracy": 0.6567717996289425,
+          "octaveErrorRate": 0.03896103896103896,
+          "otherPitchErrorRate": 0.27087198515769945,
+          "missRate": 0.07235621521335807,
+          "voicingFalseAlarm": 0.9933774834437086,
+          "overallAccuracy": 0.48405797101449277
+        },
+        "current": {
+          "frames": 690,
+          "referenceVoicedFrames": 539,
+          "referenceUnvoicedFrames": 151,
+          "rawPitchAccuracy": 0.6103896103896104,
+          "rawChromaAccuracy": 0.6512059369202227,
+          "octaveErrorRate": 0.04081632653061224,
+          "otherPitchErrorRate": 0.274582560296846,
+          "missRate": 0.07421150278293136,
+          "voicingFalseAlarm": 0.9933774834437086,
+          "overallAccuracy": 0.4782608695652174
+        }
+      },
+      {
+        "track": "opera_fem4",
+        "split": "held_out",
+        "baseline": {
+          "frames": 596,
+          "referenceVoicedFrames": 542,
+          "referenceUnvoicedFrames": 54,
+          "rawPitchAccuracy": 0.7509225092250923,
+          "rawChromaAccuracy": 0.7841328413284133,
+          "octaveErrorRate": 0.033210332103321034,
+          "otherPitchErrorRate": 0.1863468634686347,
+          "missRate": 0.02952029520295203,
+          "voicingFalseAlarm": 1.0,
+          "overallAccuracy": 0.6828859060402684
+        },
+        "current": {
+          "frames": 596,
+          "referenceVoicedFrames": 542,
+          "referenceUnvoicedFrames": 54,
+          "rawPitchAccuracy": 0.7693726937269373,
+          "rawChromaAccuracy": 0.7933579335793358,
+          "octaveErrorRate": 0.023985239852398525,
+          "otherPitchErrorRate": 0.17896678966789667,
+          "missRate": 0.027675276752767528,
+          "voicingFalseAlarm": 1.0,
+          "overallAccuracy": 0.6996644295302014
+        }
+      },
+      {
+        "track": "opera_male3",
+        "split": "development",
+        "baseline": {
+          "frames": 858,
+          "referenceVoicedFrames": 762,
+          "referenceUnvoicedFrames": 96,
+          "rawPitchAccuracy": 0.42782152230971127,
+          "rawChromaAccuracy": 0.5748031496062992,
+          "octaveErrorRate": 0.14698162729658792,
+          "otherPitchErrorRate": 0.3805774278215223,
+          "missRate": 0.04461942257217848,
+          "voicingFalseAlarm": 1.0,
+          "overallAccuracy": 0.37995337995337997
+        },
+        "current": {
+          "frames": 858,
+          "referenceVoicedFrames": 762,
+          "referenceUnvoicedFrames": 96,
+          "rawPitchAccuracy": 0.4146981627296588,
+          "rawChromaAccuracy": 0.5826771653543307,
+          "octaveErrorRate": 0.1679790026246719,
+          "otherPitchErrorRate": 0.3753280839895013,
+          "missRate": 0.04199475065616798,
+          "voicingFalseAlarm": 1.0,
+          "overallAccuracy": 0.3682983682983683
+        }
+      },
+      {
+        "track": "opera_male5",
+        "split": "held_out",
+        "baseline": {
+          "frames": 952,
+          "referenceVoicedFrames": 831,
+          "referenceUnvoicedFrames": 121,
+          "rawPitchAccuracy": 0.7099879663056559,
+          "rawChromaAccuracy": 0.8459687123947052,
+          "octaveErrorRate": 0.13598074608904934,
+          "otherPitchErrorRate": 0.13237063778580024,
+          "missRate": 0.021660649819494584,
+          "voicingFalseAlarm": 0.9917355371900827,
+          "overallAccuracy": 0.6207983193277311
+        },
+        "current": {
+          "frames": 952,
+          "referenceVoicedFrames": 831,
+          "referenceUnvoicedFrames": 121,
+          "rawPitchAccuracy": 0.7448856799037304,
+          "rawChromaAccuracy": 0.851985559566787,
+          "octaveErrorRate": 0.10709987966305656,
+          "otherPitchErrorRate": 0.12515042117930206,
+          "missRate": 0.02286401925391095,
+          "voicingFalseAlarm": 0.9917355371900827,
+          "overallAccuracy": 0.6512605042016807
+        }
+      },
+      {
+        "track": "pop1",
+        "split": "development",
+        "baseline": {
+          "frames": 974,
+          "referenceVoicedFrames": 788,
+          "referenceUnvoicedFrames": 186,
+          "rawPitchAccuracy": 0.43908629441624364,
+          "rawChromaAccuracy": 0.4416243654822335,
+          "octaveErrorRate": 0.0025380710659898475,
+          "otherPitchErrorRate": 0.5583756345177665,
+          "missRate": 0.0,
+          "voicingFalseAlarm": 1.0,
+          "overallAccuracy": 0.35523613963039014
+        },
+        "current": {
+          "frames": 974,
+          "referenceVoicedFrames": 788,
+          "referenceUnvoicedFrames": 186,
+          "rawPitchAccuracy": 0.47081218274111675,
+          "rawChromaAccuracy": 0.47588832487309646,
+          "octaveErrorRate": 0.005076142131979695,
+          "otherPitchErrorRate": 0.5241116751269036,
+          "missRate": 0.0,
+          "voicingFalseAlarm": 1.0,
+          "overallAccuracy": 0.3809034907597536
+        }
+      },
+      {
+        "track": "pop2",
+        "split": "held_out",
+        "baseline": {
+          "frames": 834,
+          "referenceVoicedFrames": 616,
+          "referenceUnvoicedFrames": 218,
+          "rawPitchAccuracy": 0.6363636363636364,
+          "rawChromaAccuracy": 0.6655844155844156,
+          "octaveErrorRate": 0.02922077922077922,
+          "otherPitchErrorRate": 0.33116883116883117,
+          "missRate": 0.003246753246753247,
+          "voicingFalseAlarm": 0.9954128440366973,
+          "overallAccuracy": 0.4712230215827338
+        },
+        "current": {
+          "frames": 834,
+          "referenceVoicedFrames": 616,
+          "referenceUnvoicedFrames": 218,
+          "rawPitchAccuracy": 0.6282467532467533,
+          "rawChromaAccuracy": 0.6477272727272727,
+          "octaveErrorRate": 0.01948051948051948,
+          "otherPitchErrorRate": 0.349025974025974,
+          "missRate": 0.003246753246753247,
+          "voicingFalseAlarm": 0.9908256880733946,
+          "overallAccuracy": 0.46642685851318944
+        }
+      },
+      {
+        "track": "pop3",
+        "split": "held_out",
+        "baseline": {
+          "frames": 858,
+          "referenceVoicedFrames": 676,
+          "referenceUnvoicedFrames": 182,
+          "rawPitchAccuracy": 0.7337278106508875,
+          "rawChromaAccuracy": 0.8254437869822485,
+          "octaveErrorRate": 0.09171597633136094,
+          "otherPitchErrorRate": 0.16124260355029585,
+          "missRate": 0.013313609467455622,
+          "voicingFalseAlarm": 0.9340659340659341,
+          "overallAccuracy": 0.5920745920745921
+        },
+        "current": {
+          "frames": 858,
+          "referenceVoicedFrames": 676,
+          "referenceUnvoicedFrames": 182,
+          "rawPitchAccuracy": 0.6686390532544378,
+          "rawChromaAccuracy": 0.757396449704142,
+          "octaveErrorRate": 0.08875739644970414,
+          "otherPitchErrorRate": 0.23076923076923078,
+          "missRate": 0.011834319526627219,
+          "voicingFalseAlarm": 0.9835164835164835,
+          "overallAccuracy": 0.5303030303030303
+        }
+      },
+      {
+        "track": "pop4",
+        "split": "development",
+        "baseline": {
+          "frames": 929,
+          "referenceVoicedFrames": 734,
+          "referenceUnvoicedFrames": 195,
+          "rawPitchAccuracy": 0.7874659400544959,
+          "rawChromaAccuracy": 0.8841961852861036,
+          "octaveErrorRate": 0.09673024523160763,
+          "otherPitchErrorRate": 0.10354223433242507,
+          "missRate": 0.01226158038147139,
+          "voicingFalseAlarm": 0.9538461538461539,
+          "overallAccuracy": 0.6318622174381054
+        },
+        "current": {
+          "frames": 929,
+          "referenceVoicedFrames": 734,
+          "referenceUnvoicedFrames": 195,
+          "rawPitchAccuracy": 0.7874659400544959,
+          "rawChromaAccuracy": 0.8760217983651226,
+          "octaveErrorRate": 0.0885558583106267,
+          "otherPitchErrorRate": 0.11307901907356949,
+          "missRate": 0.010899182561307902,
+          "voicingFalseAlarm": 0.958974358974359,
+          "overallAccuracy": 0.6307857911733046
+        }
+      }
+    ],
+    "splits": {
+      "development": {
+        "baseline": {
+          "rawPitchAccuracy": 0.723941557864228,
+          "rawChromaAccuracy": 0.7704945669925186,
+          "octaveErrorRate": 0.04655300912829058,
+          "otherPitchErrorRate": 0.18487002548977408,
+          "missRate": 0.04463540751770729,
+          "voicingFalseAlarm": 0.9612371818207808,
+          "overallAccuracy": 0.6261594784136837
+        },
+        "current": {
+          "rawPitchAccuracy": 0.7409695077766223,
+          "rawChromaAccuracy": 0.789104500878015,
+          "octaveErrorRate": 0.04813499310139263,
+          "otherPitchErrorRate": 0.18202157573059957,
+          "missRate": 0.02887392339138551,
+          "voicingFalseAlarm": 0.9668341545983703,
+          "overallAccuracy": 0.6405448040074277
+        }
+      },
+      "held_out": {
+        "baseline": {
+          "rawPitchAccuracy": 0.7490129396683805,
+          "rawChromaAccuracy": 0.8120182629453507,
+          "octaveErrorRate": 0.06300532327697046,
+          "otherPitchErrorRate": 0.16061228381464773,
+          "missRate": 0.02736945324000148,
+          "voicingFalseAlarm": 0.9284150890536466,
+          "overallAccuracy": 0.6540313715309538
+        },
+        "current": {
+          "rawPitchAccuracy": 0.7710139463525986,
+          "rawChromaAccuracy": 0.816563738962164,
+          "octaveErrorRate": 0.04554979260956544,
+          "otherPitchErrorRate": 0.16908010651277133,
+          "missRate": 0.014356154525064719,
+          "voicingFalseAlarm": 0.9562018819783226,
+          "overallAccuracy": 0.6703534526568384
+        }
+      }
+    }
+  }
+}

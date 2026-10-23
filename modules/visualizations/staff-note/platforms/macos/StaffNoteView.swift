@@ -74,14 +74,6 @@ final class StaffNoteView: NSView {
         }
         return path
     }()
-    private static let ledgerPaths: [Int: CGPath] = Dictionary(uniqueKeysWithValues: StaffPitch.supportedMIDI.map { midi in
-        let path = CGMutablePath()
-        for y in StaffPitch(midi: midi)!.ledgerYs {
-            path.move(to: CGPoint(x: 630, y: y))
-            path.addQuadCurve(to: CGPoint(x: 650, y: y), control: CGPoint(x: 640, y: y + 0.12))
-        }
-        return (midi, path)
-    })
     private var labels = [String: CTLine]()
     private var attributedLabels = [String: NSAttributedString]()
     private var retainedDrawing: RetainedDrawing?
@@ -95,9 +87,9 @@ final class StaffNoteView: NSView {
         setAccessibilityElement(true); setAccessibilityRole(.image)
         setAccessibilityLabel("Miucs · 五线谱音符")
         prepareLabels()
-        // Prepare fixed geometry before the first animated frame or register change.
+        // Prepare fixed geometry before the first animated frame.
         _ = Self.noteHead; _ = Self.upStem; _ = Self.downStem
-        _ = Self.hatch; _ = Self.sharp; _ = Self.ledgerPaths; _ = Self.star
+        _ = Self.hatch; _ = Self.sharp; _ = Self.star
     }
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     override func hitTest(_ point: NSPoint) -> NSView? { nil }
@@ -136,7 +128,6 @@ final class StaffNoteView: NSView {
         pencil(Self.clef, width: 1.35, opacity: 0.8, in: cg)
         drawTrail(in: cg)
         drawStars(in: cg)
-        drawLedgerLines(in: cg)
         // This pale, unscaled marker always indicates the exact notation position.
         if scene.pitch != nil {
             cg.saveGState(); cg.setAlpha(0.28 + 0.2 * scene.labelOpacity)
@@ -163,29 +154,40 @@ final class StaffNoteView: NSView {
             cg.restoreGState()
         }
     }
-    private func drawLedgerLines(in cg: CGContext) {
-        guard let pitch = scene.pitch, let path = Self.ledgerPaths[pitch.midi], !path.isEmpty else { return }
-        pencil(path, width: 0.8, opacity: 0.35 + scene.labelOpacity * 0.35, in: cg)
-    }
     private func drawTrail(in cg: CGContext) {
         guard !scene.trace.isEmpty else { return }
         cg.saveGState(); defer { cg.restoreGState() }
         let area = CGRect(x: 80, y: 0, width: 560, height: 160)
         cg.clip(to: area); cg.beginTransparencyLayer(in: area, auxiliaryInfo: nil)
-        let path = CGMutablePath()
-        var segment: Int?
-        for point in scene.trace {
-            let p = CGPoint(x: scene.traceX(point), y: point.y)
-            if segment != point.segment {
-                path.move(to: p); path.addLine(to: CGPoint(x: p.x + 0.3, y: p.y))
-            } else { path.addLine(to: p) }
-            segment = point.segment
-        }
-        pencil(path, width: 1.05, opacity: 0.52, in: cg)
+        pencil(Self.tracePath(scene), width: 1.05, opacity: 0.52, in: cg)
         cg.setBlendMode(.destinationIn)
         cg.drawLinearGradient(Self.trailFade, start: CGPoint(x: 80, y: 0), end: CGPoint(x: 640, y: 0),
                               options: [.drawsBeforeStartLocation, .drawsAfterEndLocation])
         cg.endTransparencyLayer()
+    }
+    private static func tracePath(_ scene: StaffNoteScene, originX: Double = 0) -> CGPath {
+        let path = CGMutablePath()
+        var segment: Int?
+        let liveTail = scene.hasContinuousTraceTail ? scene.trace.last : nil
+        let headOffset = liveTail.map { scene.noteY - $0.y } ?? 0
+        for point in scene.trace {
+            let x = scene.traceX(point)
+            var y = point.y
+            if point.segment == liveTail?.segment {
+                // Join the moving head smoothly; accepted history itself keeps its true pitch.
+                let blend = max(0, min(1, 1 - (StaffNoteScene.noteX - x) / 10))
+                y += headOffset * blend * blend * (3 - 2 * blend)
+            }
+            let p = CGPoint(x: x - originX, y: y)
+            if segment != point.segment { path.move(to: p) }
+            else { path.addLine(to: p) }
+            segment = point.segment
+        }
+        // The audible phrase stays connected through filtering, without inventing pitch samples.
+        if liveTail != nil {
+            path.addLine(to: CGPoint(x: StaffNoteScene.noteX - originX, y: scene.noteY))
+        }
+        return path
     }
     private static func stemPath(down: Bool) -> CGPath {
         let stem = CGMutablePath()
@@ -206,7 +208,7 @@ final class StaffNoteView: NSView {
         cg.setAlpha(scene.opacity)
         cg.translateBy(x: scene.noteCenterX, y: scene.noteY)
         cg.scaleBy(x: scene.scale, y: scene.scale)
-        let head = Self.noteHead, stem = scene.baseY < StaffPitch.middleY ? Self.downStem : Self.upStem
+        let head = Self.noteHead, stem = scene.noteY < StaffPitch.middleY ? Self.downStem : Self.upStem
         // Tilt the stem and flag around the solid head's center; notation and head stay anchored.
         cg.saveGState()
         cg.rotate(by: scene.swayAngle)
@@ -257,7 +259,7 @@ final class StaffNoteView: NSView {
         private let markerFill = CAShapeLayer(), headFill = CAShapeLayer(), hatch = CAShapeLayer()
         private let label = CATextLayer(), placeholder = CATextLayer()
         private var pairs = [PencilPair]()
-        private var history: PencilPair!, ledgers: PencilPair!, markerStroke: PencilPair!
+        private var history: PencilPair!, markerStroke: PencilPair!
         private var headStroke: PencilPair!, stemStroke: PencilPair!, sharp: PencilPair!
         private var currentInk: CGColor?
         private var currentLabel: String?
@@ -270,6 +272,7 @@ final class StaffNoteView: NSView {
             _ = pencil(StaffNoteView.staff, width: 0.72, opacity: 0.48, in: root)
             _ = pencil(StaffNoteView.clef, width: 1.35, opacity: 0.8, in: root)
 
+            trail.name = "melody-trail"
             trail.bounds = CGRect(x: 0, y: 0, width: 560, height: 160)
             trail.position = CGPoint(x: 360, y: 80); trail.isGeometryFlipped = false
             trail.masksToBounds = true; root.addSublayer(trail)
@@ -290,9 +293,8 @@ final class StaffNoteView: NSView {
                 stars.addSublayer(layer)
                 starPool.append((layer, pencil(StaffNoteView.star, width: 0.85, opacity: 1, in: layer)))
             }
-            ledgers = pencil(nil, width: 0.8, opacity: 0.7, in: root)
-
             marker.bounds = CGRect(x: -8, y: -6, width: 16, height: 12)
+            marker.name = "pitch-marker"
             marker.isGeometryFlipped = false; root.addSublayer(marker)
             configure(markerFill, in: marker)
             markerFill.path = StaffNoteView.noteHead; markerFill.fillColor = CGColor(gray: 0.96, alpha: 0.8)
@@ -309,6 +311,7 @@ final class StaffNoteView: NSView {
             hatch.fillColor = nil; hatch.strokeColor = CGColor(gray: 0.8, alpha: 0.22); hatch.lineWidth = 0.35
             sharp = pencil(StaffNoteView.sharp, width: 1, opacity: 0.9, in: note)
 
+            label.name = "pitch-label"
             for text in [label, placeholder] {
                 text.bounds = CGRect(x: 0, y: 0, width: 80, height: 22)
                 text.anchorPoint = .zero; text.isGeometryFlipped = false
@@ -340,18 +343,7 @@ final class StaffNoteView: NSView {
                 for i in count..<visibleStars { starPool[i].layer.isHidden = true }
             }
             visibleStars = count
-            let path = CGMutablePath()
-            var segment: Int?
-            for point in scene.trace {
-                let p = CGPoint(x: scene.traceX(point) - 80, y: point.y)
-                if segment != point.segment {
-                    path.move(to: p); path.addLine(to: CGPoint(x: p.x + 0.3, y: p.y))
-                } else { path.addLine(to: p) }
-                segment = point.segment
-            }
-            history.setPath(path)
-            ledgers.setPath(scene.pitch.flatMap { StaffNoteView.ledgerPaths[$0.midi] })
-            ledgers.setOpacity(0.35 + scene.labelOpacity * 0.35)
+            history.setPath(StaffNoteView.tracePath(scene, originX: 80))
             marker.position = CGPoint(x: StaffNoteScene.noteX, y: scene.targetY)
             marker.isHidden = scene.pitch == nil
             let markerOpacity = 0.28 + 0.2 * scene.labelOpacity
@@ -360,7 +352,7 @@ final class StaffNoteView: NSView {
             note.position = CGPoint(x: scene.noteCenterX, y: scene.noteY)
             note.setAffineTransform(CGAffineTransform(scaleX: scene.scale, y: scene.scale))
             stem.setAffineTransform(CGAffineTransform(rotationAngle: scene.swayAngle))
-            stemStroke.setPath(scene.baseY < StaffPitch.middleY ? StaffNoteView.downStem : StaffNoteView.upStem)
+            stemStroke.setPath(scene.noteY < StaffPitch.middleY ? StaffNoteView.downStem : StaffNoteView.upStem)
             stemStroke.setOpacity(scene.opacity); headStroke.setOpacity(scene.opacity)
             headFill.opacity = Float(scene.opacity); hatch.opacity = Float(scene.opacity)
             sharp.setOpacity(scene.pitch?.isSharp == true ? scene.opacity * 0.9 : 0)

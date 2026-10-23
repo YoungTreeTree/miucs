@@ -283,6 +283,20 @@ struct AudioRecoveryTests {
             try await wait { h.requests == 5 && engine.isRunning }
             try require(h.requestTimes.last! - start < 0.075, "Healthy stream retained a long retry delay")
         }
+        await check("Vocal source switches replace the capture once and respect a stopped engine") {
+            let h = CaptureHarness(), engine = h.engine(); defer { engine.stop() }
+            await engine.start(); h.captures[0].emit()
+            let previous = engine.channel.snapshot?.sessionID
+            await engine.setVocalSeparationEnabled(false)
+            h.captures[1].emit()
+            try require(h.requests == 2 && h.captures[0].stops > 0 && !engine.vocalSeparationEnabled &&
+                        engine.channel.snapshot?.sessionID != previous, "Source switch did not create a fresh generation")
+            await engine.setVocalSeparationEnabled(false)
+            try require(h.requests == 2, "Identical selection reconnected unnecessarily")
+            engine.stop()
+            await engine.setVocalSeparationEnabled(true)
+            try require(h.requests == 2 && !engine.isRunning, "Changing a stopped source started capture")
+        }
         await check("A replacement survives the old in-flight start completing later") {
             let h = CaptureHarness(); h.holdStart = true
             let engine = h.engine(); defer { engine.stop() }

@@ -18,7 +18,7 @@ struct StaffPitchTracker {
 
     mutating func reset() { pending = nil; lastTime = nil }
 
-    mutating func receive(_ candidate: StaffPitch, time: Double, previous: StaffPitch?) -> Decision {
+    mutating func receive(_ candidate: StaffPitch, time: Double, previous: StaffPitch?, singingModel: Bool = false) -> Decision {
         guard time.isFinite, lastTime.map({ time > $0 }) ?? true else { return .ignored }
         // Sparse observations cannot confirm that a new pitch was sustained.
         if let lastTime, time - lastTime > 0.075 { pending = nil }
@@ -33,10 +33,16 @@ struct StaffPitchTracker {
             pending = Pending(anchorMIDI: candidate.midi, since: time, frames: 1)
         }
         let required: (seconds: Double, frames: Int)
-        switch distance {
-        case 3...5: required = (0.02, 2)
-        case 6...10: required = (0.04, 3)
-        default: required = (0.06, 4)
+        if singingModel {
+            // Neural voicing already rejected unreliable frames. Keep a short
+            // guard against octave slips without erasing genuine short notes.
+            required = distance >= 11 ? (0.06, 3) : (0.04, 2)
+        } else {
+            switch distance {
+            case 3...5: required = (0.10, 2)
+            case 6...10: required = (0.125, 3)
+            default: required = (0.15, 4)
+            }
         }
         guard let pending, pending.frames >= required.frames,
               time - pending.since + 1e-9 >= required.seconds else { return .hold }

@@ -33,7 +33,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     let appearanceStore = VisualizationAppearanceStore()
     private var statusItem: NSStatusItem?
     private var panel: VisualizerPanel?
-    private let engine = AudioEngine()
+    private let engine = AudioEngine(vocalSeparationEnabled:
+        UserDefaults.standard.object(forKey: "MiucsVocalSeparation.v1") as? Bool ?? RapidlyVocalProcessor.isAvailable)
     private let keyboardEngine = KeyboardEngine()
     private var keyboardItem: NSMenuItem?
     private var keyboardSubscription: AnyCancellable?
@@ -44,6 +45,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     private var visualizationMenu: NSMenu?
     private var colorMenu: VisualizationColorMenu?
     private var appearanceSubscription: AnyCancellable?
+    private var vocalSubscription: AnyCancellable?
+    private var vocalMenu: NSMenu?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -133,6 +136,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         visualizationMenu = visualizations
         let colors = VisualizationColorMenu(store: appearanceStore)
         colorMenu = colors; menu.addItem(colors.item)
+        let vocals = NSMenu(title: "音高来源")
+        for (tag, title) in [(1, "Rapidly 人声分离"), (0, "原始混音")] {
+            let option = NSMenuItem(title: title, action: #selector(selectVocalSource(_:)), keyEquivalent: "")
+            option.target = self; option.tag = tag; vocals.addItem(option)
+        }
+        vocals.addItem(.separator())
+        let vocalState = NSMenuItem(title: engine.vocalStatus, action: nil, keyEquivalent: "")
+        vocalState.isEnabled = false; vocals.addItem(vocalState)
+        let vocalItem = NSMenuItem(title: "音高来源", action: nil, keyEquivalent: "")
+        vocalItem.submenu = vocals; menu.addItem(vocalItem); vocalMenu = vocals
+        vocalSubscription = engine.$vocalStatus.sink { [weak self, weak vocalState] status in
+            vocalState?.title = status
+            self?.updateVocalMenu()
+        }
         menu.addItem(.separator())
         menu.addItem(
             NSMenuItem(title: "重新连接音频", action: #selector(reconnect), keyEquivalent: "r")
@@ -210,6 +227,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
 
     @objc private func reconnect() {
         Task { await engine.reconnect() }
+    }
+
+    @objc private func selectVocalSource(_ sender: NSMenuItem) {
+        let enabled = sender.tag == 1
+        UserDefaults.standard.set(enabled, forKey: "MiucsVocalSeparation.v1")
+        Task {
+            await engine.setVocalSeparationEnabled(enabled)
+            updateVocalMenu()
+        }
+    }
+
+    private func updateVocalMenu() {
+        for option in vocalMenu?.items.prefix(2) ?? [] {
+            option.state = (option.tag == 1) == engine.vocalSeparationEnabled ? .on : .off
+        }
     }
 
     private func updateKeyboardMenu(_ state: KeyboardSourceState) {

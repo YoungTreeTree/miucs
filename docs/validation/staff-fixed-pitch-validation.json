@@ -1,0 +1,86 @@
+{
+  "date": "2026-10-23",
+  "scope": "Remove adaptive display-octave recentering so each real pitch always has the same absolute staff position",
+  "fixedStaff": {
+    "clef": "treble",
+    "lineY": [
+      58,
+      66,
+      74,
+      82,
+      90
+    ],
+    "exampleNoteY": {
+      "C4": 98,
+      "G4": 82,
+      "B4": 74
+    },
+    "automaticOctaveTranslation": false,
+    "dynamicOctaveClefLabels": false,
+    "transition": "Only accepted pitch changes move the target; the existing critically damped transition remains",
+    "history": "Previously accepted pitches keep their absolute notation height; only the live 10-point tail blends toward the moving head"
+  },
+  "preservedBehavior": [
+    "G2-C6 following range",
+    "100/125/150ms jump confirmation",
+    "Audible phrase continuity through rejected pitch results",
+    "No extra ledger strokes",
+    "Concurrent keyboard stars and audio-driven sway/scale"
+  ],
+  "tests": {
+    "staff-note-tests": {
+      "passed": 72,
+      "failed": 0
+    },
+    "staff-note-platform-tests": {
+      "passed": 37,
+      "failed": 0
+    },
+    "staff-keyboard-tests": {
+      "passed": 36,
+      "failed": 0
+    },
+    "staff-keyboard-platform-tests": {
+      "passed": 20,
+      "failed": 0
+    }
+  },
+  "totalPassed": 165,
+  "totalFailed": 0,
+  "specificRegressions": [
+    "Every accepted G2-C6 pitch settles at its canonical staff height",
+    "C4 returns to the same height after low and high preceding phrases and input reset",
+    "Holding C4 for four further seconds never recenters it",
+    "Later low phrases preserve old C4 history and the full octave distance",
+    "Native note and marker plus reference rendering agree with fixed low/high staff positions",
+    "Native path retains the original C4 height after a later low phrase",
+    "Existing trace continuity, ledger-removal and keyboard concurrency checks pass"
+  ],
+  "commands": [
+    "zsh scripts/test-staff-note.sh",
+    "zsh scripts/test-staff-note-platform.sh",
+    "zsh scripts/test-staff-keyboard.sh",
+    "zsh build.sh",
+    "git diff --check"
+  ],
+  "sourceSHA256": {
+    "modules/visualizations/staff-note/core/StaffPitch.swift": "8964e76630b44271a28df8c6e2b42da2185263c2d5acbd747b0d00ed18e65578",
+    "modules/visualizations/staff-note/core/StaffPitchTracker.swift": "3fde5ae30b8d0c9d083fc63b0bd0f0044aab68aa6ef76f6b3ce31adbb259ffe2",
+    "modules/visualizations/staff-note/core/StaffNoteScene.swift": "7d437bcdd7d082b7eb94fd0d4f5c8bcaa8b5352fe6bdf05e572a0993b1e8a258",
+    "modules/visualizations/staff-note/platforms/macos/StaffNoteView.swift": "0e635974a241321667485661cc6646e6bbbba749988dc1aeba7f138bcb588f8b",
+    "tests/visualizations/StaffNoteTests.swift": "7c4ca2d48da9b592ef121469b63c60c0cf42931ec865d236800904a339ce63ae",
+    "tests/platforms/macos/StaffNotePlatformTests.swift": "82ccebae42981edf3f99a3aa86d6ec5e136979c0480448ca27393da4ad6143c3",
+    "tests/platforms/macos/StaffKeyboardPlatformTests.swift": "9ef78bafd045173151625a414df30220fa55749315f88f4c4cf5db0d8aad9528"
+  },
+  "delivery": {
+    "installedApp": "/Applications/Miucs.app",
+    "executableSHA256": "7a6470acf1d51a23b092ebaaf8c7517b06987b8f781ed321d64c04ddf4cdb254",
+    "installedMatchesBuild": true,
+    "signaturePassed": true,
+    "previousAppBackup": "build/Miucs-before-fixed-pitch-20261023-235603.app",
+    "restartStatus": "running",
+    "runningInstalledPID": 63972,
+    "observedWindowTitle": "Miucs · 五线谱音符"
+  },
+  "listeningTrial": "Automated simulation/native rendering passed and installed application restarted; user listening acceptance has not yet been claimed."
+}

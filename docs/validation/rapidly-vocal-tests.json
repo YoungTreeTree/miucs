@@ -1,0 +1,57 @@
+{
+  "alignment" : [
+    {
+      "outputLagSamples" : 0,
+      "sampleRate" : 48000
+    },
+    {
+      "outputLagSamples" : 0,
+      "sampleRate" : 44100
+    }
+  ],
+  "checks" : [
+    {
+      "name" : "Actual SDK music model loads in explicit watermarked demo mode",
+      "passed" : true
+    },
+    {
+      "name" : "Warm-up waits for actual output rather than returning raw PCM",
+      "passed" : true
+    },
+    {
+      "name" : "Variable-size stereo capture blocks produce bounded finite vocal PCM",
+      "passed" : true
+    },
+    {
+      "name" : "Reset discards pending audio and restarts model warm-up",
+      "passed" : true
+    },
+    {
+      "name" : "Sample-rate and channel changes recreate the native processor",
+      "passed" : true
+    },
+    {
+      "name" : "Non-finite PCM is rejected before calling the SDK",
+      "passed" : true
+    },
+    {
+      "name" : "Missing model produces a recoverable initialization error",
+      "passed" : true
+    },
+    {
+      "name" : "Online keys are rejected before registration; this integration stays offline",
+      "passed" : true
+    },
+    {
+      "name" : "48000 Hz SDK output sample zero uses the original PCM timeline",
+      "passed" : true
+    },
+    {
+      "name" : "44100 Hz SDK output sample zero uses the original PCM timeline",
+      "passed" : true
+    }
+  ],
+  "failed" : 0,
+  "mode" : "unlicensed demo; watermark intact",
+  "passed" : 10
+}

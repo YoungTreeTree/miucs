@@ -4,6 +4,19 @@ set -euo pipefail
 root="$(cd "$(dirname "$0")" && pwd)"
 app="$root/dist/Miucs.app"
 source "$root/scripts/swift-sources.sh"
+rapidly_flags=()
+with_rapidly=false
+if [[ "${1:-}" == "--rapidly" ]]; then
+  with_rapidly=true
+  zsh "$root/scripts/setup-rapidly.sh"
+  zsh "$root/scripts/setup-singing-pitch.sh"
+  rapidly_framework="$root/build/rapidly/RapidlyEngine.xcframework/macos-arm64_x86_64"
+  rapidly_flags=(-F "$rapidly_framework" -framework RapidlyEngineC
+    -Xlinker -rpath -Xlinker '@executable_path/../Frameworks')
+elif [[ $# -gt 0 ]]; then
+  print -u2 "Usage: zsh build.sh [--rapidly]"
+  exit 1
+fi
 
 rm -rf "$app"
 mkdir -p "$app/Contents/MacOS"
@@ -19,10 +32,21 @@ swiftc \
   -framework CoreMedia \
   -framework CoreAudio \
   -framework Accelerate \
+  -framework CoreML \
+  "${rapidly_flags[@]}" \
   -o "$app/Contents/MacOS/Miucs" \
   "${app_sources[@]}"
 
 cp "$root/apps/macos/Info.plist" "$app/Contents/Info.plist"
+if $with_rapidly; then
+  mkdir -p "$app/Contents/Frameworks" "$app/Contents/Resources/Rapidly"
+  ditto "$rapidly_framework/RapidlyEngineC.framework" "$app/Contents/Frameworks/RapidlyEngineC.framework"
+  cp "$root/build/rapidly/"{music-stem-separation-96ms.v1.1.rapidly,LICENSE,NOTICE.txt} "$app/Contents/Resources/Rapidly/"
+  mkdir -p "$app/Contents/Resources/SingingPitch"
+  ditto "$root/build/singing-pitch/SingingPitch.mlmodelc" "$app/Contents/Resources/SingingPitch/SingingPitch.mlmodelc"
+  cp "$root/build/singing-pitch/"{LICENSE-torchcrepe.txt,conversion.json} "$app/Contents/Resources/SingingPitch/"
+  cp "$root/docs/licenses/crepe.txt" "$app/Contents/Resources/SingingPitch/LICENSE-crepe.txt"
+fi
 
 # Ad-hoc signatures change on every build, so macOS drops the screen-recording grant.
 # A stable self-signed identity keeps the TCC permission across rebuilds.
@@ -52,5 +76,8 @@ EOF
     -P miucs -A -T /usr/bin/codesign >/dev/null
 fi
 
+if $with_rapidly; then
+  codesign --force --sign "Miucs Dev" "$app/Contents/Frameworks/RapidlyEngineC.framework"
+fi
 codesign --force --sign "Miucs Dev" "$app"
 echo "built $app"

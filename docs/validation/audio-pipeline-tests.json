@@ -11,8 +11,40 @@
     {
       "name" : "Invalid PCM is rejected without poisoning the next valid analysis block",
       "passed" : true
+    },
+    {
+      "name" : "Only melody uses vocal PCM; level, onset and stereo measurements remain bit-identical",
+      "passed" : true
+    },
+    {
+      "name" : "Format changes reset both separation state and the melody timeline",
+      "passed" : true
+    },
+    {
+      "name" : "Separation warm-up publishes raw features without substituting accompaniment pitch",
+      "passed" : true
+    },
+    {
+      "name" : "Separator failure keeps capture running, clears old melody and falls back at the original PCM time",
+      "passed" : true
+    },
+    {
+      "name" : "Invalid PCM never enters or resets the native separator",
+      "passed" : true
+    },
+    {
+      "name" : "Singing mode fails closed instead of identifying the accompaniment after separation fails",
+      "passed" : true
+    },
+    {
+      "name" : "Missing vocal\/model resources keep raw audio features alive without guessed notes",
+      "passed" : true
+    },
+    {
+      "name" : "Neural inference failure suspends notes once without interrupting audio measurements",
+      "passed" : true
     }
   ],
   "failed" : 0,
-  "passed" : 3
+  "passed" : 11
 }

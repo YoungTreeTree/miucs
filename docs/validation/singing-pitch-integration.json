@@ -1,0 +1,69 @@
+{
+  "validatedAt": "2026-10-24T02:10:48.559862",
+  "installation": {
+    "installedAt": "2026-10-24T02:08:41.469677",
+    "installedApp": "/Applications/Miucs.app",
+    "backup": "/Users/yangquan/Documents/ChatGPT/miucs/build/before-singing-pitch-20261024-020841/Miucs.app",
+    "binarySHA256": "83fdf83da975e3d86dbe84c2be137a4ffeb695697b09d7004d1de62353812f59",
+    "model": {
+      "model": "CREPE tiny",
+      "weightsSHA256": "d4993eea36ed1a0ad9ac549c740dae5265b049ce72004f00c2f59e01c0be8432",
+      "exporterSHA256": "aaa26d65f1611b411112eb79deae4461aca83b0f56cf4ede5918944f432ec688",
+      "torchcrepeVersion": "0.0.24",
+      "torchcrepeRevision": "19e2ec3d494c0797a5ff2a11408ec5838fba6681",
+      "torchVersion": "2.9.1",
+      "coremltoolsVersion": "9.0",
+      "maxActivationDifference": 1.1920928955078125e-07,
+      "validationCases": 10
+    }
+  },
+  "checks": {
+    "singing-pitch-tests": {
+      "passed": 14,
+      "failed": 0
+    },
+    "audio-pipeline-tests": {
+      "passed": 11,
+      "failed": 0
+    },
+    "audio-recovery-tests": {
+      "passed": 21,
+      "failed": 0
+    },
+    "staff-note-tests": {
+      "passed": 76,
+      "failed": 0
+    },
+    "staff-note-platform-tests": {
+      "passed": 37,
+      "failed": 0
+    },
+    "contract-tests": {
+      "passed": 16,
+      "failed": 0
+    }
+  },
+  "totalPassed": 175,
+  "totalFailed": 0,
+  "sourceSHA256": {
+    "modules/audio/core/SingingPitchAnalyzer.swift": "ea2c39d4e563dc4a432027b42818d0cac851dcdd3875e28adfe2e9080ba44ae5",
+    "modules/audio/core/StreamingMonoResampler.swift": "91b56c675158144f5ab88834ddc274d84ecdccd49c53ef4cc973ab5405ef386e",
+    "modules/audio/core/AudioAnalysisPipeline.swift": "1353a04bf45978879cfd0b2004fe2e015689e4d595f09c84929e6a8a9cf56260",
+    "modules/audio/platforms/macos/CoreMLSingingPitch.swift": "c2fa6f3b292edf9c3aee4a58cbb63e733943f9dd96479cdabbf14fd9528464b0",
+    "modules/audio/platforms/macos/AudioEngine.swift": "516ef6b97e27f7393670636c39119bceb0c5e963c197e11f0d6246924ac83e87",
+    "modules/visualizations/staff-note/core/StaffNoteScene.swift": "9f6a032de793bd366e522b545dee4e3d05d24fff35b77e304b821281a73a7fcf",
+    "modules/visualizations/staff-note/core/StaffPitchTracker.swift": "5d35dba088660fecbf61361fd53653641184b486df6b427f6d0fe260f2651ac1"
+  },
+  "schema": "14 fixtures/round-trips, 8 invalid inputs rejected",
+  "runtime": {
+    "pid": "25177",
+    "capture": "48kHz stereo; production log confirms Rapidly demo + CREPE tiny with voicing gate",
+    "visualCheck": "Short Tong Hua test playback showed a C-sharp3 label and moving pitch history; after playback ended the label faded and no live tail remained. Confirmed through the actual app window. No physical keyboard retest."
+  },
+  "limits": [
+    "No licensed/unwatermarked separator comparison",
+    "False pitches remain on accompaniment; see negative controls",
+    "Musical miss rate increased; see paired quality report",
+    "Offline compute measurements exclude capture and display; slow outliers are preserved"
+  ]
+}

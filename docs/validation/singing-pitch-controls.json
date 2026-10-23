@@ -1,0 +1,50 @@
+{
+  "cases": [
+    {
+      "case": "Ani_2_01-accompaniment",
+      "expected": "no singer; accompaniment only",
+      "baselineFalseAlarm": 0.9587628865979382,
+      "currentFalseAlarm": 0.36977491961414793
+    },
+    {
+      "case": "fdps_2_01-accompaniment",
+      "expected": "no singer; accompaniment only",
+      "baselineFalseAlarm": 0.9772727272727273,
+      "currentFalseAlarm": 0.4308510638297872
+    },
+    {
+      "case": "geniusturtle_4_01-accompaniment",
+      "expected": "no singer; accompaniment only",
+      "baselineFalseAlarm": 0.9700598802395209,
+      "currentFalseAlarm": 0.38935574229691877
+    },
+    {
+      "case": "synthetic",
+      "quietVoiced": 0,
+      "noiseVoiced": 0,
+      "A3Hits": 18,
+      "A3Frames": 18,
+      "E4Hits": 18,
+      "E4Frames": 18
+    }
+  ],
+  "sourceSHA256": {
+    "modules/audio/core/AudioAnalysisPipeline.swift": "1353a04bf45978879cfd0b2004fe2e015689e4d595f09c84929e6a8a9cf56260",
+    "modules/audio/core/AudioFeatureAnalyzer.swift": "6f8992a7fcd665ca3868f062427f615ee99e4a383b664c8dfb71b7bc28da1561",
+    "modules/audio/core/AudioFeatures.swift": "c2776598ba786ad5a05aa455ebd48ebc1f5694e6a32f83064f2ef5f37c3ca1da",
+    "modules/audio/core/AudioPCMBlock.swift": "be6a8497fc212a1e64b5d9be14c58d0048b562a05a602c93e950eae853cd8d41",
+    "modules/audio/core/FeatureChannel.swift": "a007d1f6998bbcf862e6048c850c006c56032b85198d192df050bc54ebfcff4a",
+    "modules/audio/core/MelodyAnalyzer.swift": "b0ab87ca59ea900e992a1c303277921bc576e6706f85fb06e87175ea170f48e1",
+    "modules/audio/core/MelodyEstimating.swift": "59487c8120dbaddbb8c6b01e753627d1ecdb7ec943c1c8007705aa23a18714dc",
+    "modules/audio/core/MelodyFrame.swift": "5dc6fd34c525f5b432a0384bc361216b9c727b97719a5cd805466f5881e3e18f",
+    "modules/audio/core/SingingPitchAnalyzer.swift": "ea2c39d4e563dc4a432027b42818d0cac851dcdd3875e28adfe2e9080ba44ae5",
+    "modules/audio/core/SpectrumTransform.swift": "b492a773e1b8697cf6ff87686f2d36c2acd85d102515a8fbdbc76abb213ed940",
+    "modules/audio/core/StreamingMonoResampler.swift": "91b56c675158144f5ab88834ddc274d84ecdccd49c53ef4cc973ab5405ef386e",
+    "modules/audio/core/VocalPCMProcessor.swift": "b1b3a3b5fe8f9d9810bb6e44755e118c52dd33a78555e3a2d75973ab8e3bfc14",
+    "modules/audio/platforms/macos/AccelerateSpectrumTransform.swift": "bcc163720d55fb7d67850edb6b6206adf9684fb8f7e2b588b7f87f1243e01742",
+    "modules/audio/platforms/macos/RapidlyVocalProcessor.swift": "53e9245f5dbbce56b38fec630694d2ed4a9f6a6303705f2faea39e3c5e7705d4",
+    "modules/audio/platforms/macos/CoreMLSingingPitch.swift": "c2fa6f3b292edf9c3aee4a58cbb63e733943f9dd96479cdabbf14fd9528464b0",
+    "tools/macos/SingingPitchFileProbe.swift": "eaaa4bdaf1cec97a287bcbc5d86c8164895afb2dc8667ca6f6f0f5deeda538ca"
+  },
+  "scope": "Synthetic silence/noise/harmonic tones use the real Core ML estimator. Accompaniment-only clips use intact Rapidly demo output. No calibration on these controls."
+}

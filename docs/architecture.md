@@ -2,6 +2,8 @@
 
 Miucs 的输入侧包含并行的音频特征生产与键盘事件生产，可视化在同一帧消费两路数据。平台适配负责系统采集、数值后端、原生绘制；应用外壳把它们组合起来。当前运行平台是 macOS，Windows 只有协作入口与验收说明。
 
+音高分析可注入通用 `VocalPCMProcessor`，macOS 的 `RapidlyVocalProcessor` 实现可选实时人声分离；其专有 SDK 不进入通用核心。原始音频始终独立计算音量和起音，分离仅作用于旋律 PCM。`MelodyEstimating` 可注入歌声音高模型；`CoreMLSingingPitch` 仅负责原生推理，重采样、门控及时间线属于通用核心。歌声模式故障时暂停报音，不回退到伴奏。预热、格式重建和原始时间戳语义见 [Rapidly 接入](rapidly-vocals.md)。
+
 ```mermaid
 flowchart LR
     Capture[平台音频采集与 PCM 解码] --> Analysis[音频分析核心]
