@@ -29,9 +29,12 @@ enum PerformanceProbe {
     }
     static func main() throws {
         NSApplication.shared.setActivationPolicy(.prohibited)
-        if CommandLine.arguments.count == 3 && ["--cadence", "--staff-cadence"].contains(CommandLine.arguments[1]) {
+        if (3...5).contains(CommandLine.arguments.count) && ["--cadence", "--staff-cadence"].contains(CommandLine.arguments[1]) {
             let id = CommandLine.arguments[1] == "--staff-cadence" ? StaffNoteSimulation.module.id : BuiltInVisualizations.defaultID
-            try cadence(to: URL(fileURLWithPath: CommandLine.arguments[2]), moduleID: id); return
+            let width = CommandLine.arguments.count > 3 ? Double(CommandLine.arguments[3]) ?? .nan : 1000
+            let duration = CommandLine.arguments.count > 4 ? Double(CommandLine.arguments[4]) ?? .nan : 6
+            try cadence(to: URL(fileURLWithPath: CommandLine.arguments[2]), moduleID: id,
+                        width: width, duration: duration); return
         }
         guard CommandLine.arguments.count == 2 else { return }
         let directory = URL(fileURLWithPath: CommandLine.arguments[1])
@@ -98,7 +101,10 @@ enum PerformanceProbe {
             .write(to: directory.appendingPathComponent("performance.json"))
     }
 
-    static func cadence(to destination: URL, moduleID: String) throws {
+    static func cadence(to destination: URL, moduleID: String, width: Double = 1000, duration: Double = 6) throws {
+        guard width.isFinite, width > 0, duration.isFinite, (3...60).contains(duration) else {
+            throw AudioAnalysisError.invalidInput("Cadence expects a positive width and a measurement duration of 3...60 seconds")
+        }
         guard CGDisplayIsActive(CGMainDisplayID()) != 0, CGDisplayIsAsleep(CGMainDisplayID()) == 0 else {
             throw AudioAnalysisError.invalidInput("Native cadence needs an awake display; macOS pauses display-link callbacks while the display sleeps")
         }
@@ -107,7 +113,7 @@ enum PerformanceProbe {
         defer { preferences.removePersistentDomain(forName: suite) }
         let engine = AudioEngine(factory: { _, frame, _ in ProbeCapture(onFrame: frame) }, monitorsSystem: false)
         let panel = VisualizerPanel(source: engine.channel, registry: BuiltInVisualizations.registry(preferences: preferences), selectedID: moduleID, preferences: preferences, persistsFrame: false)
-        panel.setDrawingWidth(1000)
+        panel.setDrawingWidth(width)
         func setProbe(_ handler: ((Double, Double) -> Void)?) {
             if let view = panel.visualizationHost.activeView as? PencilFlightView { view.onRender = handler }
             if let view = panel.visualizationHost.activeView as? StaffNoteView { view.onRender = handler }
@@ -119,7 +125,7 @@ enum PerformanceProbe {
         }
         panel.orderFrontRegardless()
         Task { await engine.start() }
-        RunLoop.main.run(until: Date(timeIntervalSinceNow: 7))
+        RunLoop.main.run(until: Date(timeIntervalSinceNow: duration + 1))
         panel.orderOut(nil)
         // AppKit may finish a display invalidation already queued before hiding.
         RunLoop.main.run(until: Date(timeIntervalSinceNow: 0.05))
@@ -137,10 +143,16 @@ enum PerformanceProbe {
         guard intervals.count > 100 else {
             throw AudioAnalysisError.invalidInput("Display link did not render enough frames: module=\(moduleID), recorded=\(timestamps.count), resumed=\(resumedFrames), snapshot=\(deliveredFrames), running=\(sourceRunning)")
         }
-        let report: [String: Any] = ["method": "real native transparent window; synthetic capture transport; 1s warmup + 6s measurement; no recording",
+        let longFrames = intervals.enumerated().filter { $0.element > 0.025 }.map { item in
+            ["atSeconds": timestamps[item.offset + 1] - warm, "intervalMs": item.element * 1000,
+             "previousDrawMs": costs[item.offset] * 1000, "currentDrawMs": costs[item.offset + 1] * 1000]
+        }
+        let report: [String: Any] = ["method": "real native transparent window; synthetic capture transport; 1s warmup; no recording",
             "moduleID": moduleID, "widthPoints": panel.frame.width, "frames": timestamps.count,
+            "measurementSeconds": duration,
             "fps": Double(intervals.count) / intervals.reduce(0, +), "interval": metrics(intervals),
             "draw": metrics(costs), "intervalsOver25ms": intervals.filter { $0 > 0.025 }.count,
+            "drawsOver16_67ms": costs.filter { $0 > 1.0 / 60 }.count, "longFrames": longFrames,
             "hiddenStopsRendering": hiddenStopped, "resumedFramesInOneSecond": resumedFrames]
         guard hiddenStopped && (30...75).contains(resumedFrames) else {
             throw AudioAnalysisError.invalidInput("Hide/show: hiddenStopped=\(hiddenStopped), resumedFrames=\(resumedFrames)")

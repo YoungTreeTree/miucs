@@ -103,8 +103,12 @@
     {
       "name" : "A recolored retained view matches a fresh renderer including text",
       "passed" : true
+    },
+    {
+      "name" : "Retained native layers recolor all five inks with stable transparent output",
+      "passed" : true
     }
   ],
   "failed" : 0,
-  "passed" : 26
+  "passed" : 27
 }

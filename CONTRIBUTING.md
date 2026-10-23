@@ -35,7 +35,7 @@ python3 -m pip install -r tests/requirements.txt
 ```sh
 zsh scripts/test-contracts.sh       # 依赖边界、Schema、通道与会话切换
 zsh scripts/test-flight.sh          # 飞鸟规则，含距离/体积/气团
-zsh scripts/test-staff-note.sh      # 真实谱位、平滑运动、弹跳、轨迹和输入生命周期
+zsh scripts/test-staff-note.sh      # 真实谱位、平滑运动、左右摆动、轨迹和输入生命周期
 zsh scripts/test-staff-note-platform.sh # 两种布局、独立偏好、生产绘图和合成静帧
 zsh scripts/test-melody.sh          # 合成独奏/伴奏与响应时序
 zsh scripts/test-audio-pipeline.sh  # 分析编排等价与格式切换

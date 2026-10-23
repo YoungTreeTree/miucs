@@ -143,6 +143,17 @@ enum VisualizationAppearanceTests {
         staffView.applyAppearance(VisualizationInk.blue.appearance); fresh.applyAppearance(VisualizationInk.blue.appearance)
         check("A recolored retained view matches a fresh renderer including text", bytes(render(staffView, width: 800, height: 160)) == bytes(render(fresh, width: 800, height: 160)))
 
+        var nativeColors = Set<Data>()
+        var nativeStable = true
+        for ink in inks {
+            staffView.applyAppearance(ink.appearance)
+            let first = render(staffView, width: 800, height: 160, retainedLayers: true)
+            nativeColors.insert(bytes(first))
+            nativeStable = nativeStable && bytes(first) == bytes(render(staffView, width: 800, height: 160, retainedLayers: true)) &&
+                first.colorAt(x: 0, y: 0)!.alphaComponent == 0
+        }
+        check("Retained native layers recolor all five inks with stable transparent output", nativeColors.count == 5 && nativeStable)
+
         let failures = checks.filter { !($0["passed"] as! Bool) }.count
         try JSONSerialization.data(withJSONObject: ["passed": checks.count - failures, "failed": failures, "checks": checks], options: [.prettyPrinted, .sortedKeys])
             .write(to: URL(fileURLWithPath: "docs/validation/visualization-appearance-tests.json"))
@@ -152,7 +163,8 @@ enum VisualizationAppearanceTests {
     static func bytes(_ bitmap: NSBitmapImageRep) -> Data {
         Data(bytes: bitmap.bitmapData!, count: bitmap.bytesPerRow * bitmap.pixelsHigh)
     }
-    static func render(_ view: NSView, width: Int, height: Int, background: NSColor? = nil) -> NSBitmapImageRep {
+    static func render(_ view: NSView, width: Int, height: Int, background: NSColor? = nil,
+                       retainedLayers: Bool = false) -> NSBitmapImageRep {
         let bitmap = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: width * 2, pixelsHigh: height * 2,
             bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0)!
         let context = NSGraphicsContext(bitmapImageRep: bitmap)!
@@ -161,7 +173,13 @@ enum VisualizationAppearanceTests {
         let cg = context.cgContext
         cg.translateBy(x: 0, y: Double(height * 2)); cg.scaleBy(x: 2, y: -2)
         if let background { cg.setFillColor(background.cgColor); cg.fill(CGRect(x: 0, y: 0, width: width, height: height)) }
-        view.draw(view.bounds)
+        if retainedLayers {
+            view.wantsLayer = true
+            view.updateLayer()
+            view.layer!.render(in: cg)
+        } else {
+            view.draw(view.bounds)
+        }
         return bitmap
     }
 }

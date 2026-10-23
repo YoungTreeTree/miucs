@@ -73,6 +73,14 @@
       "passed" : true
     },
     {
+      "name" : "Production drawing tilts the stem around an unchanged solid head",
+      "passed" : true
+    },
+    {
+      "name" : "Retained native layers preserve the same pivot and rotating stem",
+      "passed" : true
+    },
+    {
       "name" : "Identical scene redraws have byte-identical pencil marks",
       "passed" : true
     },
@@ -94,5 +102,5 @@
     }
   ],
   "failed" : 0,
-  "passed" : 23
+  "passed" : 25
 }

@@ -54,6 +54,8 @@ private final class CaptureHarness {
     var factoryContinuation: CheckedContinuation<Void, Never>?
     nonisolated let clock = RecoveryClock()
     var expected = false, permission = true
+    var outputChecks = 0
+    var outputProbe: (@MainActor () async -> Bool)?
     var requestTimes = [Double]()
 
     func engine(timing: AudioRecoveryTiming? = nil, monitorsSystem: Bool = false) -> AudioEngine {
@@ -69,7 +71,11 @@ private final class CaptureHarness {
             captures.append(capture)
             return capture
         }, timing: timing ?? fast, monitorsSystem: monitorsSystem,
-           now: { [clock] in clock.value }, audioExpected: { [self] in expected },
+           now: { [clock] in clock.value }, audioExpected: { [self] in
+               outputChecks += 1
+               if let outputProbe { return await outputProbe() }
+               return expected
+           },
            permissionGranted: { [self] in permission })
     }
     func finishFactory() { holdFactory = false; factoryContinuation?.resume(); factoryContinuation = nil }
@@ -208,6 +214,37 @@ struct AudioRecoveryTests {
             await engine.start(); h.captures[0].emit(); try await settle(30)
             h.clock.value += 13
             try await wait { h.requests == 2 && engine.isRunning }
+        }
+        await check("Fresh PCM bypasses device queries while stalled PCM still triggers recovery") {
+            let h = CaptureHarness(); h.expected = true
+            let engine = h.engine(); defer { engine.stop() }
+            await engine.start()
+            for _ in 0..<30 {
+                h.clock.value += 0.003; h.captures[0].emit()
+                try await settle(2)
+            }
+            try require(h.outputChecks == 0 && h.requests == 1, "Healthy capture queried hardware or reconnected")
+            h.clock.value += 13
+            try await wait { h.requests == 2 && engine.isRunning }
+            try require(h.outputChecks > 0, "Stalled capture never checked the output device")
+        }
+        await check("An old output-device query cannot affect a reconnected capture") {
+            let h = CaptureHarness()
+            var pending: CheckedContinuation<Bool, Never>?
+            h.outputProbe = {
+                guard h.outputChecks == 1 else { return false }
+                return await withCheckedContinuation { pending = $0 }
+            }
+            let engine = h.engine(); defer { engine.stop() }
+            await engine.start()
+            try await wait { pending != nil }
+            h.clock.value += 600
+            await engine.reconnect(); h.captures[1].emit()
+            let generation = engine.channel.snapshot?.sessionID
+            pending?.resume(returning: true); pending = nil
+            try await settle()
+            try require(h.requests == 2 && engine.isRunning && engine.channel.snapshot?.sessionID == generation,
+                        "A cancelled device query changed the new capture")
         }
         await check("Callbacks from old captures cannot change the new scene or reconnect it") {
             let h = CaptureHarness(), engine = h.engine(); defer { engine.stop() }

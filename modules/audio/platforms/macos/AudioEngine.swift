@@ -40,7 +40,7 @@ final class AudioEngine: NSObject, ObservableObject {
     private let factory: AudioCaptureFactory
     private let timing: AudioRecoveryTiming
     private let now: @Sendable () -> Double
-    private let audioExpected: @MainActor () -> Bool
+    private let audioExpected: @MainActor () async -> Bool
     private let permissionGranted: @MainActor () -> Bool
     private let monitorsSystem: Bool
     private var session: (any AudioCaptureSession)?
@@ -65,7 +65,9 @@ final class AudioEngine: NSObject, ObservableObject {
     init(factory: AudioCaptureFactory? = nil, timing: AudioRecoveryTiming = AudioRecoveryTiming(),
          monitorsSystem: Bool = true,
          now: @escaping @Sendable () -> Double = { ProcessInfo.processInfo.systemUptime },
-         audioExpected: @escaping @MainActor () -> Bool = { AudioOutputObserver.isOutputActive() },
+         audioExpected: @escaping @MainActor () async -> Bool = {
+             await Task.detached(priority: .utility) { AudioOutputObserver.isOutputActive() }.value
+         },
          permissionGranted: @escaping @MainActor () -> Bool = { CGPreflightScreenCaptureAccess() }) {
         self.channel = FeatureChannel(now: now)
         self.factory = factory ?? { try await ScreenAudioCapture.make(excludingExistingApplications: $0, onFrame: $1, onFailure: $2) }
@@ -232,14 +234,23 @@ final class AudioEngine: NSObject, ObservableObject {
                 do { try await Task.sleep(for: .seconds(interval)) } catch { return }
                 guard let self, self.isCurrent(token), self.isRunning else { return }
                 self.resetBackoffIfHealthy()
-                if !self.audioExpected() {
+                let time = self.now(), lastFrame = self.channel.health.last
+                if let lastFrame, time - lastFrame < self.timing.watchdogInterval {
+                    // Fresh PCM already proves capture is healthy; avoid a hardware round-trip.
+                    self.expectedAudioSince = lastFrame
+                    continue
+                }
+                let outputActive = await self.audioExpected()
+                // The system query can finish after a stop, reconnect or lifecycle change.
+                guard !Task.isCancelled, self.isCurrent(token), self.isRunning else { return }
+                if !outputActive {
                     self.expectedAudioSince = nil // An idle output device may deliver no PCM.
                     continue
                 }
-                let time = self.now()
-                if self.expectedAudioSince == nil { self.expectedAudioSince = time }
-                let reference = max(self.channel.health.last ?? self.connectedAt, self.expectedAudioSince ?? time)
-                if time - reference >= self.timing.noDataTimeout {
+                let checkedAt = self.now()
+                if self.expectedAudioSince == nil { self.expectedAudioSince = checkedAt }
+                let reference = max(self.channel.health.last ?? self.connectedAt, self.expectedAudioSince ?? checkedAt)
+                if checkedAt - reference >= self.timing.noDataTimeout {
                     Self.trace("capture stalled while output device active")
                     self.recover("音频数据中断")
                     return

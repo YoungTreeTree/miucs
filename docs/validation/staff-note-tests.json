@@ -93,15 +93,39 @@
       "passed" : true
     },
     {
-      "name" : "Volume changes size while leaving true pitch and base motion identical",
+      "name" : "Repeated snapshots cannot adapt the volume range without new audio",
       "passed" : true
     },
     {
-      "name" : "Dense onsets preserve continuous position and bounded bounce",
+      "name" : "Steady sustained sound does not produce artificial size pulses",
       "passed" : true
     },
     {
-      "name" : "Trace preserves the accepted note and ignores loudness and decorative bounce",
+      "name" : "Invalid audio cannot corrupt the adaptive volume range",
+      "passed" : true
+    },
+    {
+      "name" : "One onset sways across both sides and decays back to the center",
+      "passed" : true
+    },
+    {
+      "name" : "Rotational sway keeps the solid head center fixed at its exact staff position",
+      "passed" : true
+    },
+    {
+      "name" : "Successive onsets alternate their initial rotation direction",
+      "passed" : true
+    },
+    {
+      "name" : "Ordinary musical dynamics visibly change size while preserving pitch and base motion",
+      "passed" : true
+    },
+    {
+      "name" : "Dense onsets preserve a fixed pivot, continuous rotation and bounded tilt",
+      "passed" : true
+    },
+    {
+      "name" : "Trace preserves the accepted note and ignores loudness and decorative sway",
       "passed" : true
     },
     {
@@ -125,7 +149,7 @@
       "passed" : true
     },
     {
-      "name" : "Silence stops kicks while existing bounce settles smoothly",
+      "name" : "Silence stops kicks while existing sway settles smoothly",
       "passed" : true
     },
     {
@@ -195,7 +219,7 @@
   ],
   "failed" : 0,
   "maximumRemainingFractionAt150ms" : 0.017351537314028782,
-  "passed" : 48,
+  "passed" : 54,
   "pitchConfirmationMillisecondsAt48kHz" : {
     "60->64" : 21.333333333333332,
     "60->67" : 42.666666666666671,

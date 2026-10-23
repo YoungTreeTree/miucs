@@ -27,7 +27,7 @@ flowchart LR
 | `modules/visualizations/api/platforms/macos/` | 原生扩展协议、公共笔色到 AppKit 的转换 |
 | `modules/visualizations/pencil-flight/core/` | 特征映射、运动、管道、粒子、纯颜色数据和示例场景 |
 | `modules/visualizations/pencil-flight/platforms/macos/` | AppKit 绘图与旧版配色兼容 |
-| `modules/visualizations/staff-note/core/` | 固定高音谱位、音符运动、起音弹跳与有界旋律轨迹 |
+| `modules/visualizations/staff-note/core/` | 固定高音谱位、音符运动、起音绕符头倾摆与有界旋律轨迹 |
 | `modules/visualizations/staff-note/platforms/macos/` | 透明五线谱、音符、加线与轨迹绘制，接收公共笔色 |
 | `apps/macos/` | 入口、菜单、透明窗口、显示刷新、位置偏好、模块组合注册 |
 | `tools/macos/` | 数值诊断、文件分析、离线示例导出和性能测量 |
@@ -45,6 +45,8 @@ flowchart LR
 
 采集队列串行运行基础特征与旋律分析，直接写入 `FeatureChannel`。生命周期错误才切回主线程；每个特征帧不再创建主线程任务或发布 Combine 数据。可视化只拿到只读 `AudioFeatureSource`，没有启动或停止采集的接口。
 
+恢复看门狗通过最近 PCM 的接收时间先判断健康，新数据持续到达时跳过设备探测。必要的 Core Audio 输出设备查询在后台执行，返回后重新检查采集代次、运行和取消状态；主线程只处理恢复决策。
+
 ## 实时通道与时序
 
 通道用短锁保护内存值，不执行回调或 UI 工作，不逐帧序列化。连续状态只有一个最新快照；起音保留最多 64 个，超过 250ms 或容量时丢弃最旧项；频谱变化用单调最大值队列保存最近 250ms 的未读区间峰值。订阅者有独立游标，互不排空彼此的事件。
@@ -61,7 +63,7 @@ flowchart LR
 
 `PencilFlightSimulation` 是通用飞鸟会话，`SoundFlightWorld` 管理场景规则。原生 `MacPencilFlightSession` 组合通用会话、`PencilFlightView` 和调色盘；绘制对象不再订阅音频、持有计时器或管理窗口。
 
-`StaffNoteSimulation` 消费相同通道，`StaffPitch` 按自然音级映射真实谱位，`StaffPitchTracker` 按新音频时间戳过滤短暂异常并分级确认大跳。`StaffNoteScene` 分开管理确认后的准确谱位、平滑位置、装饰弹跳与最多 512 点/8 秒的轨迹，轨迹另做 25ms 轻度平滑。音量不进入谱位计算。`MacStaffNoteSession` 组合这一会话与 `StaffNoteView`；没有依赖飞鸟核心或改动音频算法、JSON 契约。详细规则见 [五线谱音符](staff-note.md)。
+`StaffNoteSimulation` 消费相同通道，`StaffPitch` 按自然音级映射真实谱位，`StaffPitchTracker` 按新音频时间戳过滤短暂异常并分级确认大跳。`StaffNoteScene` 分开管理确认后的准确谱位、平滑位置、绕符头中心的倾摆角度与最多 512 点/8 秒的轨迹，轨迹另做 25ms 轻度平滑。音量不进入谱位计算。`MacStaffNoteSession` 组合这一会话与 `StaffNoteView`，旋转仅作用于符干和符尾；没有依赖飞鸟核心或改动音频算法、JSON 契约。详细规则见 [五线谱音符](staff-note.md)。
 
 全局颜色由 `VisualizationAppearanceStore` 保存为一个预设 ID，菜单提供五种笔色。`VisualizationController` 把纯数据的 `VisualizationAppearance` 交给当前会话，并在切换后的激活前传给新会话。两种原生适配只负责将公共 RGB 转成实际笔触；颜色更新不新建会话、不重订阅特征，也不清理音高轨迹。旧 `PencilColor` 是公共 `VisualizationColor` 的兼容别名，旧配色数据用于首次迁移；正常应用入口使用统一菜单。详见[笔色说明](appearance.md)。
 

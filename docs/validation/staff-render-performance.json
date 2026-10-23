@@ -1,0 +1,388 @@
+{
+  "date": "2026-10-23",
+  "method": "Sequential native transparent-window runs with identical synthetic 47Hz feature transport, 1s warmup, 60Hz displays, and no concurrent compilation. Normal Miucs remained running. Runs are not simultaneous; OS scheduling and system load vary.",
+  "changes": [
+    "Skip output-device probes when PCM is fresh; otherwise query Core Audio off the main actor and reject cancelled or stale-generation results.",
+    "Prepare note labels and fixed vector paths outside the frame loop.",
+    "Use retained shape, gradient-mask and text layers in the native window; keep Core Graphics drawing for offline exports."
+  ],
+  "cpuMetric": "The draw fields measure CPU draw/submission callback time: Core Graphics commands before, retained-layer property submission after. They do not include WindowServer GPU execution or physical presentation.",
+  "cases": [
+    {
+      "widthPoints": 640,
+      "measurementSeconds": 15,
+      "stages": {
+        "before": {
+          "draw": {
+            "maxMs": 1.492250245064497,
+            "meanMs": 0.3171540758340986,
+            "medianMs": 0.31245825812220573,
+            "p95Ms": 0.5330829881131649,
+            "p99Ms": 0.7229582406580448
+          },
+          "drawsOver16_67ms": 0,
+          "fps": 59.796472761652524,
+          "frames": 897,
+          "hiddenStopsRendering": true,
+          "interval": {
+            "maxMs": 61.287999618798494,
+            "meanMs": 16.723394438096356,
+            "medianMs": 16.667666845023632,
+            "p95Ms": 16.96379156783223,
+            "p99Ms": 19.477583467960358
+          },
+          "intervalsOver25ms": 2,
+          "longFrames": [
+            {
+              "atSeconds": 1.0916116666048765,
+              "currentDrawMs": 0.1360834576189518,
+              "intervalMs": 61.287999618798494,
+              "previousDrawMs": 0.2343747764825821
+            },
+            {
+              "atSeconds": 9.37640625005588,
+              "currentDrawMs": 0.7388750091195107,
+              "intervalMs": 28.934708330780268,
+              "previousDrawMs": 0.25683362036943436
+            }
+          ],
+          "measurementSeconds": 15,
+          "method": "real native transparent window; synthetic capture transport; 1s warmup; no recording",
+          "moduleID": "staff-note",
+          "resumedFramesInOneSecond": 61,
+          "widthPoints": 640
+        },
+        "cachedDrawing": {
+          "draw": {
+            "maxMs": 1.2329164892435074,
+            "meanMs": 0.23950051043373438,
+            "medianMs": 0.23366650566458702,
+            "p95Ms": 0.4005003720521927,
+            "p99Ms": 0.5196668207645416
+          },
+          "drawsOver16_67ms": 0,
+          "fps": 59.7954205018739,
+          "frames": 898,
+          "hiddenStopsRendering": true,
+          "interval": {
+            "maxMs": 67.32679158449173,
+            "meanMs": 16.723688730789366,
+            "medianMs": 16.672125086188316,
+            "p95Ms": 17.056583426892757,
+            "p99Ms": 19.692708272486925
+          },
+          "intervalsOver25ms": 2,
+          "longFrames": [
+            {
+              "atSeconds": 1.0891982084140182,
+              "currentDrawMs": 0.09033316746354103,
+              "intervalMs": 67.32679158449173,
+              "previousDrawMs": 0.2276250161230564
+            },
+            {
+              "atSeconds": 2.2136757913976908,
+              "currentDrawMs": 0.10950025171041489,
+              "intervalMs": 25.204333011060953,
+              "previousDrawMs": 0.15083327889442444
+            }
+          ],
+          "measurementSeconds": 15,
+          "method": "real native transparent window; synthetic capture transport; 1s warmup; no recording",
+          "moduleID": "staff-note",
+          "resumedFramesInOneSecond": 60,
+          "widthPoints": 640
+        },
+        "asyncDeviceChecks": {
+          "draw": {
+            "maxMs": 3.1159999780356884,
+            "meanMs": 0.17500626709403466,
+            "medianMs": 0.15129195526242256,
+            "p95Ms": 0.30062487348914146,
+            "p99Ms": 0.4791663959622383
+          },
+          "drawsOver16_67ms": 0,
+          "fps": 59.86349388218925,
+          "frames": 898,
+          "hiddenStopsRendering": true,
+          "interval": {
+            "maxMs": 51.54933361336589,
+            "meanMs": 16.704671497590663,
+            "medianMs": 16.668041702359915,
+            "p95Ms": 16.828291583806276,
+            "p99Ms": 21.534166764467955
+          },
+          "intervalsOver25ms": 5,
+          "longFrames": [
+            {
+              "atSeconds": 2.587706916499883,
+              "currentDrawMs": 0.16479194164276123,
+              "intervalMs": 25.53049987182021,
+              "previousDrawMs": 0.25524990633130074
+            },
+            {
+              "atSeconds": 2.9134477502666414,
+              "currentDrawMs": 1.9433749839663506,
+              "intervalMs": 51.54933361336589,
+              "previousDrawMs": 0.12020859867334366
+            },
+            {
+              "atSeconds": 11.176385583356023,
+              "currentDrawMs": 0.3332914784550667,
+              "intervalMs": 30.70108313113451,
+              "previousDrawMs": 0.276416540145874
+            },
+            {
+              "atSeconds": 11.611027750186622,
+              "currentDrawMs": 3.1159999780356884,
+              "intervalMs": 25.39812494069338,
+              "previousDrawMs": 0.1922082155942917
+            },
+            {
+              "atSeconds": 14.544201583601534,
+              "currentDrawMs": 0.40841661393642426,
+              "intervalMs": 31.744458712637424,
+              "previousDrawMs": 0.14733336865901947
+            }
+          ],
+          "measurementSeconds": 15,
+          "method": "real native transparent window; synthetic capture transport; 1s warmup; no recording",
+          "moduleID": "staff-note",
+          "resumedFramesInOneSecond": 61,
+          "widthPoints": 640
+        },
+        "retainedLayers": {
+          "draw": {
+            "maxMs": 4.95179183781147,
+            "meanMs": 0.06043896612429063,
+            "medianMs": 0.053666532039642334,
+            "p95Ms": 0.09012501686811447,
+            "p99Ms": 0.1255837269127369
+          },
+          "drawsOver16_67ms": 0,
+          "fps": 59.996965820678035,
+          "frames": 901,
+          "hiddenStopsRendering": true,
+          "interval": {
+            "maxMs": 29.74441647529602,
+            "meanMs": 16.667509536879756,
+            "medianMs": 16.667999792844057,
+            "p95Ms": 16.81429147720337,
+            "p99Ms": 21.149500273168087
+          },
+          "intervalsOver25ms": 4,
+          "longFrames": [
+            {
+              "atSeconds": 5.866144291590899,
+              "currentDrawMs": 0.0982498750090599,
+              "intervalMs": 29.74441647529602,
+              "previousDrawMs": 0.06258301436901093
+            },
+            {
+              "atSeconds": 10.544975750148296,
+              "currentDrawMs": 0.04650000482797623,
+              "intervalMs": 25.215625297278166,
+              "previousDrawMs": 0.016458332538604736
+            },
+            {
+              "atSeconds": 10.6629647500813,
+              "currentDrawMs": 0.05358317866921425,
+              "intervalMs": 26.410041842609644,
+              "previousDrawMs": 0.03900006413459778
+            },
+            {
+              "atSeconds": 11.4318384998478,
+              "currentDrawMs": 4.95179183781147,
+              "intervalMs": 28.625333216041327,
+              "previousDrawMs": 0.03808317705988884
+            }
+          ],
+          "measurementSeconds": 15,
+          "method": "real native transparent window; synthetic capture transport; 1s warmup; no recording",
+          "moduleID": "staff-note",
+          "resumedFramesInOneSecond": 62,
+          "widthPoints": 640
+        }
+      }
+    },
+    {
+      "widthPoints": 1000,
+      "measurementSeconds": 6,
+      "stages": {
+        "before": {
+          "draw": {
+            "maxMs": 0.4514167085289955,
+            "meanMs": 0.171072736861153,
+            "medianMs": 0.16579125076532364,
+            "p95Ms": 0.30858302488923073,
+            "p99Ms": 0.388250220566988
+          },
+          "drawsOver16_67ms": 0,
+          "fps": 59.66156849904029,
+          "frames": 358,
+          "hiddenStopsRendering": true,
+          "interval": {
+            "maxMs": 49.68841653317213,
+            "meanMs": 16.761208683544517,
+            "medianMs": 16.66645798832178,
+            "p95Ms": 16.845958307385445,
+            "p99Ms": 17.311207950115204
+          },
+          "intervalsOver25ms": 1,
+          "longFrames": [
+            {
+              "atSeconds": 1.079424750059843,
+              "currentDrawMs": 0.13258308172225952,
+              "intervalMs": 49.68841653317213,
+              "previousDrawMs": 0.12170802801847458
+            }
+          ],
+          "measurementSeconds": 6,
+          "method": "real native transparent window; synthetic capture transport; 1s warmup; no recording",
+          "moduleID": "staff-note",
+          "resumedFramesInOneSecond": 60,
+          "widthPoints": 1000
+        },
+        "cachedDrawing": {
+          "draw": {
+            "maxMs": 0.4225415177643299,
+            "meanMs": 0.1370004617593475,
+            "medianMs": 0.12679165229201317,
+            "p95Ms": 0.27841655537486076,
+            "p99Ms": 0.30841678380966187
+          },
+          "drawsOver16_67ms": 0,
+          "fps": 59.66324069838559,
+          "frames": 358,
+          "hiddenStopsRendering": true,
+          "interval": {
+            "maxMs": 51.95470852777362,
+            "meanMs": 16.76073891217677,
+            "medianMs": 16.66824985295534,
+            "p95Ms": 16.848375089466572,
+            "p99Ms": 17.097666393965483
+          },
+          "intervalsOver25ms": 1,
+          "longFrames": [
+            {
+              "atSeconds": 1.0808966252952814,
+              "currentDrawMs": 0.0705416314303875,
+              "intervalMs": 51.95470852777362,
+              "previousDrawMs": 0.21370826289057732
+            }
+          ],
+          "measurementSeconds": 6,
+          "method": "real native transparent window; synthetic capture transport; 1s warmup; no recording",
+          "moduleID": "staff-note",
+          "resumedFramesInOneSecond": 61,
+          "widthPoints": 1000
+        },
+        "asyncDeviceChecks": {
+          "draw": {
+            "maxMs": 0.9362916462123394,
+            "meanMs": 0.12692395040450666,
+            "medianMs": 0.11733314022421837,
+            "p95Ms": 0.21866662427783012,
+            "p99Ms": 0.3831246867775917
+          },
+          "drawsOver16_67ms": 0,
+          "fps": 59.99540493627043,
+          "frames": 361,
+          "hiddenStopsRendering": true,
+          "interval": {
+            "maxMs": 30.117583461105824,
+            "meanMs": 16.66794317101853,
+            "medianMs": 16.669041477143764,
+            "p95Ms": 16.964041627943516,
+            "p99Ms": 20.926916506141424
+          },
+          "intervalsOver25ms": 3,
+          "longFrames": [
+            {
+              "atSeconds": 1.1302321669645607,
+              "currentDrawMs": 0.49795815721154213,
+              "intervalMs": 25.219833478331566,
+              "previousDrawMs": 0.13262499123811722
+            },
+            {
+              "atSeconds": 3.547281333245337,
+              "currentDrawMs": 0.15295855700969696,
+              "intervalMs": 25.495624635368586,
+              "previousDrawMs": 0.12066634371876717
+            },
+            {
+              "atSeconds": 3.5868971250019968,
+              "currentDrawMs": 0.19524991512298584,
+              "intervalMs": 30.117583461105824,
+              "previousDrawMs": 0.12470874935388565
+            }
+          ],
+          "measurementSeconds": 6,
+          "method": "real native transparent window; synthetic capture transport; 1s warmup; no recording",
+          "moduleID": "staff-note",
+          "resumedFramesInOneSecond": 60,
+          "widthPoints": 1000
+        },
+        "retainedLayers": {
+          "draw": {
+            "maxMs": 0.12962520122528076,
+            "meanMs": 0.04043459581832091,
+            "medianMs": 0.03458373248577118,
+            "p95Ms": 0.07600011304020882,
+            "p99Ms": 0.09583309292793274
+          },
+          "drawsOver16_67ms": 0,
+          "fps": 59.99629577242727,
+          "frames": 360,
+          "hiddenStopsRendering": true,
+          "interval": {
+            "maxMs": 28.137874789536,
+            "meanMs": 16.66769568229867,
+            "medianMs": 16.66733343154192,
+            "p95Ms": 16.767041757702827,
+            "p99Ms": 16.87679160386324
+          },
+          "intervalsOver25ms": 1,
+          "longFrames": [
+            {
+              "atSeconds": 4.121346083004028,
+              "currentDrawMs": 0.03458373248577118,
+              "intervalMs": 28.137874789536,
+              "previousDrawMs": 0.026499852538108826
+            }
+          ],
+          "measurementSeconds": 6,
+          "method": "real native transparent window; synthetic capture transport; 1s warmup; no recording",
+          "moduleID": "staff-note",
+          "resumedFramesInOneSecond": 61,
+          "widthPoints": 1000
+        }
+      }
+    }
+  ],
+  "functionalChecks": {
+    "staff-note-platform-tests": {
+      "passed": 25,
+      "failed": 0
+    },
+    "visualization-appearance-tests": {
+      "passed": 27,
+      "failed": 0
+    },
+    "audio-recovery-tests": {
+      "passed": 20,
+      "failed": 0
+    },
+    "visualization-host-tests": {
+      "passed": 11,
+      "failed": 0
+    }
+  },
+  "remainingJitter": "Final 640pt/15s run still had 4 intervals above 25ms (maximum 29.74ms); 1000pt/6s had 1 (28.14ms). The repeated early 50-70ms pause was absent in these final runs. This is not a zero-drop-frame guarantee.",
+  "sourcesSHA256": {
+    "modules/audio/platforms/macos/AudioEngine.swift": "59932ef473a2723ce462e117383556d2c980be1cfd4f57264d564e00b8b71a53",
+    "modules/visualizations/staff-note/platforms/macos/StaffNoteView.swift": "71e29ce116e96f138fe6ee34bd71f10a10a60ba68b209a798cdad0cbc137b8dd",
+    "tools/macos/PerformanceProbe.swift": "92cd0853a4ce0e60c24f08de55c4d2025b2d6e2d6dca42cb0f8f0792d42a0f0a",
+    "tools/macos/StaffNotePreview.swift": "6d19a63b25c71c5d6b0ff0faded96baa65a1d5b8d3c5078aaf42b622b92dd594",
+    "scripts/measure-performance.sh": "388972c717fd9d5e770fd32a0167534809e6690d46f4728d3ae8dbac79e3f504"
+  }
+}

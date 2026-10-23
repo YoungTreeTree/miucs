@@ -175,24 +175,54 @@ enum StaffNoteTests {
             softened.pitch?.midi == 71 && firstTrailY > 74 && firstTrailY < 78 && abs(softened.trace.last!.y - 74) < 0.2 &&
             softened.trace.allSatisfy { (74...78).contains($0.y) })
 
+        var volume = StaffVolumeTracker()
+        volume.receive(envelope: 0.05, time: 0)
+        volume.receive(envelope: 0.1, time: 0.02)
+        let highContrast = volume.contrast
+        for _ in 0..<60 { volume.receive(envelope: 0.1, time: 0.02) }
+        check("Repeated snapshots cannot adapt the volume range without new audio", highContrast > 0.7 && volume.contrast == highContrast)
+        volume.reset(); volume.receive(envelope: 0.1, time: 0)
+        for tick in 1...300 { volume.receive(envelope: 0.1, time: Double(tick) / 50) }
+        check("Steady sustained sound does not produce artificial size pulses", volume.contrast == 0.5)
+        volume.receive(envelope: .nan, time: 7); volume.receive(envelope: 1, time: .nan)
+        check("Invalid audio cannot corrupt the adaptive volume range", volume.contrast == 0.5)
+
+        var pulse = StaffNoteScene()
+        pulse.receive(audio: audio(0)); pulse.receive(melody: melody(0, 71))
+        pulse.receiveOnset(strength: 1)
+        var leftmost = 0.0, rightmost = 0.0, staysOnPitch = true
+        for _ in 0..<240 {
+            pulse.receive(audio: audio(pulse.elapsed)); pulse.receive(melody: melody(pulse.elapsed, 71))
+            pulse.advance(seconds: 1.0 / 120)
+            leftmost = min(leftmost, pulse.swayAngle); rightmost = max(rightmost, pulse.swayAngle)
+            staysOnPitch = staysOnPitch && pulse.noteY == 74 && pulse.targetY == 74 && pulse.noteCenterX == StaffNoteScene.noteX
+        }
+        check("One onset sways across both sides and decays back to the center",
+            leftmost < -12 * .pi / 180 && rightmost > 3 * .pi / 180 && abs(pulse.swayAngle) < 0.01 * .pi / 180)
+        check("Rotational sway keeps the solid head center fixed at its exact staff position", staysOnPitch)
+        pulse.receiveOnset(strength: 1); pulse.advance(seconds: 1.0 / 60)
+        check("Successive onsets alternate their initial rotation direction", pulse.swayAngle > 0)
+
         var quiet = StaffNoteScene(), loud = StaffNoteScene()
         var bounded = true, continuous = true, traceIsPitch = true
         for i in 0..<720 {
             let t = Double(i) / 120
-            quiet.receive(audio: audio(t, envelope: 0.005)); loud.receive(audio: audio(t, envelope: 0.3))
+            let sharedEnvelope = (i / 60).isMultiple(of: 2) ? 0.05 : 0.1
+            quiet.receive(audio: audio(t, envelope: i < 696 ? sharedEnvelope : 0.05))
+            loud.receive(audio: audio(t, envelope: i < 696 ? sharedEnvelope : 0.1))
             quiet.receive(melody: melody(t, 66)); loud.receive(melody: melody(t, 66))
-            let before = loud.noteY
+            let before = loud.swayAngle
             if i.isMultiple(of: 3) {
                 quiet.receiveOnset(strength: 1); loud.receiveOnset(strength: 1)
-                continuous = continuous && loud.noteY == before
+                continuous = continuous && loud.swayAngle == before && loud.noteCenterX == StaffNoteScene.noteX
             }
             quiet.advance(seconds: 1.0 / 120); loud.advance(seconds: 1.0 / 120)
-            bounded = bounded && (-4...0).contains(loud.bounce) && loud.scale <= 1.11
+            bounded = bounded && abs(loud.swayAngle) <= 20 * .pi / 180 && loud.scale <= 1.5 && loud.scale >= 0.8 && loud.noteY == loud.baseY
             traceIsPitch = traceIsPitch && loud.trace.last?.pitch.y == 86 && loud.trace.last?.y == quiet.trace.last?.y
         }
-        check("Volume changes size while leaving true pitch and base motion identical", loud.scale > quiet.scale + 0.08 && loud.baseY == quiet.baseY && loud.targetY == 86)
-        check("Dense onsets preserve continuous position and bounded bounce", bounded && continuous && loud.bounce < 0)
-        check("Trace preserves the accepted note and ignores loudness and decorative bounce", traceIsPitch)
+        check("Ordinary musical dynamics visibly change size while preserving pitch and base motion", loud.scale > quiet.scale + 0.2 && loud.baseY == quiet.baseY && loud.targetY == 86)
+        check("Dense onsets preserve a fixed pivot, continuous rotation and bounded tilt", bounded && continuous && abs(loud.swayAngle) > 0.0001)
+        check("Trace preserves the accepted note and ignores loudness and decorative sway", traceIsPitch)
         check("Trace capacity never exceeds 512 samples", loud.trace.count == 512)
         let point = loud.trace.last!, x = loud.traceX(loud.trace.last!)
         loud.receive(audio: nil); loud.advance(seconds: 1)
@@ -202,10 +232,10 @@ enum StaffNoteTests {
         check("Unreliable pitch holds the last height and fades the label", loud.pitch?.name == "F♯4" && loud.targetY == 86 && !loud.isPitchReliable && loud.labelOpacity < 0.02)
         let count = quiet.trace.count
         quiet.receive(melody: nil); quiet.receiveOnset(strength: 1); quiet.advance(seconds: 0.1)
-        check("Sound without melody holds pitch, stops history and still follows onsets", quiet.trace.count == count && quiet.targetY == 86 && quiet.canBounce && quiet.bounce < 0)
+        check("Sound without melody holds pitch, stops history and still follows onsets", quiet.trace.count == count && quiet.targetY == 86 && quiet.canSway && abs(quiet.swayAngle) > 0.0001)
         quiet.receive(audio: audio(8, silent: true)); quiet.receive(melody: melody(8, 60)); quiet.receiveOnset(strength: 1)
         quiet.advance(seconds: 0.25)
-        check("Silence stops kicks while existing bounce settles smoothly", !quiet.canBounce && abs(quiet.bounce) < 0.04)
+        check("Silence stops kicks while existing sway settles smoothly", !quiet.canSway && abs(quiet.swayAngle) < 0.2 * .pi / 180)
 
         let simulation = StaffNoteSimulation(), generation = UUID()
         simulation.activate(viewport: VisualizationViewport(width: 800, height: 160, scale: 1))
@@ -217,13 +247,13 @@ enum StaffNoteTests {
         for _ in 0..<20 { simulation.update(input: first, deltaTime: 1.0 / 60) }
         check("Cached melody expires even when the snapshot remains fresh", !simulation.scene.isPitchReliable)
         simulation.update(input: input(2, 72, generation: generation, age: 0.5, onset: true), deltaTime: 1.0 / 60)
-        check("Stale audio cannot move the note or start actions", simulation.scene.targetY == 98 && !simulation.scene.canBounce)
+        check("Stale audio cannot move the note or start actions", simulation.scene.targetY == 98 && !simulation.scene.canSway)
         simulation.update(input: input(1, 67, generation: UUID(), onset: false), deltaTime: 1.0 / 60)
         check("Reconnect isolates old history and accepts the new generation", simulation.scene.trace.count == 1 && simulation.scene.targetY == 82)
         simulation.update(input: input(3, 60, generation: generation, onset: true), deltaTime: 1.0 / 60)
-        let oldBounce = simulation.scene.bounce
+        let oldSway = simulation.scene.swayAngle
         simulation.update(input: input(4, 72, generation: generation, rate: 44_100, channels: 1, onset: true), deltaTime: 1.0 / 60)
-        check("Audio format changes discard old history and queued kicks", simulation.scene.trace.count == 1 && simulation.scene.targetY == 70 && simulation.scene.bounce > oldBounce)
+        check("Audio format changes discard old history and queued kicks", simulation.scene.trace.count == 1 && simulation.scene.targetY == 70 && abs(simulation.scene.swayAngle) < abs(oldSway))
         simulation.update(input: input(5, 64, generation: generation, time: 0, rate: 44_100, channels: 1), deltaTime: 1.0 / 60)
         check("PCM timeline reset does not connect unrelated trajectories", simulation.scene.trace.count == 1 && simulation.scene.targetY == 90)
         simulation.deactivate()
@@ -231,11 +261,11 @@ enum StaffNoteTests {
         check("Hidden session stops consuming and clears hidden history", simulation.scene.trace.isEmpty && simulation.scene.targetY == 90)
         simulation.activate(viewport: .desktop)
         simulation.update(input: input(8, 72, generation: generation, age: 1, onset: true), deltaTime: 1.0 / 60)
-        check("Resume rejects an expired hidden snapshot", simulation.scene.trace.isEmpty && !simulation.scene.canBounce)
+        check("Resume rejects an expired hidden snapshot", simulation.scene.trace.isEmpty && !simulation.scene.canSway)
         simulation.update(input: input(9, 72, generation: generation), deltaTime: 1.0 / 60)
         check("Resume starts a fresh trajectory from current reliable input", simulation.scene.trace.count == 1 && simulation.scene.targetY == 70)
         simulation.update(input: input(10, 96, generation: generation, state: .recovering, onset: true), deltaTime: 0.2)
-        check("Disconnected state holds height and lets existing history fade", simulation.scene.targetY == 70 && simulation.scene.trace.count == 1 && !simulation.scene.canBounce)
+        check("Disconnected state holds height and lets existing history fade", simulation.scene.targetY == 70 && simulation.scene.trace.count == 1 && !simulation.scene.canSway)
         var segmented = StaffNoteScene()
         segmented.receive(audio: audio(0)); segmented.receive(melody: melody(0, 60)); segmented.receive(melody: nil)
         segmented.receive(melody: melody(0.1, 72))
@@ -250,10 +280,10 @@ enum StaffNoteTests {
         channel.publish(audio: audio(0), melody: melody(0, 60), sessionID: channelID)
         _ = controller.select(id: "staff-note"); controller.tick(deltaTime: 1.0 / 60)
         let mounted = controller.current as! StaffNoteSimulation
-        check("Switch through the real channel consumes current pitch without old bursts", mounted.scene.trace.count == 1 && mounted.scene.bounce == 0 && mounted.scene.targetY == 98)
+        check("Switch through the real channel consumes current pitch without old bursts", mounted.scene.trace.count == 1 && mounted.scene.swayAngle == 0 && mounted.scene.targetY == 98)
         channel.publish(audio: audio(0.02), melody: melody(0.02, 72), sessionID: channelID)
         controller.tick(deltaTime: 1.0 / 60)
-        check("New channel onsets animate immediately while a large pitch jump is pending", mounted.scene.bounce < 0 && mounted.scene.targetY == 98)
+        check("New channel onsets animate immediately while a large pitch jump is pending", mounted.scene.swayAngle < 0 && mounted.scene.targetY == 98)
         for (time, midi) in [(0.04, 72.0), (0.06, 72), (0.08, 72)] {
             channel.publish(audio: audio(time), melody: melody(time, midi), sessionID: channelID)
             controller.tick(deltaTime: 0.02)
@@ -261,9 +291,9 @@ enum StaffNoteTests {
         check("A sustained octave is confirmed through the production feature channel", mounted.scene.targetY == 70)
         controller.pause()
         channel.publish(audio: audio(0.1), melody: melody(0.1, 96), sessionID: channelID)
-        let pausedBounce = mounted.scene.bounce
+        let pausedSway = mounted.scene.swayAngle
         controller.resume(); controller.tick(deltaTime: 1.0 / 60)
-        check("Hidden channel events are skipped and only current pitch starts fresh history", mounted.scene.trace.count == 1 && mounted.scene.trace[0].pitch.midi == 96 && mounted.scene.bounce > pausedBounce)
+        check("Hidden channel events are skipped and only current pitch starts fresh history", mounted.scene.trace.count == 1 && mounted.scene.trace[0].pitch.midi == 96 && abs(mounted.scene.swayAngle) < abs(pausedSway))
         channel.publish(audio: audio(9), melody: melody(9, 60), sessionID: channelID)
         controller.tick(deltaTime: 9)
         check("Long render stalls expire old history while retaining the fresh current sample", mounted.scene.trace.count == 1 && mounted.scene.trace[0].pitch.midi == 60 && mounted.scene.traceX(mounted.scene.trace[0]) > 639)

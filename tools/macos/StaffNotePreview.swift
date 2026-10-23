@@ -26,7 +26,8 @@ enum StaffNotePreview {
         }
         return scene
     }
-    static func bitmap(scene: StaffNoteScene, width: Int, background: NSColor? = nil) -> NSBitmapImageRep {
+    static func bitmap(scene: StaffNoteScene, width: Int, background: NSColor? = nil,
+                       retainedLayers: Bool = false) -> NSBitmapImageRep {
         let height = width / 5
         let bitmap = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: width * 2, pixelsHigh: height * 2,
             bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
@@ -42,7 +43,13 @@ enum StaffNotePreview {
         if let background {
             cg.setFillColor(background.cgColor); cg.fill(CGRect(x: 0, y: 0, width: width, height: height))
         }
-        view.draw(view.bounds)
+        if retainedLayers {
+            view.wantsLayer = true
+            view.updateLayer()
+            view.layer!.render(in: cg)
+        } else {
+            view.draw(view.bounds)
+        }
         return bitmap
     }
     static func render(to directory: URL) throws {

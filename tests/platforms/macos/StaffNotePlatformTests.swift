@@ -90,6 +90,54 @@ enum StaffNotePlatformTests {
         check("First redraw after native resume cannot display a cached old trajectory", hadTrace && native?.drawing.scene.trace.isEmpty == true)
         native?.dispose()
 
+        var pivot = StaffNoteScene()
+        for _ in 0..<120 {
+            pivot.receive(audio: StaffNotePreview.audio(pivot.elapsed))
+            pivot.receive(melody: StaffNotePreview.melody(pivot.elapsed, midi: 71))
+            pivot.advance(seconds: 1.0 / 60)
+        }
+        // Compare the same instant so trail aging and volume easing cannot affect head pixels.
+        var uprightScene = pivot
+        uprightScene.advance(seconds: 0.1)
+        let upright = StaffNotePreview.bitmap(scene: uprightScene, width: 800)
+        var tilted = pivot
+        tilted.receiveOnset(strength: 0.8); tilted.advance(seconds: 0.1)
+        let leaning = StaffNotePreview.bitmap(scene: tilted, width: 800)
+        var fixedHead = true, changedStemPixels = 0
+        for y in 147..<150 {
+            for x in 1277..<1283 {
+                fixedHead = fixedHead && upright.colorAt(x: x, y: y)!.isEqual(leaning.colorAt(x: x, y: y)!)
+            }
+        }
+        for y in 90..<138 {
+            for x in 1245..<1320 {
+                if !upright.colorAt(x: x, y: y)!.isEqual(leaning.colorAt(x: x, y: y)!) { changedStemPixels += 1 }
+            }
+        }
+        if !fixedHead || changedStemPixels <= 100 {
+            print("Pivot render details: fixedHead=\(fixedHead), changedStemPixels=\(changedStemPixels), angle=\(tilted.swayAngle), head=(\(tilted.noteCenterX), \(tilted.noteY))")
+            try upright.representation(using: .png, properties: [:])!.write(to: URL(fileURLWithPath: "build/staff-pivot-upright.png"))
+            try leaning.representation(using: .png, properties: [:])!.write(to: URL(fileURLWithPath: "build/staff-pivot-leaning.png"))
+        }
+        check("Production drawing tilts the stem around an unchanged solid head", fixedHead && changedStemPixels > 100 &&
+            abs(tilted.swayAngle) > 10 * .pi / 180 && tilted.noteCenterX == pivot.noteCenterX && tilted.noteY == pivot.noteY)
+
+        let layerUpright = StaffNotePreview.bitmap(scene: uprightScene, width: 800, retainedLayers: true)
+        let layerLeaning = StaffNotePreview.bitmap(scene: tilted, width: 800, retainedLayers: true)
+        var layerHeadFixed = true, layerStemChanges = 0
+        for y in 147..<150 {
+            for x in 1277..<1283 {
+                layerHeadFixed = layerHeadFixed && layerUpright.colorAt(x: x, y: y)!.isEqual(layerLeaning.colorAt(x: x, y: y)!)
+            }
+        }
+        for y in 90..<138 {
+            for x in 1245..<1320 {
+                if !layerUpright.colorAt(x: x, y: y)!.isEqual(layerLeaning.colorAt(x: x, y: y)!) { layerStemChanges += 1 }
+            }
+        }
+        check("Retained native layers preserve the same pivot and rotating stem", layerHeadFixed && layerStemChanges > 100 &&
+            layerUpright.colorAt(x: 1280, y: 148)!.alphaComponent > 0.9)
+
         let scene = StaffNotePreview.sampleScene()
         let bitmap = StaffNotePreview.bitmap(scene: scene, width: 800)
         let repeated = StaffNotePreview.bitmap(scene: scene, width: 800)

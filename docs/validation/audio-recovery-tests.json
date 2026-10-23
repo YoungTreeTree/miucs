@@ -53,6 +53,14 @@
       "passed" : true
     },
     {
+      "name" : "Fresh PCM bypasses device queries while stalled PCM still triggers recovery",
+      "passed" : true
+    },
+    {
+      "name" : "An old output-device query cannot affect a reconnected capture",
+      "passed" : true
+    },
+    {
       "name" : "Callbacks from old captures cannot change the new scene or reconnect it",
       "passed" : true
     },
@@ -75,5 +83,5 @@
   ],
   "failed" : 0,
   "method" : "injected capture transport, actual retry tasks, workspace notifications and controlled monotonic clock; no machine sleep or device changes",
-  "passed" : 18
+  "passed" : 20
 }
