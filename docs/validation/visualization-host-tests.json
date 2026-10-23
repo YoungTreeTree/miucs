@@ -17,6 +17,10 @@
       "passed" : true
     },
     {
+      "name" : "Native module receives concurrent keyboard state without replaying old presses",
+      "passed" : true
+    },
+    {
       "name" : "Switch preserves the running audio capture and generation",
       "passed" : true
     },
@@ -33,6 +37,10 @@
       "passed" : true
     },
     {
+      "name" : "One native refresh delivers fresh keyboard and audio events together",
+      "passed" : true
+    },
+    {
       "name" : "Same and unknown IDs leave the current native view intact",
       "passed" : true
     },
@@ -41,10 +49,14 @@
       "passed" : true
     },
     {
+      "name" : "Hiding a native view leaves the keyboard channel running",
+      "passed" : true
+    },
+    {
       "name" : "Explicit disposal releases the current native session",
       "passed" : true
     }
   ],
   "failed" : 0,
-  "passed" : 11
+  "passed" : 14
 }

@@ -1,0 +1,134 @@
+{
+  "checks" : [
+    {
+      "name" : "Missing permission is a distinct state without installing a tap",
+      "passed" : true
+    },
+    {
+      "name" : "Background permission checks never prompt",
+      "passed" : true
+    },
+    {
+      "name" : "Explicit authorization action requests access once",
+      "passed" : true
+    },
+    {
+      "name" : "Granting access starts one capture",
+      "passed" : true
+    },
+    {
+      "name" : "Repeated starts and idle checks do not recreate capture",
+      "passed" : true
+    },
+    {
+      "name" : "Capture delivers numeric key events",
+      "passed" : true
+    },
+    {
+      "name" : "Permission revocation stops capture and clears held keys",
+      "passed" : true
+    },
+    {
+      "name" : "Late events after revocation are discarded",
+      "passed" : true
+    },
+    {
+      "name" : "Secure input pauses capture without requesting more privileges",
+      "passed" : true
+    },
+    {
+      "name" : "Sleep releases capture and clears held keys",
+      "passed" : true
+    },
+    {
+      "name" : "Wake cannot resume an inactive login session",
+      "passed" : true
+    },
+    {
+      "name" : "Active session resumes a new generation",
+      "passed" : true
+    },
+    {
+      "name" : "Disabled tap resets pending input before recovery",
+      "passed" : true
+    },
+    {
+      "name" : "Interrupted taps respect retry delay",
+      "passed" : true
+    },
+    {
+      "name" : "Interrupted tap reconnects automatically on the next health check",
+      "passed" : true
+    },
+    {
+      "name" : "Old callbacks cannot affect the new capture",
+      "passed" : true
+    },
+    {
+      "name" : "Stop is idempotent and prevents later revival",
+      "passed" : true
+    },
+    {
+      "name" : "System permission queries execute off the main thread",
+      "passed" : true
+    },
+    {
+      "name" : "Delayed startup cannot replace a newer generation",
+      "passed" : true
+    },
+    {
+      "name" : "Tap creation failure enters bounded retry",
+      "passed" : true
+    },
+    {
+      "name" : "Capture creation recovers after a transient failure",
+      "passed" : true
+    },
+    {
+      "name" : "Native key-down decoder preserves physical code and modifier flags",
+      "passed" : true
+    },
+    {
+      "name" : "Native auto-repeat is explicit",
+      "passed" : true
+    },
+    {
+      "name" : "Native key-up and modifier transitions are distinct",
+      "passed" : true
+    },
+    {
+      "name" : "Mouse events are outside the keyboard channel",
+      "passed" : true
+    },
+    {
+      "name" : "Decoder does not rewrite keyboard events",
+      "passed" : true
+    },
+    {
+      "name" : "Control, Option and Fn retain independent modifier bits",
+      "passed" : true
+    },
+    {
+      "name" : "A stopped native capture cannot install a tap",
+      "passed" : true
+    },
+    {
+      "name" : "Health polling notices permission grants without manual reconnect",
+      "passed" : true
+    },
+    {
+      "name" : "Entering secure input clears an already held key",
+      "passed" : true
+    },
+    {
+      "name" : "Leaving secure input resumes the independent listener",
+      "passed" : true
+    },
+    {
+      "name" : "Releasing an engine cancels polling and stops its native resource",
+      "passed" : true
+    }
+  ],
+  "failed" : 0,
+  "passed" : 32
+}

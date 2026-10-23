@@ -2,14 +2,24 @@
   "date": "2026-10-23",
   "command": "zsh scripts/render-demo.sh --staff",
   "asset": "docs/assets/miucs-staff-note.gif",
-  "assetSHA256": "33a28f0d0f97822ee404e2d5bdff622331c319802115e8d1b31d0e249ed26463",
+  "assetSHA256": "78483afbfa2bcff580a283dc55c6f53025e53bd88071642fcce3dab990e75402",
   "render": {
     "animationRateIsPresentationBenchmark": false,
     "background": "plain paper",
     "durationSeconds": 10,
     "fps": 25,
     "frames": 250,
+    "framesWithStars": 242,
     "height": 240,
+    "keyboardBursts": 48,
+    "keyboardPresses": 39,
+    "keyboardRows": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
     "loop": "infinite",
     "notationHeightRange": 27.999999204642776,
     "noteCenterX": 640,
@@ -24,11 +34,12 @@
       "G4"
     ],
     "onsets": 20,
+    "peakStars": 40,
     "scaleRange": [
       0.8001351539366327,
       1.4991906467401204
     ],
-    "source": "generated PCM, production audio analyzers, staff scene and retained native layers; no capture",
+    "source": "generated PCM and invented physical key events; production audio analyzers, keyboard channel, star simulation and retained native layers; no capture or event injection",
     "swayDegrees": [
       -19.958460031519543,
       19.59756179528484
@@ -44,7 +55,7 @@
     ],
     "durationSeconds": 10,
     "fps": 25,
-    "bytes": 1187783,
+    "bytes": 1521304,
     "loop": "infinite",
     "metadata": "format and animation fields only; inherited metadata removed",
     "allFramesChange": true,
@@ -54,42 +65,26 @@
   "visualReview": {
     "frames": [
       0,
-      25,
-      50,
-      90,
+      62,
       125,
-      200
+      187
     ],
     "extrema": [
       "left",
-      "right",
       "small",
       "large"
     ],
-    "result": "Fixed horizontal head position, readable upright labels, visible tilt and scale changes; no clipping observed."
-  },
-  "existingDemoRegression": {
-    "desktop": {
-      "frames": 250,
-      "fps": 25,
-      "durationSeconds": 10,
-      "allFramesMatchQuantizedSource": true,
-      "matchesExistingAssetBytes": true
-    },
-    "close-up": {
-      "frames": 250,
-      "fps": 25,
-      "durationSeconds": 10,
-      "allFramesMatchQuantizedSource": true,
-      "matchesExistingAssetBytes": true
-    }
+    "result": "Audio tilt/scale/trajectory and keyboard stars are visible together; five-row physical positions, multiple keys and hold repeats use the production star simulation. Native rendering tests additionally cover five colors, scale, transparent interiors, boundaries and music foreground order."
   },
   "sourceSHA256": {
-    "tools/macos/StaffNoteDemo.swift": "49c466dfd8ebb760a5cd196d3bd446c931c9f499927891f88d387533f0978fcc",
+    "tools/macos/StaffNoteDemo.swift": "a52a97777e8efae55b1291f6bcbee847d71b9bc7b04bf35a347a25d2d751e689",
+    "tools/macos/SyntheticKeyboardInput.swift": "de193fa236b70265c969e90a9f6477b221dd3e3526fdf3046790f837b5bc4c0e",
     "tools/macos/RenderDemo.swift": "0b808f52fcd15d0a24b01cc0fe948dbde81d1b1cbc2d3c316bfa5fbd2d607a4b",
-    "scripts/render-demo.sh": "1eb8312860501d30d191aa7b516870559620dcf039ebbafb86d1c49f6a10cab9",
+    "scripts/render-demo.sh": "69768d7dc212d4964940c1b5c1790f6319771dd56b4309f0854e7875285bd4d6",
     "scripts/prepare-demo.py": "3075f4ffbc4f36b0e18fc38100f985109c12069b9400d527d2b86bc113ed02ad",
     "modules/visualizations/staff-note/core/StaffNoteScene.swift": "aa273b5bf71144ac206c1c57ccdb751255284221a5def66f9a0873827ba11433",
-    "modules/visualizations/staff-note/platforms/macos/StaffNoteView.swift": "71e29ce116e96f138fe6ee34bd71f10a10a60ba68b209a798cdad0cbc137b8dd"
+    "modules/visualizations/staff-note/core/StaffKeyboardStars.swift": "e4a20201621a7cb0192e41b0eae4f9f5cdb80a9e2d2031ea6f20e7dcf9f397aa",
+    "modules/visualizations/staff-note/core/StaffKeyboardLayout.swift": "aa75549c2c6e8f2dc036540c98848166eff91110574a94b7c828b1f5f7f8e100",
+    "modules/visualizations/staff-note/platforms/macos/StaffNoteView.swift": "55f7159720a7127399cb2d3eacde2bb4504769c79fa72b5bb2828c6c8b46f0b9"
   }
 }

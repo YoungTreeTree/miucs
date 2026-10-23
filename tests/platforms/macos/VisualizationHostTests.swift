@@ -23,6 +23,7 @@ private final class NativeProbe: MacVisualizationSession {
     private var settings: NSWindow?
     var active = false
     var lastInput: FeatureInput?
+    var lastKeyboard: KeyboardInput?
     var viewport = VisualizationViewport.desktop
     init(id: String, journal: HostJournal) {
         descriptor = VisualizationDescriptor(id: id, name: id); self.journal = journal
@@ -30,6 +31,7 @@ private final class NativeProbe: MacVisualizationSession {
     func activate(viewport: VisualizationViewport) { active = true; self.viewport = viewport }
     func resize(to viewport: VisualizationViewport) { self.viewport = viewport }
     func update(input: FeatureInput, deltaTime: Double) { lastInput = input }
+    func receive(keyboard: KeyboardInput) { lastKeyboard = keyboard }
     func deactivate() { active = false }
     func presentSettings() {
         settings = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 200, height: 100),
@@ -70,8 +72,10 @@ enum VisualizationHostTests {
         registry.register(VisualizationDescriptor(id: "second", name: "Second")) {
             let session = NativeProbe(id: "second", journal: journal); secondSession = session; return session
         }
+        let keyboard = KeyboardChannel(), keyboardID = UUID()
+        keyboard.reset(sessionID: keyboardID, state: .running)
         let panel = VisualizerPanel(source: engine.channel, registry: registry, selectedID: "first",
-                                    preferences: preferences, persistsFrame: false)
+                                    preferences: preferences, persistsFrame: false, keyboardSource: keyboard)
         let host = panel.visualizationHost
         host.controller.resume()
         check("Host mounts only the active native module", host.activeView === firstSession?.view &&
@@ -90,6 +94,7 @@ enum VisualizationHostTests {
             flatness: 0.1, spectralFlux: 0.9, onsetThreshold: 0.18, isOnset: true,
             balance: 0, sideEnergyRatio: 0, correlation: 1, displayBands: Array(repeating: 0.2, count: 24))
         capture.emit?(audio, nil)
+        keyboard.publish(KeyboardRawEvent(kind: .pressed, keyCode: 0, modifiers: []), sessionID: keyboardID)
         let generation = engine.channel.snapshot!.sessionID
         let switched = host.select(id: "second")
         host.controller.tick(deltaTime: 1.0 / 60)
@@ -98,6 +103,9 @@ enum VisualizationHostTests {
         check("New native module starts without replaying previous effects", host.activeView === secondSession?.view &&
             host.subviews.count == 2 && secondSession?.lastInput?.onsets.isEmpty == true &&
             secondSession?.lastInput?.spectralFluxPeak == 0)
+        check("Native module receives concurrent keyboard state without replaying old presses",
+            secondSession?.lastKeyboard?.state == .running && secondSession?.lastKeyboard?.events.isEmpty == true &&
+            secondSession?.lastKeyboard?.heldKeys.map(\.keyCode) == [0])
         check("Switch preserves the running audio capture and generation", engine.isRunning && capture.starts == 1 &&
             capture.stops == 0 && engine.channel.snapshot?.sessionID == generation)
         check("Module switch preserves geometry, transparency and click-through", panel.frame == frame &&
@@ -108,15 +116,19 @@ enum VisualizationHostTests {
             host.hitTest(host.convert(NSPoint(x: 20, y: 20), to: host.superview)) === host)
         host.adjustingPosition = false
         audio.time = 0.02
+        keyboard.publish(KeyboardRawEvent(kind: .released, keyCode: 0, modifiers: []), sessionID: keyboardID)
         capture.emit?(audio, nil); host.controller.tick(deltaTime: 1.0 / 60)
         check("Audio continues delivering fresh events to the replacement view", secondSession?.lastInput?.onsets.count == 1 &&
             secondSession?.lastInput?.frame?.sequence == 2)
+        check("One native refresh delivers fresh keyboard and audio events together",
+            secondSession?.lastKeyboard?.events.map(\.kind) == [.released] && secondSession?.lastInput?.onsets.count == 1)
         let noOp = host.select(id: "second"), invalid = host.select(id: "missing")
         check("Same and unknown IDs leave the current native view intact", noOp && !invalid &&
             host.activeView === secondSession?.view && journal.disposals == ["first"])
         panel.orderOut(nil)
         check("Hiding the host pauses animation while capture continues", !host.controller.isActive &&
             secondSession?.active == false && engine.isRunning && capture.stops == 0)
+        check("Hiding a native view leaves the keyboard channel running", keyboard.subscribe().read().state == .running)
         host.dispose()
         check("Explicit disposal releases the current native session", host.controller.current == nil &&
             secondSession == nil && host.subviews.count == 1 && journal.disposals == ["first", "second"])

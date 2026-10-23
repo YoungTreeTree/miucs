@@ -1,0 +1,310 @@
+{
+  "burstLimit" : 16,
+  "method" : "600 measured synthetic frames after 9s warmup per size\/pattern; production keyboard channel, native staff session and retained layer transactions; CLOCK_THREAD_CPUTIME_ID records main-thread CPU, systemUptime separately includes scheduling\/commit waits; excludes WindowServer\/GPU execution and presentation",
+  "p95BudgetMs" : 2,
+  "passed" : true,
+  "scenarios" : [
+    {
+      "animationUpdate" : {
+        "maxMs" : 0.016666483134031296,
+        "meanMs" : 0.0037684136380751929,
+        "medianMs" : 0.0036251731216907501,
+        "p95Ms" : 0.0044167973101139069,
+        "p99Ms" : 0.0063329935073852539
+      },
+      "combined" : {
+        "maxMs" : 7.8590414486825466,
+        "meanMs" : 0.091783327516168356,
+        "medianMs" : 0.053124967962503433,
+        "p95Ms" : 0.06079208105802536,
+        "p99Ms" : 0.71983365342020988
+      },
+      "frames" : 600,
+      "layerSubmission" : {
+        "maxMs" : 7.8556248918175697,
+        "meanMs" : 0.088014913878093168,
+        "medianMs" : 0.049499794840812683,
+        "p95Ms" : 0.056250020861625671,
+        "p99Ms" : 0.71620848029851913
+      },
+      "p95Under2ms" : true,
+      "pattern" : "typing20",
+      "peakStars" : 87,
+      "threadCPUCombined" : {
+        "maxMs" : 0.096542000000000003,
+        "meanMs" : 0.045998958333333374,
+        "medianMs" : 0.044958000000000005,
+        "p95Ms" : 0.050500000000000003,
+        "p99Ms" : 0.073833999999999997
+      },
+      "threadCPUSubmission" : {
+        "maxMs" : 0.093167,
+        "meanMs" : 0.042390894999999977,
+        "medianMs" : 0.041500000000000002,
+        "p95Ms" : 0.046625,
+        "p99Ms" : 0.066833000000000004
+      },
+      "threadCPUUpdate" : {
+        "maxMs" : 0.014167000000000001,
+        "meanMs" : 0.0036080633333333374,
+        "medianMs" : 0.0035000000000000001,
+        "p95Ms" : 0.0042500000000000003,
+        "p99Ms" : 0.0057910000000000001
+      },
+      "wallP95Under2ms" : true,
+      "widthPoints" : 600
+    },
+    {
+      "animationUpdate" : {
+        "maxMs" : 0.057958532124757767,
+        "meanMs" : 0.0080119453681012,
+        "medianMs" : 0.0076666474342346191,
+        "p95Ms" : 0.0092503614723682404,
+        "p99Ms" : 0.014791730791330338
+      },
+      "combined" : {
+        "maxMs" : 3.5493331961333752,
+        "meanMs" : 0.094021754339337349,
+        "medianMs" : 0.047000125050544739,
+        "p95Ms" : 0.054583419114351273,
+        "p99Ms" : 2.8589167632162571
+      },
+      "frames" : 600,
+      "layerSubmission" : {
+        "maxMs" : 3.5391664132475853,
+        "meanMs" : 0.08600980897123614,
+        "medianMs" : 0.039250124245882034,
+        "p95Ms" : 0.046374741941690445,
+        "p99Ms" : 2.8513334691524506
+      },
+      "p95Under2ms" : true,
+      "pattern" : "capacity",
+      "peakStars" : 112,
+      "threadCPUCombined" : {
+        "maxMs" : 0.16033399999999998,
+        "meanMs" : 0.03990591333333339,
+        "medianMs" : 0.038542,
+        "p95Ms" : 0.044083000000000004,
+        "p99Ms" : 0.074790999999999996
+      },
+      "threadCPUSubmission" : {
+        "maxMs" : 0.15287499999999998,
+        "meanMs" : 0.032119001666666702,
+        "medianMs" : 0.031041000000000003,
+        "p95Ms" : 0.035917000000000004,
+        "p99Ms" : 0.064958000000000002
+      },
+      "threadCPUUpdate" : {
+        "maxMs" : 0.024749999999999998,
+        "meanMs" : 0.0077869116666666582,
+        "medianMs" : 0.0075000000000000006,
+        "p95Ms" : 0.0090840000000000001,
+        "p99Ms" : 0.014542000000000001
+      },
+      "wallP95Under2ms" : true,
+      "widthPoints" : 600
+    },
+    {
+      "animationUpdate" : {
+        "maxMs" : 0.061041675508022308,
+        "meanMs" : 0.004197640810161829,
+        "medianMs" : 0.0039166770875453949,
+        "p95Ms" : 0.0051250681281089783,
+        "p99Ms" : 0.011916738003492355
+      },
+      "combined" : {
+        "maxMs" : 4.958166740834713,
+        "meanMs" : 0.10958068538457155,
+        "medianMs" : 0.056416727602481842,
+        "p95Ms" : 0.072749797254800797,
+        "p99Ms" : 2.9888749122619629
+      },
+      "frames" : 600,
+      "layerSubmission" : {
+        "maxMs" : 4.953041672706604,
+        "meanMs" : 0.10538304457440972,
+        "medianMs" : 0.052458606660366058,
+        "p95Ms" : 0.066791661083698273,
+        "p99Ms" : 2.9849167913198471
+      },
+      "p95Under2ms" : true,
+      "pattern" : "typing20",
+      "peakStars" : 87,
+      "threadCPUCombined" : {
+        "maxMs" : 0.125666,
+        "meanMs" : 0.049379910000000013,
+        "medianMs" : 0.047708,
+        "p95Ms" : 0.055833000000000001,
+        "p99Ms" : 0.088624999999999995
+      },
+      "threadCPUSubmission" : {
+        "maxMs" : 0.120708,
+        "meanMs" : 0.045416315000000006,
+        "medianMs" : 0.044042000000000005,
+        "p95Ms" : 0.051792000000000005,
+        "p99Ms" : 0.0785
+      },
+      "threadCPUUpdate" : {
+        "maxMs" : 0.021250000000000002,
+        "meanMs" : 0.0039635950000000116,
+        "medianMs" : 0.0037910000000000001,
+        "p95Ms" : 0.004875,
+        "p99Ms" : 0.0096249999999999999
+      },
+      "wallP95Under2ms" : true,
+      "widthPoints" : 800
+    },
+    {
+      "animationUpdate" : {
+        "maxMs" : 0.082916580140590668,
+        "meanMs" : 0.011754306809355816,
+        "medianMs" : 0.009708106517791748,
+        "p95Ms" : 0.030125025659799576,
+        "p99Ms" : 0.046750064939260483
+      },
+      "combined" : {
+        "maxMs" : 12.646083254367113,
+        "meanMs" : 0.24997854294876259,
+        "medianMs" : 0.060958322137594223,
+        "p95Ms" : 0.2255002036690712,
+        "p99Ms" : 4.6364166773855686
+      },
+      "frames" : 600,
+      "layerSubmission" : {
+        "maxMs" : 12.614541687071323,
+        "meanMs" : 0.23822423613940677,
+        "medianMs" : 0.050708185881376266,
+        "p95Ms" : 0.18562516197562218,
+        "p99Ms" : 4.6059582382440567
+      },
+      "p95Under2ms" : true,
+      "pattern" : "capacity",
+      "peakStars" : 112,
+      "threadCPUCombined" : {
+        "maxMs" : 0.299958,
+        "meanMs" : 0.058182983333333362,
+        "medianMs" : 0.048834000000000002,
+        "p95Ms" : 0.119958,
+        "p99Ms" : 0.174458
+      },
+      "threadCPUSubmission" : {
+        "maxMs" : 0.29020800000000002,
+        "meanMs" : 0.046988118333333342,
+        "medianMs" : 0.039042,
+        "p95Ms" : 0.098916000000000004,
+        "p99Ms" : 0.16195900000000002
+      },
+      "threadCPUUpdate" : {
+        "maxMs" : 0.069499999999999992,
+        "meanMs" : 0.011194865000000023,
+        "medianMs" : 0.0094999999999999998,
+        "p95Ms" : 0.022957999999999999,
+        "p99Ms" : 0.041916000000000002
+      },
+      "wallP95Under2ms" : true,
+      "widthPoints" : 800
+    },
+    {
+      "animationUpdate" : {
+        "maxMs" : 0.075416639447212219,
+        "meanMs" : 0.0080689601600170135,
+        "medianMs" : 0.0066249631345272064,
+        "p95Ms" : 0.017916783690452576,
+        "p99Ms" : 0.026000197976827621
+      },
+      "combined" : {
+        "maxMs" : 11.381208430975676,
+        "meanMs" : 0.41147771446655196,
+        "medianMs" : 0.09199976921081543,
+        "p95Ms" : 3.1566247344017029,
+        "p99Ms" : 5.8470834046602249
+      },
+      "frames" : 600,
+      "layerSubmission" : {
+        "maxMs" : 11.363041587173939,
+        "meanMs" : 0.40340875430653494,
+        "medianMs" : 0.085291452705860138,
+        "p95Ms" : 3.1512915156781673,
+        "p99Ms" : 5.8410833589732647
+      },
+      "p95Under2ms" : true,
+      "pattern" : "typing20",
+      "peakStars" : 87,
+      "threadCPUCombined" : {
+        "maxMs" : 0.29341700000000004,
+        "meanMs" : 0.084661741666666679,
+        "medianMs" : 0.077084,
+        "p95Ms" : 0.13041700000000001,
+        "p99Ms" : 0.19104200000000002
+      },
+      "threadCPUSubmission" : {
+        "maxMs" : 0.28549999999999998,
+        "meanMs" : 0.07704309499999995,
+        "medianMs" : 0.070250000000000007,
+        "p95Ms" : 0.11799999999999999,
+        "p99Ms" : 0.17450000000000002
+      },
+      "threadCPUUpdate" : {
+        "maxMs" : 0.075166000000000011,
+        "meanMs" : 0.0076186466666666739,
+        "medianMs" : 0.0063749999999999996,
+        "p95Ms" : 0.015833,
+        "p99Ms" : 0.023207999999999999
+      },
+      "wallP95Under2ms" : false,
+      "widthPoints" : 1600
+    },
+    {
+      "animationUpdate" : {
+        "maxMs" : 0.13749999925494194,
+        "meanMs" : 0.029393342168380816,
+        "medianMs" : 0.021958258002996445,
+        "p95Ms" : 0.06316695362329483,
+        "p99Ms" : 0.094583258032798767
+      },
+      "combined" : {
+        "maxMs" : 18.262541387230158,
+        "meanMs" : 1.1092493069979052,
+        "medianMs" : 0.15375018119812012,
+        "p95Ms" : 9.2907501384615898,
+        "p99Ms" : 13.258208055049181
+      },
+      "frames" : 600,
+      "layerSubmission" : {
+        "maxMs" : 18.212458118796349,
+        "meanMs" : 1.0798559648295245,
+        "medianMs" : 0.12887502089142799,
+        "p95Ms" : 9.2593333683907986,
+        "p99Ms" : 13.23274988681078
+      },
+      "p95Under2ms" : true,
+      "pattern" : "capacity",
+      "peakStars" : 112,
+      "threadCPUCombined" : {
+        "maxMs" : 0.54591699999999999,
+        "meanMs" : 0.14764443999999993,
+        "medianMs" : 0.11770800000000001,
+        "p95Ms" : 0.316583,
+        "p99Ms" : 0.390542
+      },
+      "threadCPUSubmission" : {
+        "maxMs" : 0.49633299999999997,
+        "meanMs" : 0.1194411016666666,
+        "medianMs" : 0.093332999999999999,
+        "p95Ms" : 0.26683399999999996,
+        "p99Ms" : 0.35195900000000002
+      },
+      "threadCPUUpdate" : {
+        "maxMs" : 0.129333,
+        "meanMs" : 0.028203338333333324,
+        "medianMs" : 0.021500000000000002,
+        "p95Ms" : 0.058541000000000003,
+        "p99Ms" : 0.083084000000000005
+      },
+      "wallP95Under2ms" : false,
+      "widthPoints" : 1600
+    }
+  ],
+  "starLimit" : 112,
+  "typingPressesPerSecond" : 20
+}

@@ -1,0 +1,122 @@
+{
+  "checks" : [
+    {
+      "name" : "Starts stopped without invented activity",
+      "passed" : true
+    },
+    {
+      "name" : "Held duration advances on the monotonic clock",
+      "passed" : true
+    },
+    {
+      "name" : "Auto repeat does not inflate typing rate",
+      "passed" : true
+    },
+    {
+      "name" : "Release has measured hold duration and clears held state",
+      "passed" : true
+    },
+    {
+      "name" : "Readers have independent event cursors",
+      "passed" : true
+    },
+    {
+      "name" : "Repeated snapshot reads do not replay events",
+      "passed" : true
+    },
+    {
+      "name" : "Duplicate down is treated as repeat",
+      "passed" : true
+    },
+    {
+      "name" : "New reader gets current state without old bursts",
+      "passed" : true
+    },
+    {
+      "name" : "Orphan release does not invent hold duration",
+      "passed" : true
+    },
+    {
+      "name" : "Modifier state is separate from ordinary held keys",
+      "passed" : true
+    },
+    {
+      "name" : "Optional physical modifier state survives the channel and Codable without changing typing rate",
+      "passed" : true
+    },
+    {
+      "name" : "Older v1 events without physical modifier state remain decodable",
+      "passed" : true
+    },
+    {
+      "name" : "Typing rate decays during idle without new events",
+      "passed" : true
+    },
+    {
+      "name" : "Held state survives event expiry",
+      "passed" : true
+    },
+    {
+      "name" : "Expired events are dropped and reported",
+      "passed" : true
+    },
+    {
+      "name" : "Event memory is bounded under a burst",
+      "passed" : true
+    },
+    {
+      "name" : "Typing-rate history has a fixed bound",
+      "passed" : true
+    },
+    {
+      "name" : "A reader reports each loss only once",
+      "passed" : true
+    },
+    {
+      "name" : "Reset clears keys, modifiers, rate, activity and events",
+      "passed" : true
+    },
+    {
+      "name" : "Old capture generation cannot publish",
+      "passed" : true
+    },
+    {
+      "name" : "Suspended channel rejects new events",
+      "passed" : true
+    },
+    {
+      "name" : "Late startup cannot revive an old generation",
+      "passed" : true
+    },
+    {
+      "name" : "Concurrent producers preserve ordered unique sequence and held state",
+      "passed" : true
+    },
+    {
+      "name" : "Value contract round trips without text fields",
+      "passed" : true
+    },
+    {
+      "name" : "One frame delivers both independent sources before animation",
+      "passed" : true
+    },
+    {
+      "name" : "Audio permission failure does not stop keyboard delivery",
+      "passed" : true
+    },
+    {
+      "name" : "Resume reads held state without replaying hidden events",
+      "passed" : true
+    },
+    {
+      "name" : "Switching modules does not reset or replay either source",
+      "passed" : true
+    },
+    {
+      "name" : "Keyboard permission failure does not stop audio delivery",
+      "passed" : true
+    }
+  ],
+  "failed" : 0,
+  "passed" : 29
+}

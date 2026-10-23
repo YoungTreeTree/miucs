@@ -5,9 +5,9 @@ from pathlib import Path
 
 root = Path(__file__).resolve().parent.parent
 failures = []
-shared = [*root.glob("modules/audio/core/*.swift"), *root.glob("modules/visualizations/api/*.swift"),
+shared = [*root.glob("modules/audio/core/*.swift"), *root.glob("modules/keyboard/core/*.swift"), *root.glob("modules/visualizations/api/*.swift"),
           *root.glob("modules/visualizations/*/core/*.swift")]
-native_names = r"\b(?:NSView|NSColor|NSWindow|CMSampleBuffer|SCStream|CGColor|CGPath|AudioEngine|AccelerateSpectrumTransform|vDSP_\w+)\b"
+native_names = r"\b(?:NSView|NSColor|NSWindow|CMSampleBuffer|SCStream|CGColor|CGPath|CGEvent|AudioEngine|KeyboardEngine|KeyboardEventTap|AccelerateSpectrumTransform|vDSP_\w+)\b"
 for path in shared:
     code = re.sub(r"//[^\n]*|/\*[\s\S]*?\*/", "", path.read_text())
     imports = re.findall(r"^import\s+(\w+)", code, re.M)
@@ -15,8 +15,8 @@ for path in shared:
         failures.append(f"{path.relative_to(root)}: shared import {imports}")
     if re.search(native_names, code):
         failures.append(f"{path.relative_to(root)}: native type in shared source")
-    if path.is_relative_to(root / "modules/audio") and re.search(r"\b(?:SoundFlightWorld|Pencil\w+|Visualization\w+)\b", code):
-        failures.append(f"{path.relative_to(root)}: audio depends on visualization")
+    if any(path.is_relative_to(root / f"modules/{source}") for source in ("audio", "keyboard")) and re.search(r"\b(?:SoundFlightWorld|Pencil\w+|Visualization\w+)\b", code):
+        failures.append(f"{path.relative_to(root)}: input source depends on visualization")
 
 for platform in ("macos", "windows"):
     opposite = "windows" if platform == "macos" else "macos"
@@ -27,7 +27,7 @@ for platform in ("macos", "windows"):
 
 for path in root.glob("modules/visualizations/**/*.swift"):
     code = re.sub(r"//[^\n]*|/\*[\s\S]*?\*/", "", path.read_text())
-    if re.search(r"\b(?:AudioEngine|SCStream|AudioPCMDecoder|AccelerateSpectrumTransform)\b", code):
+    if re.search(r"\b(?:AudioEngine|KeyboardEngine|KeyboardEventTap|SCStream|AudioPCMDecoder|AccelerateSpectrumTransform)\b", code):
         failures.append(f"{path.relative_to(root)}: visualization depends on capture or analysis backend")
 
 for path in (root / "scripts").glob("*"):

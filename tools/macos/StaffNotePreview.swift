@@ -27,13 +27,15 @@ enum StaffNotePreview {
         return scene
     }
     static func bitmap(scene: StaffNoteScene, width: Int, background: NSColor? = nil,
-                       retainedLayers: Bool = false) -> NSBitmapImageRep {
+                       retainedLayers: Bool = false, stars: [StaffStar] = [],
+                       appearance: VisualizationAppearance = .graphite) -> NSBitmapImageRep {
         let height = width / 5
         let bitmap = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: width * 2, pixelsHigh: height * 2,
             bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
             colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0)!
         let context = NSGraphicsContext(bitmapImageRep: bitmap)!
         let view = StaffNoteView(preview: scene)
+        view.updatePreview(scene, stars: stars); view.applyAppearance(appearance)
         view.setFrameSize(NSSize(width: width, height: height))
         NSGraphicsContext.saveGraphicsState(); defer { NSGraphicsContext.restoreGraphicsState() }
         NSGraphicsContext.current = NSGraphicsContext(cgContext: context.cgContext, flipped: true)

@@ -23,12 +23,17 @@ enum StaffNoteDemo {
         let view = StaffNoteView()
         view.setFrameSize(NSSize(width: width, height: height)); view.wantsLayer = true
         var scene = StaffNoteScene()
+        let keyboard = SyntheticKeyboardInput(.demo), keys = MacStaffKeyboardLayout.keys
+        let reader = keyboard.channel.subscribe()
+        var stars = StaffKeyboardStars(keys: keys)
+        var peakStars = 0, starFrames = 0
         var rendered = 0, onsetCount = 0
         var names = Set<String>()
         var minScale = Double.infinity, maxScale = -Double.infinity
         var minAngle = Double.infinity, maxAngle = -Double.infinity
         var minY = Double.infinity, maxY = -Double.infinity
         var extrema = [String: StaffNoteScene]()
+        var extremaStars = [String: [StaffStar]]()
         var lastMelodyTime: Double?
         for tick in 0..<(warmup + count * 4) {
             var left = [Float](), right = [Float]()
@@ -60,38 +65,47 @@ enum StaffNoteDemo {
                 }
             }
             scene.advance(seconds: 0.01)
+            if tick >= warmup {
+                keyboard.update(at: Double(tick - warmup) / 100)
+                stars.advance(seconds: 0.01, keyboard: reader.read())
+            }
             guard tick >= warmup, (tick - warmup) % 4 == 0 else { continue }
+            peakStars = max(peakStars, stars.stars.count)
+            if stars.hasLiveStars { starFrames += 1 }
             if let name = scene.pitch?.name { names.insert(name) }
-            if scene.scale < minScale { minScale = scene.scale; extrema["small"] = scene }
-            if scene.scale > maxScale { maxScale = scene.scale; extrema["large"] = scene }
-            if scene.swayAngle < minAngle { minAngle = scene.swayAngle; extrema["left"] = scene }
-            if scene.swayAngle > maxAngle { maxAngle = scene.swayAngle; extrema["right"] = scene }
+            if scene.scale < minScale { minScale = scene.scale; extrema["small"] = scene; extremaStars["small"] = stars.stars }
+            if scene.scale > maxScale { maxScale = scene.scale; extrema["large"] = scene; extremaStars["large"] = stars.stars }
+            if scene.swayAngle < minAngle { minAngle = scene.swayAngle; extrema["left"] = scene; extremaStars["left"] = stars.stars }
+            if scene.swayAngle > maxAngle { maxAngle = scene.swayAngle; extrema["right"] = scene; extremaStars["right"] = stars.stars }
             minY = min(minY, scene.noteY); maxY = max(maxY, scene.noteY)
             guard scene.noteCenterX == StaffNoteScene.noteX else {
                 throw AudioAnalysisError.invalidInput("The staff demo's note pivot moved sideways")
             }
             try autoreleasepool {
-                CGImageDestinationAddImage(destination, try draw(scene, with: view), properties)
+                CGImageDestinationAddImage(destination, try draw(scene, stars: stars.stars, with: view), properties)
             }
             rendered += 1
         }
         guard rendered == count, names.count >= 6, onsetCount >= 12, maxY - minY > 24,
               maxScale - minScale > 0.25, minAngle < -10 * .pi / 180, maxAngle > 10 * .pi / 180,
+              keyboard.rows.count == 5, peakStars > 20, starFrames > 200,
               CGImageDestinationFinalize(destination) else {
             throw AudioAnalysisError.invalidInput("Incomplete staff demo or insufficient visible motion")
         }
         for name in extrema.keys.sorted() {
-            let image = try draw(extrema[name]!, with: view)
+            let image = try draw(extrema[name]!, stars: extremaStars[name]!, with: view)
             let path = output.deletingLastPathComponent().appendingPathComponent("\(output.deletingPathExtension().lastPathComponent)-\(name).png")
             try RenderDemo.writePNG(image, to: path)
         }
         let report: [String: Any] = [
-            "source": "generated PCM, production audio analyzers, staff scene and retained native layers; no capture",
+            "source": "generated PCM and invented physical key events; production audio analyzers, keyboard channel, star simulation and retained native layers; no capture or event injection",
             "width": width, "height": height, "frames": rendered, "fps": fps,
             "durationSeconds": Double(count) / fps, "loop": "infinite", "background": "plain paper",
             "notes": names.sorted(), "onsets": onsetCount, "noteCenterX": StaffNoteScene.noteX,
             "scaleRange": [minScale, maxScale], "swayDegrees": [minAngle * 180 / .pi, maxAngle * 180 / .pi],
             "notationHeightRange": maxY - minY, "warmupSeconds": Double(warmup) / 100,
+            "keyboardPresses": keyboard.presses, "keyboardBursts": stars.totalBursts,
+            "keyboardRows": keyboard.rows.sorted(), "framesWithStars": starFrames, "peakStars": peakStars,
             "animationRateIsPresentationBenchmark": false
         ]
         try JSONSerialization.data(withJSONObject: report, options: [.prettyPrinted, .sortedKeys])
@@ -99,7 +113,7 @@ enum StaffNoteDemo {
         print("Rendered \(rendered) staff frames, \(names.count) notes, scale \(minScale)...\(maxScale), sway \(minAngle * 180 / .pi)...\(maxAngle * 180 / .pi) degrees")
     }
 
-    private static func draw(_ scene: StaffNoteScene, with view: StaffNoteView) throws -> CGImage {
+    private static func draw(_ scene: StaffNoteScene, stars: [StaffStar], with view: StaffNoteView) throws -> CGImage {
         guard let bitmap = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: width, pixelsHigh: height,
             bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB,
             bytesPerRow: 0, bitsPerPixel: 0), let context = NSGraphicsContext(bitmapImageRep: bitmap) else {
@@ -111,7 +125,7 @@ enum StaffNoteDemo {
         cg.translateBy(x: 0, y: Double(height)); cg.scaleBy(x: 1, y: -1)
         DemoDesktop.color(0.975, 0.971, 0.957).setFill()
         NSRect(x: 0, y: 0, width: width, height: height).fill()
-        view.updatePreview(scene); view.updateLayer()
+        view.updatePreview(scene, stars: stars); view.updateLayer()
         guard let layer = view.layer else { throw AudioAnalysisError.invalidInput("Missing native staff layers") }
         layer.render(in: cg)
         guard let image = bitmap.cgImage else { throw AudioAnalysisError.invalidInput("Missing staff demo image") }

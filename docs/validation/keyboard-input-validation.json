@@ -1,0 +1,83 @@
+{
+  "date": "2026-10-23",
+  "scope": "Independent simultaneous audio and keyboard channels; no keyboard-driven visual effects",
+  "automaticChecks": {
+    "keyboard-channel-tests": {
+      "passed": 27,
+      "failed": 0,
+      "report": "docs/validation/keyboard-channel-tests.json"
+    },
+    "keyboard-engine-tests": {
+      "passed": 32,
+      "failed": 0,
+      "report": "docs/validation/keyboard-engine-tests.json"
+    },
+    "visualization-host-tests": {
+      "passed": 14,
+      "failed": 0,
+      "report": "docs/validation/visualization-host-tests.json"
+    },
+    "contract-tests": {
+      "passed": 16,
+      "failed": 0,
+      "report": "docs/validation/contract-tests.json"
+    },
+    "staff-note-tests": {
+      "passed": 54,
+      "failed": 0,
+      "report": "docs/validation/staff-note-tests.json"
+    }
+  },
+  "totalPassed": 143,
+  "totalFailed": 0,
+  "additionalChecks": [
+    "Existing audio JSON Schema fixtures passed",
+    "Dependency boundaries passed",
+    "Local documentation links valid",
+    "Shell syntax and git diff whitespace checks passed"
+  ],
+  "application": {
+    "build": "passed",
+    "signatureVerification": "codesign --verify --deep --strict dist/Miucs.app passed",
+    "restart": "passed"
+  },
+  "liveProbe": {
+    "audioFeatureFrames": 0,
+    "audioOnsets": 0,
+    "audioStates": [
+      "connecting",
+      "recovering"
+    ],
+    "containsKeyCodesOrText": false,
+    "duration": 5.017555541358888,
+    "keyboardDroppedEvents": 0,
+    "keyboardEventsByKind": {},
+    "keyboardStates": [
+      "running"
+    ],
+    "maximumKeyboardDeliveryAgeMs": 0,
+    "maximumPressesPerSecond": 0,
+    "simultaneousRunningSamples": 0
+  },
+  "liveLimitations": {
+    "status": "partial",
+    "displayActive": false,
+    "displayAsleep": true,
+    "keyboard": "Native input monitoring permission and listen-only event tap creation succeeded. No key events occurred during this sample, so actual keystroke delivery is not yet verified.",
+    "audio": "ScreenCaptureKit returned SCStreamErrorNoCaptureSource (-3815) with the display asleep. Real simultaneous audio/keyboard delivery was not verified in this sample; synthetic concurrency and native-host delivery checks passed."
+  },
+  "sourceSHA256": {
+    "apps/macos/App.swift": "d594ad94da8cc9521cb4db77f2f4b72e86ff9b6ea68bf091910a7a1beb1130e0",
+    "apps/macos/VisualizationHostView.swift": "298c4d65f01cdab772cdd5ce1b7c98b1dccb27f40f05002da330c7d4046971c8",
+    "apps/macos/VisualizerPanel.swift": "2f2b629056bfe6e92cd83cb453b0765adbcc0aa167f6cdc4e79b80c491f75846",
+    "modules/keyboard/core/KeyboardChannel.swift": "94f858af989854a79e5fcdf9bee53f89bb231efeb3392c69630d9326d7637ef4",
+    "modules/keyboard/core/KeyboardInput.swift": "574036c72e24380641a6a25d31882a6e2458f5ca45a2407e575ee8123bebe171",
+    "modules/keyboard/platforms/macos/KeyboardEngine.swift": "84afc5e7753110e12fc3b89e8105dd7253563f07b79b6be2e60982c238fe6167",
+    "modules/keyboard/platforms/macos/KeyboardEventTap.swift": "cc06bc7c7740a05534aa44289bd7eff321e66f7a0770062f3d3110b23676060e",
+    "modules/visualizations/api/VisualizationModule.swift": "6b6bb0dd46f2f7f3906166ec47f6d1b7f7017d27890a084e9e4a2760710a116a",
+    "tests/contracts/KeyboardChannelTests.swift": "7a484e150b885853ad5515d96004583155efb8b11cb55e16295cbc2f0ebc5184",
+    "tests/platforms/macos/KeyboardEngineTests.swift": "108f114e8a0cf40cc39d88c0ec9a0163fe3142b71f26e99d633d9f37c7deb078",
+    "tests/platforms/macos/VisualizationHostTests.swift": "f2c8d8e82a8896b2aaae0f760681da021e69bd44873754a3bbf50ae47e55ad6e",
+    "tools/macos/InputDiagnostics.swift": "d0901025e9862d0ec14ef97407b8e35cd939d522d795a9ac6d859d452fd68658"
+  }
+}

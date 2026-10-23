@@ -20,6 +20,8 @@ targets:
       - path: apps/macos
       - path: modules/audio/core
       - path: modules/audio/platforms/macos
+      - path: modules/keyboard/core
+      - path: modules/keyboard/platforms/macos
       - path: modules/visualizations/api
         excludes:
           - platforms/**
@@ -29,6 +31,7 @@ targets:
       - path: modules/visualizations/staff-note/core
       - path: modules/visualizations/staff-note/platforms/macos
       - path: tools/macos/AudioDiagnostics.swift
+      - path: tools/macos/InputDiagnostics.swift
       - path: tools/macos/FlightPreview.swift
       - path: tools/macos/StaffNotePreview.swift
     settings:

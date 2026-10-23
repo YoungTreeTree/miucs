@@ -34,6 +34,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     private var statusItem: NSStatusItem?
     private var panel: VisualizerPanel?
     private let engine = AudioEngine()
+    private let keyboardEngine = KeyboardEngine()
+    private var keyboardItem: NSMenuItem?
+    private var keyboardSubscription: AnyCancellable?
     private var diagnostics: AudioDiagnostics?
     private var moveItem: NSMenuItem?
     private var sizeItem: NSMenuItem?
@@ -86,6 +89,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             return
         }
 
+        if CommandLine.arguments.contains("--diagnose-inputs") {
+            Task { await InputDiagnostics.run(audio: engine, keyboard: keyboardEngine, arguments: CommandLine.arguments) }
+            return
+        }
+
         appearanceStore.saveSelection()
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         item.button?.image = NSImage(
@@ -129,13 +137,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         menu.addItem(
             NSMenuItem(title: "重新连接音频", action: #selector(reconnect), keyEquivalent: "r")
         )
+        let keyboard = NSMenuItem(title: "键盘监听：正在连接…", action: #selector(connectKeyboard), keyEquivalent: "")
+        keyboard.target = self; keyboardItem = keyboard; menu.addItem(keyboard)
+        keyboardSubscription = keyboardEngine.$state.sink { [weak self] state in
+            self?.updateKeyboardMenu(state)
+        }
         menu.addItem(
             NSMenuItem(title: "退出 Miucs", action: #selector(quit), keyEquivalent: "q")
         )
         item.menu = menu
         statusItem = item
 
-        let panel = VisualizerPanel(source: engine.channel, registry: registry)
+        let panel = VisualizerPanel(source: engine.channel, registry: registry, keyboardSource: keyboardEngine.channel)
         self.panel = panel
         appearanceSubscription = appearanceStore.$selection.sink { [weak self] ink in
             self?.panel?.visualizationHost.applyAppearance(ink.appearance)
@@ -146,6 +159,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         updateVisualizationMenu()
 
         Task { await engine.start() }
+        Task {
+            let key = "MiucsKeyboardPermissionRequested.v1"
+            let request = !UserDefaults.standard.bool(forKey: key)
+            UserDefaults.standard.set(true, forKey: key)
+            await keyboardEngine.start(requestAccess: request)
+        }
     }
 
     @objc private func showPanel() {
@@ -193,12 +212,38 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         Task { await engine.reconnect() }
     }
 
+    private func updateKeyboardMenu(_ state: KeyboardSourceState) {
+        let label: String
+        switch state {
+        case .running: label = "已连接"
+        case .permissionRequired: label = "点击授权…"
+        case .secureInput: label = "安全输入期间暂停"
+        case .suspended: label = "等待系统恢复"
+        case .recovering: label = "正在重连…"
+        case .connecting: label = "正在连接…"
+        case .stopped: label = "点击连接…"
+        }
+        keyboardItem?.title = "键盘监听：" + label
+    }
+
+    @objc private func connectKeyboard() {
+        Task {
+            await keyboardEngine.start(requestAccess: true)
+            if keyboardEngine.state == .permissionRequired,
+               let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent") {
+                NSWorkspace.shared.open(url)
+            }
+        }
+    }
+
     @objc private func quit() {
+        keyboardEngine.stop()
         engine.stop()
         NSApp.terminate(nil)
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        keyboardEngine.stop()
         engine.stop()
         panel?.saveDrawingFrame()
         panel?.visualizationHost.dispose()

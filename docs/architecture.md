@@ -1,6 +1,6 @@
-# 音频与可视化分层
+# 输入与可视化分层
 
-Miucs 的两个业务部分是音频特征生产和可视化消费。平台适配负责系统采集、数值后端、原生绘制；应用外壳把它们组合起来。当前运行平台是 macOS，Windows 只有协作入口与验收说明。
+Miucs 的输入侧包含并行的音频特征生产与键盘事件生产，可视化在同一帧消费两路数据。平台适配负责系统采集、数值后端、原生绘制；应用外壳把它们组合起来。当前运行平台是 macOS，Windows 只有协作入口与验收说明。
 
 ```mermaid
 flowchart LR
@@ -8,8 +8,11 @@ flowchart LR
     FFT[平台 FFT 后端] --> Analysis
     Analysis --> Channel[进程内实时通道]
     Channel --> Session[当前可视化会话]
+    Keyboard[平台键盘监听] --> Keys[键盘状态与事件通道]
+    Keys --> Session
     Session --> Drawing[平台原生绘制]
     Shell[应用外壳] --> Capture
+    Shell --> Keyboard
     Shell --> Registry[内置模块注册表]
     Registry --> Session
     Shell --> Clock[屏幕同步刷新]
@@ -23,12 +26,14 @@ flowchart LR
 | `contracts/` | 语言无关的字段、单位、时间语义、版本、Schema 与合成样本 |
 | `modules/audio/core/` | PCM 数据模型、分析算法、FFT 后端接口和实时通道；只用 Foundation |
 | `modules/audio/platforms/macos/` | ScreenCaptureKit、CoreMedia 解码、恢复、Accelerate FFT；依赖音频核心 |
+| `modules/keyboard/core/` | 按键值类型、修饰状态、按住时长、敲击频率和独立订阅；只用 Foundation |
+| `modules/keyboard/platforms/macos/` | 只读 CGEventTap、输入监控权限、安全输入及休眠恢复；依赖键盘核心 |
 | `modules/visualizations/api/` | 模块描述、会话、视口、通用 RGB 笔色、注册和消费调度；只用 Foundation |
 | `modules/visualizations/api/platforms/macos/` | 原生扩展协议、公共笔色到 AppKit 的转换 |
 | `modules/visualizations/pencil-flight/core/` | 特征映射、运动、管道、粒子、纯颜色数据和示例场景 |
 | `modules/visualizations/pencil-flight/platforms/macos/` | AppKit 绘图与旧版配色兼容 |
-| `modules/visualizations/staff-note/core/` | 固定高音谱位、音符运动、起音绕符头倾摆与有界旋律轨迹 |
-| `modules/visualizations/staff-note/platforms/macos/` | 透明五线谱、音符、加线与轨迹绘制，接收公共笔色 |
+| `modules/visualizations/staff-note/core/` | 固定高音谱位、音符运动、起音绕符头倾摆、有界旋律轨迹与独立键盘布局/星爆状态 |
+| `modules/visualizations/staff-note/platforms/macos/` | 物理键码映射，透明五线谱、音符、轨迹与可复用星形图层池，接收公共笔色 |
 | `apps/macos/` | 入口、菜单、透明窗口、显示刷新、位置偏好、模块组合注册 |
 | `tools/macos/` | 数值诊断、文件分析、离线示例导出和性能测量 |
 | `tests/` | 契约、通用音频、场景规则与各平台集成验证 |
@@ -59,11 +64,15 @@ flowchart LR
 
 ## 可视化与应用外壳
 
-`VisualizationRegistry` 保存稳定 ID、名称、`VisualizationLayout` 与创建新会话的工厂。布局包含基准宽高和宽度上下限，默认值兼容飞鸟。`VisualizationController` 仅管理当前会话、订阅和视口，不持有 `AudioEngine`，因此切换不会中断音频。
+`VisualizationRegistry` 保存稳定 ID、名称、`VisualizationLayout` 与创建新会话的工厂。布局包含基准宽高和宽度上下限，默认值兼容飞鸟。`VisualizationController` 仅管理当前会话、两路独立订阅和视口，不持有音频或键盘采集对象，因此切换不会中断输入。
+
+`KeyboardEngine` 与 `AudioEngine` 由应用外壳分别持有并同时启动。键盘采集在专用线程回调中将数字事件写入 `KeyboardChannel`，不读取字符、不逐键分发主线程任务。控制器每帧先传递 `receive(keyboard:)`，再执行音频 `update(input:deltaTime:)`；任一路未授权都不阻断另一路。五线谱在同帧推进独立的键盘星爆，飞鸟沿用默认空实现。权限、事件容量、时间语义与验证见[键盘输入契约](../contracts/keyboard-input/README.md)。
 
 `PencilFlightSimulation` 是通用飞鸟会话，`SoundFlightWorld` 管理场景规则。原生 `MacPencilFlightSession` 组合通用会话、`PencilFlightView` 和调色盘；绘制对象不再订阅音频、持有计时器或管理窗口。
 
 `StaffNoteSimulation` 消费相同通道，`StaffPitch` 按自然音级映射真实谱位，`StaffPitchTracker` 按新音频时间戳过滤短暂异常并分级确认大跳。`StaffNoteScene` 分开管理确认后的准确谱位、平滑位置、绕符头中心的倾摆角度与最多 512 点/8 秒的轨迹，轨迹另做 25ms 轻度平滑。音量不进入谱位计算。`MacStaffNoteSession` 组合这一会话与 `StaffNoteView`，旋转仅作用于符干和符尾；没有依赖飞鸟核心或改动音频算法、JSON 契约。详细规则见 [五线谱音符](staff-note.md)。
+
+`StaffKeyboardStars` 与音频场景分开计时，最多保存 16 次星爆、112 颗星。`MacStaffKeyboardLayout` 将虚拟键码映射到不依赖平台的 ANSI 主区布局；左右修饰键的按下状态由采集适配层解码。普通键长按使用屏幕刷新推进，忽略系统重复事件；权限/代次变化取消旧长按，完整帧间隔负责淘汰粒子，长帧不追赶积压。`StaffNoteView` 缓存一条五角星路径和 112 个原生图层槽，只更新位置、旋转、大小和透明度，层次位于轨迹之上、音乐标记之下。
 
 全局颜色由 `VisualizationAppearanceStore` 保存为一个预设 ID，菜单提供五种笔色。`VisualizationController` 把纯数据的 `VisualizationAppearance` 交给当前会话，并在切换后的激活前传给新会话。两种原生适配只负责将公共 RGB 转成实际笔触；颜色更新不新建会话、不重订阅特征，也不清理音高轨迹。旧 `PencilColor` 是公共 `VisualizationColor` 的兼容别名，旧配色数据用于首次迁移；正常应用入口使用统一菜单。详见[笔色说明](appearance.md)。
 

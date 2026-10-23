@@ -1,0 +1,86 @@
+{
+  "checks" : [
+    {
+      "name" : "Native ANSI mapping covers the entire portable layout exactly once",
+      "passed" : true
+    },
+    {
+      "name" : "Physical mapping includes both sides and ignores function, navigation and keypad keys",
+      "passed" : true
+    },
+    {
+      "name" : "Every left\/right modifier decoder distinguishes press from release with the opposite side held",
+      "passed" : true
+    },
+    {
+      "name" : "Fn uses its dedicated down\/up flag",
+      "passed" : true
+    },
+    {
+      "name" : "Caps Lock transports both lock states as modifiersChanged",
+      "passed" : true
+    },
+    {
+      "name" : "Stars sit above the staff\/trail and below the ledger, note and text layers",
+      "passed" : true
+    },
+    {
+      "name" : "The retained pool allocates exactly 112 two-stroke vector stars",
+      "passed" : true
+    },
+    {
+      "name" : "Cached star geometry is a closed ten-vertex five-point outline",
+      "passed" : true
+    },
+    {
+      "name" : "Saturated animation reuses all pool objects and the cached path",
+      "passed" : true
+    },
+    {
+      "name" : "Expired particles hide their old layers without removing the pool",
+      "passed" : true
+    },
+    {
+      "name" : "600\/800\/1600-point windows scale position and star geometry uniformly",
+      "passed" : true
+    },
+    {
+      "name" : "All five global ink colors reach the stars' native strokes",
+      "passed" : true
+    },
+    {
+      "name" : "Stars retain transparent interiors without glow or a keyboard background",
+      "passed" : true
+    },
+    {
+      "name" : "Native bursts are visible on light\/dark backgrounds at all three sizes",
+      "passed" : true
+    },
+    {
+      "name" : "The six rendered size\/background combinations do not clip any particles",
+      "passed" : true
+    },
+    {
+      "name" : "The solid note head stays readable when stars pass beneath it",
+      "passed" : true
+    },
+    {
+      "name" : "Twenty presses\/sec run alongside pitch, sway, scale and trail with identical audio motion",
+      "passed" : true
+    },
+    {
+      "name" : "Fresh silent audio frames stop redrawing after motion and stars settle",
+      "passed" : true
+    },
+    {
+      "name" : "A fresh key wakes rendering while the audio channel stays silent",
+      "passed" : true
+    },
+    {
+      "name" : "Native reactivation clears cached star presentation",
+      "passed" : true
+    }
+  ],
+  "failed" : 0,
+  "passed" : 20
+}

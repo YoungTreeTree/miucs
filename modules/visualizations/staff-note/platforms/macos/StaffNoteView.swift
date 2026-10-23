@@ -6,6 +6,7 @@ import QuartzCore
 @MainActor
 final class StaffNoteView: NSView {
     private(set) var scene: StaffNoteScene
+    private(set) var stars = [StaffStar]()
     var onRender: ((_ seconds: Double, _ timestamp: Double) -> Void)?
     private(set) var inkStyle = VisualizationAppearance.graphite
     private var ink = VisualizationAppearance.graphite.ink.cgColor
@@ -45,6 +46,16 @@ final class StaffNoteView: NSView {
     }()
     private static let upStem = stemPath(down: false)
     private static let downStem = stemPath(down: true)
+    private static let star: CGPath = {
+        let path = CGMutablePath()
+        for i in 0..<10 {
+            let angle = -.pi / 2 + Double(i) * .pi / 5
+            let radius = i.isMultiple(of: 2) ? 5.0 : 2.1
+            let point = CGPoint(x: cos(angle) * radius, y: sin(angle) * radius)
+            if i == 0 { path.move(to: point) } else { path.addLine(to: point) }
+        }
+        path.closeSubpath(); return path.copy()!
+    }()
     private static let hatch: CGPath = {
         let path = CGMutablePath()
         for i in 0..<4 {
@@ -86,11 +97,13 @@ final class StaffNoteView: NSView {
         prepareLabels()
         // Prepare fixed geometry before the first animated frame or register change.
         _ = Self.noteHead; _ = Self.upStem; _ = Self.downStem
-        _ = Self.hatch; _ = Self.sharp; _ = Self.ledgerPaths
+        _ = Self.hatch; _ = Self.sharp; _ = Self.ledgerPaths; _ = Self.star
     }
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     override func hitTest(_ point: NSPoint) -> NSView? { nil }
-    func updatePreview(_ scene: StaffNoteScene) { self.scene = scene }
+    func updatePreview(_ scene: StaffNoteScene, stars: [StaffStar] = []) {
+        self.scene = scene; self.stars = stars
+    }
     func applyAppearance(_ appearance: VisualizationAppearance) {
         guard inkStyle != appearance else { return }
         inkStyle = appearance; ink = appearance.ink.cgColor
@@ -108,7 +121,7 @@ final class StaffNoteView: NSView {
             let drawing = RetainedDrawing()
             layer.addSublayer(drawing.root); retainedDrawing = drawing
         }
-        retainedDrawing!.update(scene: scene, size: bounds.size, ink: ink, labels: attributedLabels,
+        retainedDrawing!.update(scene: scene, stars: stars, size: bounds.size, ink: ink, labels: attributedLabels,
                                 backingScale: window?.backingScaleFactor ?? NSScreen.main?.backingScaleFactor ?? 2)
     }
 
@@ -122,6 +135,7 @@ final class StaffNoteView: NSView {
         pencil(Self.staff, width: 0.72, opacity: 0.48, in: cg)
         pencil(Self.clef, width: 1.35, opacity: 0.8, in: cg)
         drawTrail(in: cg)
+        drawStars(in: cg)
         drawLedgerLines(in: cg)
         // This pale, unscaled marker always indicates the exact notation position.
         if scene.pitch != nil {
@@ -140,6 +154,15 @@ final class StaffNoteView: NSView {
         drawLabel("—", at: CGPoint(x: 664, y: labelY), opacity: (1 - scene.labelOpacity) * 0.4, in: cg)
     }
 
+    private func drawStars(in cg: CGContext) {
+        for star in stars.prefix(StaffKeyboardStars.starLimit) {
+            cg.saveGState()
+            cg.translateBy(x: star.x, y: star.y); cg.rotate(by: star.rotation)
+            cg.scaleBy(x: star.radius / 5, y: star.radius / 5)
+            pencil(Self.star, width: 0.85, opacity: star.opacity, in: cg)
+            cg.restoreGState()
+        }
+    }
     private func drawLedgerLines(in cg: CGContext) {
         guard let pitch = scene.pitch, let path = Self.ledgerPaths[pitch.midi], !path.isEmpty else { return }
         pencil(path, width: 0.8, opacity: 0.35 + scene.labelOpacity * 0.35, in: cg)
@@ -238,6 +261,8 @@ final class StaffNoteView: NSView {
         private var headStroke: PencilPair!, stemStroke: PencilPair!, sharp: PencilPair!
         private var currentInk: CGColor?
         private var currentLabel: String?
+        private var starPool = [(layer: CALayer, stroke: PencilPair)]()
+        private var visibleStars = 0
 
         init() {
             root.bounds = CGRect(x: 0, y: 0, width: 800, height: 160)
@@ -254,6 +279,17 @@ final class StaffNoteView: NSView {
             fade.startPoint = CGPoint(x: 0, y: 0.5); fade.endPoint = CGPoint(x: 1, y: 0.5)
             trail.mask = fade
             history = pencil(nil, width: 1.05, opacity: 0.52, in: trail)
+            let stars = CALayer()
+            stars.name = "keyboard-stars"; stars.bounds = root.bounds
+            stars.position = CGPoint(x: 400, y: 80); stars.isGeometryFlipped = false
+            root.addSublayer(stars)
+            for _ in 0..<StaffKeyboardStars.starLimit {
+                let layer = CALayer()
+                layer.bounds = CGRect(x: -10, y: -10, width: 20, height: 20)
+                layer.isGeometryFlipped = false; layer.isHidden = true
+                stars.addSublayer(layer)
+                starPool.append((layer, pencil(StaffNoteView.star, width: 0.85, opacity: 1, in: layer)))
+            }
             ledgers = pencil(nil, width: 0.8, opacity: 0.7, in: root)
 
             marker.bounds = CGRect(x: -8, y: -6, width: 16, height: 12)
@@ -263,7 +299,7 @@ final class StaffNoteView: NSView {
             markerStroke = pencil(StaffNoteView.noteHead, width: 0.65, opacity: 0.6, in: marker)
 
             note.bounds = CGRect(x: -40, y: -50, width: 80, height: 100)
-            note.isGeometryFlipped = false; root.addSublayer(note)
+            note.name = "music-note"; note.isGeometryFlipped = false; root.addSublayer(note)
             stem.bounds = note.bounds; stem.position = .zero; stem.isGeometryFlipped = false
             note.addSublayer(stem)
             stemStroke = pencil(StaffNoteView.upStem, width: 1.35, opacity: 1, in: stem)
@@ -283,7 +319,7 @@ final class StaffNoteView: NSView {
 
         func invalidateAppearance() { currentInk = nil; currentLabel = nil }
 
-        func update(scene: StaffNoteScene, size: CGSize, ink: CGColor,
+        func update(scene: StaffNoteScene, stars: [StaffStar], size: CGSize, ink: CGColor,
                     labels: [String: NSAttributedString], backingScale: CGFloat) {
             root.setAffineTransform(CGAffineTransform(scaleX: size.width / 800, y: size.height / 160))
             if currentInk != ink {
@@ -291,6 +327,19 @@ final class StaffNoteView: NSView {
                 headFill.fillColor = ink; currentInk = ink; currentLabel = nil
                 placeholder.string = labels["—"]
             }
+            let count = min(stars.count, starPool.count)
+            for i in 0..<count {
+                let star = stars[i], item = starPool[i]
+                item.layer.isHidden = false
+                item.layer.position = CGPoint(x: star.x, y: star.y)
+                item.layer.setAffineTransform(CGAffineTransform(rotationAngle: star.rotation)
+                    .scaledBy(x: star.radius / 5, y: star.radius / 5))
+                item.stroke.setOpacity(star.opacity)
+            }
+            if count < visibleStars {
+                for i in count..<visibleStars { starPool[i].layer.isHidden = true }
+            }
+            visibleStars = count
             let path = CGMutablePath()
             var segment: Int?
             for point in scene.trace {

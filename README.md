@@ -2,7 +2,7 @@
 
 **让音乐自己飞。**
 
-一个原生 macOS 桌面音乐可视化工具。可以看小鸟随旋律穿行，也可以让八分音符在长条五线谱上随节奏倾摆、随音量缩放。两种模式都使用透明的铅笔线稿，播放音乐即可观看。
+一个原生 macOS 桌面音乐可视化工具。可以看小鸟随旋律穿行，也可以让八分音符在长条五线谱上随节奏倾摆、随音量缩放；同时打字，按键对应的位置会炸开一簇五角星。两种模式都使用透明的铅笔线稿。
 
 `macOS 14+` · `Apple Silicon` · `Swift 6` · `AppKit` · `Windows 规划中`
 
@@ -25,6 +25,7 @@
 - **看得见的音符**：鸟后方显示 `C4`、`F♯4` 等音名，数字代表八度；`C4` 是中央 C。
 - **会让路的管道**：随机管道提前平滑避让，大跳音时柔和展开开口；从右往左逐渐淡出，到小鸟处消失。
 - **会摆动的音符**：符干与符尾绕实心符头左右倾摆，音量起伏带动明显缩放，音高仍落在准确谱位。
+- **打字会开花**：五线谱里藏着键盘布局，按键在对应位置散出小星星；与音乐同时生效，静音也能使用。
 - **统一铅笔画风**：细铅笔线条、手写数字、稀疏云朵与点状尾迹。
 - **五种笔色**：菜单栏直接选择石墨灰、雾蓝、苔绿、赭橙或雾紫，两种模式共用一个选择，即时生效并自动保存。
 - **融入桌面**：透明、无边框、默认鼠标穿透，不抢键盘焦点。
@@ -34,9 +35,9 @@
 
 ## 五线谱音符
 
-![五线谱音符：符干绕实心符头左右倾摆，随音量缩放，旋律轨迹向左淡出](docs/assets/miucs-staff-note.gif)
+![五线谱：音符随音乐倾摆缩放，键盘对应位置同时散出五角星](docs/assets/miucs-staff-note.gif)
 
-> 合成音频经过实际音频分析、动画和原生图层绘制，开头保持同一音高，便于观察符头支点与大小变化。纸色背景用于衬托透明线稿；GIF 无声，25fps、10 秒循环，演示帧率不代表应用的屏幕刷新率。
+> 合成音频与预设按键同时经过生产分析、事件通道、动画和原生图层绘制，展示五行键位、多键同按和长按星爆；没有录制真实输入或桌面。纸色背景用于衬托透明线稿；GIF 无声，25fps、10 秒循环，演示帧率不代表应用的屏幕刷新率。
 
 默认 **800 × 160**，音符位于画面宽度的约 80% 处。固定高音谱号和 8 点线距，不随音域拉伸；高低音补加线。`C4` 与 `C♯4` 处于同一谱位，通过升号区分，八度保留真实距离。
 
@@ -51,6 +52,10 @@
 音符固定为八分音符造型，不推断时值、调号、拍号或和弦，也不生成完整乐谱。默认石墨灰，支持全局五种笔色。
 
 实心符头中心是倾摆支点，左右位置固定；高低位置由旋律决定。浅色符头与加线标示准确谱位，旋律轨迹不受倾摆或缩放影响。
+
+键盘采用隐形的 ANSI QWERTY 主键区，保留错位行、宽键中心和左右修饰键，按物理键位定位，中文输入法不改变爆点。每次按下是一颗中心星加 6 颗散开的小星，约 650ms 消失；普通键按住 300ms 后每 180ms 补一次较小星爆，松开停止。修饰键只响应按下，Caps Lock 每次切换触发；首版不包含功能键、方向键、导航区和数字小键盘。
+
+星星位于轨迹上方、音符和音名下方，随窗口等比缩放并使用全局笔色。音频未连接或静音时仍可独立响应键盘。布局、生命周期及性能验证见[五线谱说明](docs/staff-note.md)。
 
 ## 铅笔飞鸟的特征映射
 
@@ -82,6 +87,10 @@ open dist/Miucs.app
 
 首次运行时，按 macOS 提示授权系统音频捕获。授权恢复后会自动连接；休眠唤醒或采集中断也会自动恢复，菜单栏「重新连接音频」保留为手动入口。
 
+键盘输入通道与音频同时运行。首次启动新增通道时会请求 macOS「输入监控」权限，也可点击菜单「键盘监听」进入授权；菜单显示连接、等待授权或暂停状态。选择「五线谱音符」即可看到键盘星爆，飞鸟保持原有音频映射。按键数据仅在内存中短暂处理，不保存输入文字。详见[键盘输入契约](contracts/keyboard-input/README.md)。
+
+如果音乐正常、打字没有星爆，先查看菜单「键盘监听」是否为“已连接”。开启系统权限后若选择“退出并重新打开”，请确认“应用程序”里的 Miucs 也已更新，避免系统重开旧版本。
+
 ### 桌面操作
 
 | 菜单项 / 操作 | 用途 |
@@ -93,6 +102,7 @@ open dist/Miucs.app
 | 调整位置与大小… | 暂时接收鼠标，拖动画面移动，拖动右下角缩放 |
 | 完成调整 | 保存位置和大小，恢复鼠标穿透 |
 | 重新连接音频 | 重新建立系统音频捕获 |
+| 键盘监听 | 查看监听状态，未授权时点击打开输入监控权限 |
 
 ### 选择笔色
 
@@ -124,6 +134,8 @@ zsh scripts/test-melody.sh
 zsh scripts/test-flight.sh
 zsh scripts/test-staff-note.sh
 zsh scripts/test-staff-note-platform.sh
+zsh scripts/test-keyboard.sh
+zsh scripts/test-staff-keyboard.sh
 zsh scripts/test-palette.sh
 zsh scripts/test-appearance.sh
 zsh scripts/test-audio-recovery.sh
@@ -139,9 +151,13 @@ zsh scripts/measure-performance.sh --cadence
 zsh scripts/measure-performance.sh --staff-cadence
 # 指定窗口宽度（点）和测量时长（秒）
 zsh scripts/measure-performance.sh --staff-cadence build/staff-cadence.json 640 15
+# 每秒 20 次按键 / 满 112 颗星的 CPU 更新与图层提交
+zsh scripts/measure-performance.sh --staff-keyboard build/staff-keyboard-performance.json
+# 音频 + 键盘同时运行时的真实窗口刷新间隔
+zsh scripts/measure-performance.sh --staff-keyboard-cadence build/staff-keyboard-cadence.json 800 15
 ```
 
-带 `--cadence` 或 `--staff-cadence` 的命令会短暂显示相应测试窗口，测量真实刷新间隔；不采集系统声音或桌面画面。
+带 `--cadence`、`--staff-cadence` 或 `--staff-keyboard-cadence` 的命令会短暂显示相应测试窗口，测量真实刷新间隔；不采集系统声音、桌面画面，也不向系统注入按键。键盘星爆的自动验证与性能数据见[验证记录](docs/validation/staff-keyboard-validation.json)。
 
 最近一次 640 点窗口的 15 秒对照测量中，优化后平均约 60fps，最长刷新间隔从 61ms 降至 30ms，仍有零星 25～30ms 波动。测试方法、各阶段数据和限制见 [五线谱刷新记录](docs/validation/staff-render-performance.json)。
 
@@ -151,15 +167,16 @@ zsh scripts/measure-performance.sh --staff-cadence build/staff-cadence.json 640 
 zsh scripts/render-demo.sh --staff
 ```
 
-导出使用生成的音频和生产绘制代码，输出 `docs/assets/miucs-staff-note.gif`，无需播放声音或录制屏幕。帧数、动作范围和编码检查见 [演示验证记录](docs/validation/staff-demo.json)。
+导出使用生成的音频、预设物理按键和生产绘制代码，输出 `docs/assets/miucs-staff-note.gif`，无需播放声音或录制屏幕。帧数、动作范围和编码检查见 [演示验证记录](docs/validation/staff-demo.json)。
 
 独立数值参考与契约验证使用 Python 开发依赖，可通过 `python3 -m pip install -r tests/requirements.txt` 安装；应用运行不依赖 Python。
 
 ### 项目结构
 
 ```text
-contracts/                 语言无关的音频与可视化契约、Schema 和合成样本
+contracts/                 音频、键盘与可视化契约，音频 Schema 和合成样本
 modules/audio/             通用分析与实时通道，及各平台采集和数值后端
+modules/keyboard/          键盘事件、状态通道与 macOS 全局监听
 modules/visualizations/    通用模块接口、飞鸟 / 五线谱场景及各平台绘制
 apps/                      各平台应用入口、窗口和菜单
 tests/                     契约、音频、场景和平台验证
@@ -168,11 +185,12 @@ scripts/                   保持原有构建与验证命令入口
 docs/                      架构、设计说明、验证记录与演示资源
 ```
 
-音频生产与绘制消费通过进程内实时通道连接；连续状态取最新快照，短起音与频谱变化峰值单独保留。可视化模块通过注册接入，一次显示一种，切换不重启音频。Windows 目前仅预留职责说明、接口和合成测试样本，不提供可运行版本，也未指定实现语言。
+音频与键盘通过各自的进程内实时通道同时送达可视化；连续状态取最新快照，短事件有界保留。可视化模块通过注册接入，一次显示一种，切换不重启两个输入源。Windows 目前仅预留职责说明、接口和合成测试样本，不提供可运行版本，也未指定实现语言。
 
 - [开发、测试与新增模块](CONTRIBUTING.md)
 - [分层架构与依赖边界](docs/architecture.md)
 - [音频数据契约](contracts/audio-features/README.md)
+- [键盘输入与并行通道](contracts/keyboard-input/README.md)
 - [画风、特征映射与验证结果](docs/sound-flight.md)
 - [五线谱音符的谱位、运动与验证](docs/staff-note.md)
 - [全局笔色与模块接入](docs/appearance.md)

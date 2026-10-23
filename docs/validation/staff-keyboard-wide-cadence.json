@@ -1,0 +1,31 @@
+{
+  "draw" : {
+    "maxMs" : 0.66858343780040741,
+    "meanMs" : 0.22685381661479673,
+    "medianMs" : 0.19620824605226517,
+    "p95Ms" : 0.42100017890334129,
+    "p99Ms" : 0.57958345860242844
+  },
+  "drawsOver16_67ms" : 0,
+  "fps" : 59.997203468102413,
+  "frames" : 600,
+  "hiddenStopsRendering" : true,
+  "interval" : {
+    "maxMs" : 23.131208494305611,
+    "meanMs" : 16.667443517290792,
+    "medianMs" : 16.671250108629465,
+    "p95Ms" : 16.979875043034554,
+    "p99Ms" : 18.127374816685915
+  },
+  "intervalsOver25ms" : 0,
+  "keyboardPressesPerSecond" : 20,
+  "longFrames" : [
+
+  ],
+  "measurementSeconds" : 10,
+  "method" : "real native transparent window; synthetic capture transport; 1s warmup; no recording",
+  "moduleID" : "staff-note",
+  "resumedFramesInOneSecond" : 61,
+  "syntheticKeyboardPresses" : 244,
+  "widthPoints" : 1600
+}

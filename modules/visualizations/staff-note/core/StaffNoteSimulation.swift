@@ -6,6 +6,7 @@ final class StaffNoteSimulation: VisualizationSession {
         layout: VisualizationLayout(width: 800, height: 160, minimumWidth: 600, maximumWidth: 1600))
     var descriptor: VisualizationDescriptor { Self.module }
     private(set) var scene = StaffNoteScene()
+    private(set) var keyboardStars: StaffKeyboardStars
     private(set) var needsDisplay = true
     private var active = false
     private var sessionID: UUID?
@@ -15,17 +16,31 @@ final class StaffNoteSimulation: VisualizationSession {
     private var sampleRate: Double?
     private var channels: Int?
     private var onsetSequence: UInt64 = 0
+    private var pendingKeyboard: KeyboardInput?
+
+    init(keyboardKeys: [UInt16: StaffKeyboardKey] = [:]) {
+        keyboardStars = StaffKeyboardStars(keys: keyboardKeys)
+    }
 
     func activate(viewport: VisualizationViewport) {
         active = true; needsDisplay = true
         scene.resetInput(clearHistory: true)
+        keyboardStars.clear(); pendingKeyboard = nil
         sequence = nil; lastMelodyTime = nil; lastAudioTime = nil
     }
     func resize(to viewport: VisualizationViewport) { needsDisplay = true }
-    func deactivate() { active = false; scene.resetInput(clearHistory: true) }
+    func deactivate() {
+        active = false; scene.resetInput(clearHistory: true)
+        keyboardStars.clear(); pendingKeyboard = nil
+    }
     func dispose() { deactivate() }
+    func receive(keyboard: KeyboardInput) {
+        if active { pendingKeyboard = keyboard }
+    }
     func update(input: FeatureInput, deltaTime: Double) {
         guard active else { return }
+        let starsChanged = keyboardStars.advance(seconds: deltaTime, keyboard: pendingKeyboard)
+        pendingKeyboard = nil
         let wasMoving = scene.needsMotionUpdates
         scene.elapse(seconds: deltaTime)
         var changed = false
@@ -56,15 +71,15 @@ final class StaffNoteSimulation: VisualizationSession {
                         scene.receive(melody: melody, age: melodyAge); lastMelodyTime = melody.time
                     }
                 } else { scene.receive(melody: nil) }
-                lastAudioTime = frame.audio.time; sequence = frame.sequence; changed = true
+                lastAudioTime = frame.audio.time; sequence = frame.sequence
             }
             let events = input.onsets.filter { $0.sequence > onsetSequence && $0.sequence <= frame.sequence }
-            if let strength = events.map(\.strength).max() { scene.receiveOnset(strength: strength); changed = true }
+            if let strength = events.map(\.strength).max() { scene.receiveOnset(strength: strength) }
             onsetSequence = max(onsetSequence, frame.sequence)
         } else {
             scene.receive(audio: nil)
         }
         scene.animate(seconds: min(deltaTime, 0.1))
-        needsDisplay = changed || wasMoving || scene.needsMotionUpdates
+        needsDisplay = changed || wasMoving || scene.needsMotionUpdates || starsChanged
     }
 }

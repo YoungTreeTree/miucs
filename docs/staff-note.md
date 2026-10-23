@@ -21,6 +21,32 @@
 
 造型固定为普通八分音符；不根据音乐推断时值、调号、拍号或和弦，不生成完整乐谱。新模式不显示飞鸟的管道、计分、云朵、气团或调色界面。
 
+## 键盘五角星
+
+键盘和音频同时驱动画面：键盘不影响音高、倾摆、缩放与旋律轨迹；音频静音、未授权或重连也不会清空已出现的星星。没有按键时不显示键帽、键名或键盘轮廓。
+
+`StaffKeyboardLayout` 使用 ANSI QWERTY 主键区的物理位置。每行宽 15 个键宽单位，横向拉伸到 x=80～760，各行中心 y=36、58、80、102、124。数字行退格占 2 单位，Tab / 反斜杠占 1.5，Caps Lock 占 1.75，回车占 2.25，左右 Shift 分别占 2.25 / 2.75，因此 Q、A、Z 保留真实错位。底行从左到右是 Fn、Control、Option、Command、空格、右 Command、右 Option、右 Control；空格占 6.25，其余各占 1.25。爆点使用宽键中心。
+
+macOS 的虚拟键码由 `MacStaffKeyboardLayout` 转成通用键位，不读取字符，输入法不改变位置。首版不包含 F1～F12、Escape、方向键、导航区和数字小键盘。位置适配长条画布，五角星本身保持正常比例；窗口 600～1600 点宽时，位置和星形一起等比缩放。
+
+| 输入 | 星爆效果 |
+| --- | --- |
+| 普通键首次按下 | 当帧出现中心五角星，100ms 内放大、淡出；6 颗半径约 3～5 点的小星向四周移动 12～28 点，轻微旋转，650ms 内消失 |
+| 普通键长按 | 300ms 后首次补发，之后每 180ms 补发较小的中心星和 4 颗小星；忽略系统自动重复，松开立即停止新增 |
+| 多键同按 | 各自位置独立爆散 |
+| 左右修饰键、Fn | 仅真实按下触发一次；释放不会误触发，另一侧仍按住也能正确区分 |
+| Caps Lock | 锁定和解除锁定各触发一次，相同锁定状态不重复触发 |
+
+星形轮廓沿用铅笔描边、浅色衬线及五种公共笔色。绘制顺序为五线谱 / 旋律轨迹 → 星星 → 加线 / 谱位标记 / 音符 / 音名，不添加背景、光晕或彩色发光。
+
+`StaffKeyboardStars` 独立保存事件游标、长按节奏和有界粒子；`receive(keyboard:)` 暂存本帧快照，统一在音频更新中推进。最多 16 次星爆、112 颗星，超额回收最早一次。五角星路径预先缓存，原生绘制预建并复用 112 个矢量图层槽，不逐键创建计时器或主线程任务。
+
+隐藏和切换模块清空星爆，恢复时重新订阅，不补播隐藏期间的按键。权限丢失、安全输入、监听代次变化及事件丢失会停止旧长按；已有粒子继续自然消失，恢复后只响应新按下。长帧按实际时间淘汰旧粒子，每个仍有效的长按最多产生一次当前补发，绝不循环追赶积压。无音频变化且没有存活星星时不再请求绘制。
+
+自动检查覆盖键位、修饰键两侧同时按住、事件去重、长按、过期释放、权限/安全输入、重连、隐藏恢复、长帧和粒子上限；原生绘制覆盖五色、600/800/1600 点、浅深背景及音符前景层次。合成演示 GIF 同时展示音频与键盘，未采集或注入真实输入。验证摘要、CPU 数据与真实窗口刷新间隔见 [staff-keyboard-validation.json](validation/staff-keyboard-validation.json)。真实按键端到端验收与合成结果分开记录。
+
+2026-10-23 的星爆版本通过 268 项自动检查，并在安装版中完成实体键盘的打字、长按和松开确认。每秒 20 次按键及满 112 颗星、三种尺寸的主线程 CPU 更新加图层提交 p95 为 0.044～0.317ms，低于 2ms 目标；使用线程 CPU 时钟，另行记录含调度/提交等待的墙钟时间。实际透明窗口在 800 点 / 15 秒及 1600 点 / 10 秒测试中平均约 59.86 / 60.00fps，最长间隔分别为 51.13 / 23.13ms，超过 25ms 分别有 33 / 0 次。CPU 达标不代表所有刷新都按时完成，完整波动数据已保留。
+
 ## 短时毛刺过滤
 
 `StaffPitchTracker` 只在五线谱模块中处理音高候选。首次可靠音高和中断后的首音立即采用；相对于当前音高，变化不超过 2 半音时立即响应，保留正常人声的小幅换音和滑音。
@@ -58,11 +84,15 @@
 ```sh
 zsh scripts/test-staff-note.sh
 zsh scripts/test-staff-note-platform.sh
+zsh scripts/test-keyboard.sh
+zsh scripts/test-staff-keyboard.sh
 zsh scripts/test-contracts.sh
 zsh scripts/test-visualization-host.sh
 zsh build.sh
 dist/Miucs.app/Contents/MacOS/Miucs --render-staff-preview --output build/staff-note-preview
 zsh scripts/measure-performance.sh --staff-cadence build/staff-note-cadence.json
+zsh scripts/measure-performance.sh --staff-keyboard build/staff-keyboard-performance.json
+zsh scripts/measure-performance.sh --staff-keyboard-cadence build/staff-keyboard-cadence.json 800 15
 ```
 
 规则结果见 [staff-note-tests.json](validation/staff-note-tests.json)，原生布局与绘图结果见 [staff-note-platform-tests.json](validation/staff-note-platform-tests.json)。测试仅使用合成音高与独立偏好域。合成预览覆盖 600/800/1600 点、透明/浅色/深色背景、E2/C7 边界与待机，重复静帧按像素检查笔迹稳定。

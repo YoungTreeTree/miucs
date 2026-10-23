@@ -34,9 +34,11 @@ python3 -m pip install -r tests/requirements.txt
 
 ```sh
 zsh scripts/test-contracts.sh       # 依赖边界、Schema、通道与会话切换
+zsh scripts/test-keyboard.sh        # 键盘通道、并行输入、权限/休眠/重连和原生事件解码
 zsh scripts/test-flight.sh          # 飞鸟规则，含距离/体积/气团
 zsh scripts/test-staff-note.sh      # 真实谱位、平滑运动、左右摆动、轨迹和输入生命周期
 zsh scripts/test-staff-note-platform.sh # 两种布局、独立偏好、生产绘图和合成静帧
+zsh scripts/test-staff-keyboard.sh  # ANSI 布局、并行星爆、长按生命周期、原生图层池和五色缩放
 zsh scripts/test-melody.sh          # 合成独奏/伴奏与响应时序
 zsh scripts/test-audio-pipeline.sh  # 分析编排等价与格式切换
 zsh scripts/test-audio-recovery.sh  # 采集生命周期、退避与迟到回调
@@ -52,7 +54,10 @@ zsh scripts/validate-audio.sh       # 基础音频与独立 NumPy 参考
 dist/Miucs.app/Contents/MacOS/Miucs --verify-flight-window --output docs/validation/flight-window-tests.json
 dist/Miucs.app/Contents/MacOS/Miucs --render-flight-preview --output build/flight-preview
 dist/Miucs.app/Contents/MacOS/Miucs --render-staff-preview --output build/staff-note-preview
+dist/Miucs.app/Contents/MacOS/Miucs --diagnose-inputs --duration 8 --output build/input-diagnostics.json
 ```
+
+`--diagnose-inputs` 同时检查音频和键盘，只导出分类计数和状态。真实桌面权限请用 `open -n -g "$PWD/dist/Miucs.app" --args --diagnose-inputs --duration 8 --output "$PWD/build/input-diagnostics.json"` 验证；直接运行二进制可能继承开发工具权限。键盘需要先授予「输入监控」权限；普通诊断不弹授权框，可显式加 `--request-keyboard-access` 请求权限。诊断期间可正常打字和播放音频，不会保存按键内容。字段与数据范围见[键盘输入契约](contracts/keyboard-input/README.md)。
 
 实际系统回放检查需要已授予系统音频捕获权限，会播放约 12 秒合成低幅度测试音：
 
@@ -68,17 +73,20 @@ python3 scripts/evaluate-melody.py --help
 zsh scripts/measure-performance.sh
 zsh scripts/measure-performance.sh --cadence
 zsh scripts/measure-performance.sh --staff-cadence build/staff-note-cadence.json
+zsh scripts/measure-performance.sh --staff-keyboard build/staff-keyboard-performance.json
+zsh scripts/measure-performance.sh --staff-keyboard-cadence build/staff-keyboard-cadence.json 800 15
 zsh scripts/render-demo.sh --desktop
 zsh scripts/render-demo.sh --close-up
 zsh scripts/render-demo.sh --staff
 ```
 
-生成的 WAV、逐帧诊断、临时可执行文件在 `build/`；摘要报告在 `docs/validation/`。合成 GIF 使用模拟桌面或纯纸色背景，不能将真实桌面、播放内容、路径或账号信息放入公开示例。`--staff` 通过生成的 PCM、生产分析器和五线谱原生图层导出倾摆与缩放演示；编码器验证帧数、时长、逐帧像素和元数据，检查图在 `build/demo-export/review/`。性能测量方法与限制见报告，位图耗时不能代替屏幕呈现帧率。两种 cadence 命令会短暂显示合成测试窗口，需要解锁桌面并保持显示器唤醒；显示休眠期间系统会暂停同步回调。
+生成的 WAV、逐帧诊断、临时可执行文件在 `build/`；摘要报告在 `docs/validation/`。合成 GIF 使用模拟桌面或纯纸色背景，不能将真实桌面、播放内容、路径或账号信息放入公开示例。`--staff` 通过生成的 PCM、预设物理按键、生产分析器/键盘通道和五线谱原生图层导出并行动画；不会向 macOS 注入按键。编码器验证帧数、时长、逐帧像素和元数据，检查图在 `build/demo-export/review/`。`--staff-keyboard` 测量每秒 20 次按键和 112 颗星的模拟更新与图层提交，目标合计 p95 < 2ms，不包含 WindowServer/GPU。cadence 命令短暂显示合成测试窗口并记录真实刷新间隔，需要解锁桌面并保持显示器唤醒；显示休眠期间系统会暂停同步回调。
 
 ## 新增可视化模块
 
 1. 新建 `modules/visualizations/<stable-id>/core/`，实现 `VisualizationSession` 与自己的场景状态；声明稳定 ID、名称和 `VisualizationLayout`（基准宽高、最小/最大宽度）。布局默认值保持飞鸟 400 × 260。
 2. 消费连续特征、独立起音事件和区间峰值；按代次/序号去重并处理静音、失联、缺失旋律。数据单位以契约为准，映射与平滑属于本模块。
+   键盘快照通过 `receive(keyboard:)` 在同一帧的音频更新之前送达；需要键盘效果的模块覆盖该默认空实现，并在统一动画更新中消费。键盘和音频同时运行，不能将输入源实现成二选一。
 3. 在 `platforms/macos/` 实现 `MacVisualizationSession`，提供原生视图与 `applyAppearance(_:)`，使用通用 `VisualizationAppearance.ink` 绘制，保持本模块的线宽和透明度。颜色由外壳统一保存、在激活前应用；模块不另存颜色。停用/释放应幂等，关闭设置窗口并取消自身订阅。原生 UI 类型不能进入通用 API。
 4. 在 `BuiltInVisualizations.registry()` 添加工厂注册；核对编译分组并更新 Xcode 源目录。菜单、比例、预设缩放和每个模块的位置大小保存均由外壳读取描述符，无需修改音频分析或采集代码。
 5. 在 `tests/visualizations/` 添加合成数据驱动的规则测试，在 `tests/platforms/macos/` 添加需要原生环境的测试；运行契约与原生切换测试。不要把测试用第二模块注册进正式应用。

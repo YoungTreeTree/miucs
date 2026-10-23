@@ -14,7 +14,7 @@ mkdir -p build/demo-export docs/assets
 swiftc -swift-version 6 -parse-as-library -O \
   -framework AppKit -framework Accelerate -framework ScreenCaptureKit \
   -framework CoreMedia -framework CoreAudio -framework ImageIO \
-  "${native_libraries[@]}" tools/macos/DemoDesktop.swift tools/macos/StaffNoteDemo.swift tools/macos/RenderDemo.swift \
+  "${native_libraries[@]}" tools/macos/SyntheticKeyboardInput.swift tools/macos/DemoDesktop.swift tools/macos/StaffNoteDemo.swift tools/macos/RenderDemo.swift \
   -o build/render-demo
 build/render-demo "build/demo-export/$demo_name.gif" "${demo_options[@]}"
 python3 scripts/prepare-demo.py "build/demo-export/$demo_name.gif" "docs/assets/$demo_name.gif"

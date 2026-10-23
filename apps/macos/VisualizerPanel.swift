@@ -22,11 +22,13 @@ final class VisualizerPanel: NSPanel, NSWindowDelegate {
     var drawingAspectRatio: Double { descriptor.layout.aspectRatio }
 
     init(source: any AudioFeatureSource, registry: VisualizationRegistry, selectedID: String? = nil,
-         preferences: UserDefaults = .standard, persistsFrame: Bool = true) {
+         preferences: UserDefaults = .standard, persistsFrame: Bool = true,
+         keyboardSource: (any KeyboardFeatureSource)? = nil) {
         let requestedID = selectedID ?? preferences.string(forKey: Self.selectionPreferencesKey)
         let initial = requestedID.flatMap { registry.descriptor(id: $0) } ?? registry.descriptors.first!
         descriptor = initial
-        visualizationHost = VisualizationHostView(source: source, registry: registry, selectedID: initial.id)
+        visualizationHost = VisualizationHostView(source: source, registry: registry, selectedID: initial.id,
+                                                   keyboardSource: keyboardSource)
         self.preferences = preferences; self.persistsFrame = persistsFrame
         super.init(contentRect: NSRect(x: 80, y: 80, width: initial.layout.width, height: initial.layout.height),
                    styleMask: [.borderless, .nonactivatingPanel, .fullSizeContentView],

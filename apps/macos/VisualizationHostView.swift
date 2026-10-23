@@ -17,8 +17,9 @@ final class VisualizationHostView: NSView {
     override var isFlipped: Bool { true }
     override var isOpaque: Bool { false }
 
-    init(source: any AudioFeatureSource, registry: VisualizationRegistry, selectedID: String) {
-        controller = VisualizationController(source: source, registry: registry)
+    init(source: any AudioFeatureSource, registry: VisualizationRegistry, selectedID: String,
+         keyboardSource: (any KeyboardFeatureSource)? = nil) {
+        controller = VisualizationController(source: source, registry: registry, keyboardSource: keyboardSource)
         let layout = registry.descriptor(id: selectedID)?.layout ?? .desktop
         super.init(frame: NSRect(x: 0, y: 0, width: layout.width, height: layout.height))
         wantsLayer = true; layer?.isOpaque = false; layer?.backgroundColor = NSColor.clear.cgColor

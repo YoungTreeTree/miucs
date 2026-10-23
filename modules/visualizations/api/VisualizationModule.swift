@@ -28,6 +28,7 @@ protocol VisualizationSession: AnyObject {
     var descriptor: VisualizationDescriptor { get }
     func applyAppearance(_ appearance: VisualizationAppearance)
     func activate(viewport: VisualizationViewport)
+    func receive(keyboard: KeyboardInput)
     func update(input: FeatureInput, deltaTime: Double)
     func resize(to viewport: VisualizationViewport)
     func deactivate()
@@ -37,6 +38,7 @@ protocol VisualizationSession: AnyObject {
 // Simulations have no paint. Native drawing adapters implement this hook.
 extension VisualizationSession {
     func applyAppearance(_ appearance: VisualizationAppearance) {}
+    func receive(keyboard: KeyboardInput) {}
 }
 
 @MainActor
@@ -60,12 +62,16 @@ final class VisualizationController {
     let registry: VisualizationRegistry
     private let source: any AudioFeatureSource
     private var subscription: FeatureSubscription
+    private let keyboardSource: (any KeyboardFeatureSource)?
+    private var keyboardSubscription: KeyboardSubscription?
     private(set) var current: (any VisualizationSession)?
     private(set) var isActive = false
     private(set) var appearance: VisualizationAppearance?
     private var viewport = VisualizationViewport.desktop
-    init(source: any AudioFeatureSource, registry: VisualizationRegistry) {
+    init(source: any AudioFeatureSource, registry: VisualizationRegistry,
+         keyboardSource: (any KeyboardFeatureSource)? = nil) {
         self.source = source; self.registry = registry; subscription = source.subscribe()
+        self.keyboardSource = keyboardSource; keyboardSubscription = keyboardSource?.subscribe()
     }
     @discardableResult
     func select(id: String) -> Bool {
@@ -74,6 +80,7 @@ final class VisualizationController {
         precondition(candidate.descriptor.id == id, "Session identifier must match its registry entry")
         current?.deactivate(); current?.dispose()
         subscription = source.subscribe() // New module sees the snapshot, not old bursts.
+        keyboardSubscription = keyboardSource?.subscribe()
         current = candidate
         if let appearance { candidate.applyAppearance(appearance) }
         if isActive { candidate.activate(viewport: viewport) }
@@ -88,7 +95,8 @@ final class VisualizationController {
     }
     func resume() {
         guard !isActive else { return }
-        isActive = true; subscription = source.subscribe(); current?.activate(viewport: viewport)
+        isActive = true; subscription = source.subscribe(); keyboardSubscription = keyboardSource?.subscribe()
+        current?.activate(viewport: viewport)
     }
     func pause() {
         guard isActive else { return }
@@ -98,6 +106,7 @@ final class VisualizationController {
     func tick(deltaTime: Double) -> FeatureInput? {
         guard isActive else { return nil }
         let input = subscription.read()
+        if let keyboard = keyboardSubscription?.read() { current?.receive(keyboard: keyboard) }
         current?.update(input: input, deltaTime: deltaTime)
         return input
     }
