@@ -157,7 +157,7 @@ private final class HostOverlayView: NSView {
         let attributes: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: ink.withAlphaComponent(0.9),
             .strokeColor: NSColor(calibratedWhite: 0.98, alpha: 0.6), .strokeWidth: -3]
         let label = NSAttributedString(string: text, attributes: attributes)
-        label.draw(at: NSPoint(x: max(18, (layout.width - label.size().width) / 2), y: layout.height - 25))
+        label.draw(at: NSPoint(x: max(18, (CGFloat(layout.width) - label.size().width) / 2), y: layout.height - 25))
         if adjustingPosition {
             NSColor(calibratedWhite: 0.45, alpha: 0.75).setStroke()
             let path = NSBezierPath(); path.lineWidth = 1
