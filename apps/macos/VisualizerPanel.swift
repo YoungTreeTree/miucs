@@ -89,6 +89,7 @@ final class VisualizerPanel: NSPanel, NSWindowDelegate {
         isRestoringFrame = false
         saveDrawingFrame()
         if wasRendering { visualizationHost.setRendering(true) }
+        if isAdjustingPosition { showHoverLock() }
         return true
     }
 
@@ -174,7 +175,7 @@ final class VisualizerPanel: NSPanel, NSWindowDelegate {
         visualizationHost.adjustingPosition = adjusting
         hoverLockPanel?.lockButton.unlocked = adjusting
         onAdjustmentChange?()
-        if adjusting { orderFrontRegardless() } else { saveDrawingFrame() }
+        if adjusting { orderFrontRegardless(); showHoverLock() } else { saveDrawingFrame() }
     }
     override func orderFrontRegardless() {
         super.orderFrontRegardless(); visualizationHost.setRendering(true)
@@ -227,12 +228,16 @@ final class VisualizerPanel: NSPanel, NSWindowDelegate {
     /// Explicit input makes dwell/leave and lifecycle behavior deterministic in native tests.
     func updateHoverLock(pointer: NSPoint, now: TimeInterval, enabled: Bool) {
         guard enabled, hoverSuspensionReasons.isEmpty else { hideHoverLock(); return }
-        guard hoverDwell.update(inside: frame.contains(pointer), now: now) else {
+        let hovered = hoverDwell.update(inside: frame.contains(pointer), now: now)
+        guard isAdjustingPosition || hovered else {
             if let control = hoverLockPanel, control.isVisible {
                 removeChildWindow(control); control.orderOut(nil)
             }
             return
         }
+        showHoverLock()
+    }
+    private func showHoverLock() {
         if hoverLockPanel == nil {
             let control = HoverLockPanel()
             control.lockButton.target = self; control.lockButton.action = #selector(toggleHoverLock)

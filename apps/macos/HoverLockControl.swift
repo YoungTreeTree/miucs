@@ -51,29 +51,52 @@ final class SketchLockButton: NSButton {
         toolTip = "开锁 · 移动与缩放"; setAccessibilityLabel(toolTip)
     }
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+    // Explicit top-down coordinates: NSButton's inherited orientation must not invert the lock.
+    override var isFlipped: Bool { true }
     override func draw(_ dirtyRect: NSRect) {
-        // Slightly irregular double strokes keep the icon in the pencil visual language.
-        NSColor(calibratedWhite: isHighlighted ? 0.86 : 0.98, alpha: 0.94).setFill()
-        NSBezierPath(roundedRect: bounds.insetBy(dx: 1, dy: 1), xRadius: 10, yRadius: 10).fill()
-        NSColor(calibratedWhite: 0.24, alpha: 0.95).setStroke()
-        let body = NSBezierPath(); body.lineWidth = 1.5; body.lineJoinStyle = .round; body.lineCapStyle = .round
-        body.move(to: NSPoint(x: 10, y: 9)); body.line(to: NSPoint(x: 24, y: 9.5))
-        body.line(to: NSPoint(x: 23.5, y: 21)); body.line(to: NSPoint(x: 10.5, y: 20.5)); body.close()
-        body.stroke()
-        let shackle = NSBezierPath(); shackle.lineWidth = 1.5; shackle.lineCapStyle = .round
-        shackle.move(to: NSPoint(x: unlocked ? 16 : 12.5, y: 21))
-        shackle.line(to: NSPoint(x: unlocked ? 16 : 12.5, y: 25))
-        shackle.curve(to: NSPoint(x: unlocked ? 27 : 22, y: unlocked ? 25 : 24),
-                      controlPoint1: NSPoint(x: unlocked ? 16 : 12.5, y: 32),
-                      controlPoint2: NSPoint(x: unlocked ? 28 : 22, y: 32))
-        if !unlocked { shackle.line(to: NSPoint(x: 22, y: 21)) }
-        shackle.stroke()
-        let detail = NSBezierPath(); detail.lineWidth = 0.6
-        detail.move(to: NSPoint(x: 11, y: 8)); detail.line(to: NSPoint(x: 24.5, y: 8.5)); detail.stroke()
-        NSColor(calibratedWhite: 0.24, alpha: 0.95).setFill()
-        NSBezierPath(ovalIn: NSRect(x: 15.5, y: 14, width: 3, height: 3)).fill()
-        let key = NSBezierPath(); key.lineWidth = 1.2
-        key.move(to: NSPoint(x: 17, y: 14)); key.line(to: NSPoint(x: 17, y: 12)); key.stroke()
+        NSGraphicsContext.saveGraphicsState()
+        defer { NSGraphicsContext.restoreGraphicsState() }
+        // Reduce the drawing while preserving the forgiving 34-point click target.
+        let transform = NSAffineTransform()
+        transform.translateX(by: bounds.midX, yBy: bounds.midY)
+        transform.scale(by: 0.7)
+        transform.translateX(by: -17, yBy: -17)
+        transform.concat()
+        let outline = NSBezierPath()
+        outline.move(to: NSPoint(x: 10.5, y: 16))
+        outline.curve(to: NSPoint(x: 23.5, y: 15.7), controlPoint1: NSPoint(x: 14, y: 15.5), controlPoint2: NSPoint(x: 20, y: 16.1))
+        outline.curve(to: NSPoint(x: 25, y: 18), controlPoint1: NSPoint(x: 24.5, y: 15.7), controlPoint2: NSPoint(x: 25, y: 16.6))
+        outline.line(to: NSPoint(x: 24.7, y: 26))
+        outline.curve(to: NSPoint(x: 22.8, y: 28), controlPoint1: NSPoint(x: 24.8, y: 27.4), controlPoint2: NSPoint(x: 24, y: 28.1))
+        outline.line(to: NSPoint(x: 11, y: 27.7))
+        outline.curve(to: NSPoint(x: 9.3, y: 26), controlPoint1: NSPoint(x: 9.7, y: 27.8), controlPoint2: NSPoint(x: 9.2, y: 27.2))
+        outline.line(to: NSPoint(x: 9.5, y: 18)); outline.close()
+        // Paper only inside the lock body; no rounded button tile around the drawing.
+        NSColor(calibratedWhite: isHighlighted ? 0.89 : 0.98, alpha: 0.88).setFill()
+        outline.fill()
+        let shackle = NSBezierPath()
+        shackle.move(to: NSPoint(x: 13, y: 15.7))
+        shackle.line(to: NSPoint(x: 12.8, y: 11))
+        shackle.curve(to: NSPoint(x: unlocked ? 24.4 : 21.7, y: unlocked ? 9.5 : 10.8),
+                      controlPoint1: NSPoint(x: 12.5, y: unlocked ? 2.5 : 4.1),
+                      controlPoint2: NSPoint(x: unlocked ? 24.6 : 22, y: unlocked ? 2.1 : 4.4))
+        if !unlocked { shackle.line(to: NSPoint(x: 21.8, y: 15.8)) }
+        let key = NSBezierPath(ovalIn: NSRect(x: 15.6, y: 19.7, width: 2.5, height: 2.6))
+        key.move(to: NSPoint(x: 16.9, y: 22)); key.line(to: NSPoint(x: 16.8, y: 24.2))
+        let ink = NSColor(calibratedWhite: 0.27, alpha: isHighlighted ? 1 : 0.9)
+        for path in [outline, shackle, key] {
+            path.lineJoinStyle = .round; path.lineCapStyle = .round
+            NSColor(calibratedWhite: 0.98, alpha: 0.78).setStroke()
+            path.lineWidth = 3.2; path.stroke()
+            ink.setStroke(); path.lineWidth = 1.25; path.stroke()
+        }
+        // Short, offset pencil echoes instead of a mechanically duplicated outline.
+        let grain = NSBezierPath(); grain.lineWidth = 0.55; grain.lineCapStyle = .round
+        grain.move(to: NSPoint(x: 10.8, y: 18.6)); grain.line(to: NSPoint(x: 10.6, y: 25.3))
+        grain.move(to: NSPoint(x: 12, y: 29)); grain.line(to: NSPoint(x: 21.8, y: 29.2))
+        grain.move(to: NSPoint(x: 14.3, y: 10.4))
+        grain.curve(to: NSPoint(x: 19.7, y: 6.5), controlPoint1: NSPoint(x: 14.3, y: 7.6), controlPoint2: NSPoint(x: 16.6, y: 5.8))
+        ink.withAlphaComponent(0.32).setStroke(); grain.stroke()
     }
 }
 

@@ -67,6 +67,7 @@ internal sealed class HoverLockControl : IDisposable
         string label = locked ? "解锁：移动与缩放" : "锁定：恢复鼠标穿透";
         button.ToolTip = label;
         AutomationProperties.SetName(button, label);
+        if (!locked && owner.IsVisible && available()) Show();
     }
 
     public void Reset()
@@ -91,8 +92,15 @@ internal sealed class HoverLockControl : IDisposable
     internal void Sample(double now, bool inside)
     {
         if (disposed) return;
-        bool show = dwell.Update(now, inside, owner.IsVisible && available());
+        bool enabled = owner.IsVisible && available();
+        bool hovered = dwell.Update(now, inside, enabled);
+        bool show = enabled && (!glyph.Locked || hovered);
         if (!show) { if (control.IsVisible) control.Hide(); return; }
+        Show();
+    }
+
+    private void Show()
+    {
         Position();
         if (!control.IsVisible) { control.Show(); Position(); }
     }
@@ -125,14 +133,27 @@ internal sealed class LockGlyph : FrameworkElement
     protected override void OnRender(DrawingContext dc)
     {
         base.OnRender(dc);
-        dc.DrawRoundedRectangle(new SolidColorBrush(Color.FromArgb(235, 251, 249, 243)), null, new Rect(1, 1, ActualWidth - 2, ActualHeight - 2), 9, 9);
-        dc.PushTransform(new ScaleTransform(ActualWidth / 36, ActualHeight / 36));
-        var pen = new Pen(new SolidColorBrush(Color.FromRgb(68, 66, 61)), 1.6) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round, LineJoin = PenLineJoin.Round };
-        dc.DrawGeometry(null, pen, Geometry.Parse("M 10,16 L 25,15.5 26,28 10.5,28.5 Z"));
-        dc.DrawGeometry(null, pen, Geometry.Parse(Locked ? "M 13,16 L 13,11 C 12.7,3.5 23,3.7 23,11 L 23,15.5" : "M 13,16 L 13,10 C 13,3.7 23,3.5 23.8,10"));
-        dc.DrawGeometry(null, new Pen(new SolidColorBrush(Color.FromArgb(70, 68, 66, 61)), .7), Geometry.Parse("M 9,17 L 9.8,29 25,29 M 11,14.8 L 24,15"));
-        dc.DrawEllipse(pen.Brush, null, new Point(18, 21), 1.3, 1.3);
-        dc.DrawLine(pen, new Point(18, 21), new Point(18, 24));
+        dc.PushTransform(new ScaleTransform(ActualWidth / 34, ActualHeight / 34));
+        dc.PushTransform(new ScaleTransform(.7, .7, 17, 17));
+        var ink = new SolidColorBrush(Color.FromArgb(230, 69, 69, 69));
+        Pen Pencil(Brush brush, double width) => new(brush, width)
+            { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round, LineJoin = PenLineJoin.Round };
+        var outline = Geometry.Parse("M 10.5,16 C 14,15.5 20,16.1 23.5,15.7 C 24.5,15.7 25,16.6 25,18 L 24.7,26 C 24.8,27.4 24,28.1 22.8,28 L 11,27.7 C 9.7,27.8 9.2,27.2 9.3,26 L 9.5,18 Z");
+        var shackle = Geometry.Parse(Locked
+            ? "M 13,15.7 L 12.8,11 C 12.5,4.1 22,4.4 21.7,10.8 L 21.8,15.8"
+            : "M 13,15.7 L 12.8,11 C 12.5,2.5 24.6,2.1 24.4,9.5");
+        var key = new GeometryGroup();
+        key.Children.Add(new EllipseGeometry(new Rect(15.6, 19.7, 2.5, 2.6)));
+        key.Children.Add(Geometry.Parse("M 16.9,22 L 16.8,24.2"));
+        dc.DrawGeometry(new SolidColorBrush(Color.FromArgb(224, 250, 250, 250)), null, outline);
+        foreach (var path in new Geometry[] { outline, shackle, key })
+        {
+            dc.DrawGeometry(null, Pencil(new SolidColorBrush(Color.FromArgb(199, 250, 250, 250)), 3.2), path);
+            dc.DrawGeometry(null, Pencil(ink, 1.25), path);
+        }
+        dc.DrawGeometry(null, Pencil(new SolidColorBrush(Color.FromArgb(82, 69, 69, 69)), .55),
+            Geometry.Parse("M 10.8,18.6 L 10.6,25.3 M 12,29 L 21.8,29.2 M 14.3,10.4 C 14.3,7.6 16.6,5.8 19.7,6.5"));
+        dc.Pop();
         dc.Pop();
     }
 }

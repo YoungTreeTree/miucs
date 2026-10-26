@@ -80,7 +80,7 @@ internal static class WindowsSmokeTests
             int ink = 0;
             for (int i = 0; i < pixels.Length; i += 4)
                 if (pixels[i + 3] > 200 && pixels[i] < 130) ink++;
-            if (ink < 40) throw new InvalidOperationException("Lock glyph missing pencil strokes");
+            if (ink < 20) throw new InvalidOperationException("Lock glyph missing pencil strokes");
             if (locked) lockedPixels = pixels;
             else
             {
@@ -131,8 +131,15 @@ internal static class WindowsSmokeTests
                 Assert(hover.TargetWindow.IsVisible, "toggle does not flicker");
             }
             Assert(!adjusting, "even number of toggles relocks");
+            hover.ClickForVerification();
+            hover.Sample(3.05, false);
+            Assert(hover.TargetWindow.IsVisible, "unlocked target stays visible outside canvas");
+            hover.ClickForVerification();
             hover.Sample(3.1, false);
             Assert(!hover.TargetWindow.IsVisible, "leave hides target");
+            adjusting = true; NativeWindow.SetInteractive(owner, true); hover.SetLocked(false);
+            Assert(hover.TargetWindow.IsVisible, "menu unlock immediately reveals target");
+            hover.ClickForVerification(); hover.Sample(3.2, false);
             for (int i = 0; i < 30; i++) hover.Sample(4 + i * .1, true);
             Assert(!hover.TargetWindow.IsVisible, "reentry must dwell again");
             hover.Sample(7, true);

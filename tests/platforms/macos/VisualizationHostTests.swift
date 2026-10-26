@@ -142,11 +142,26 @@ enum VisualizationHostTests {
         check("Only a small child target becomes interactive on locked dwell", lock != nil &&
             lock?.parent === panel && lock?.frame.size == NSSize(width: 34, height: 34) &&
             lock?.ignoresMouseEvents == false && panel.ignoresMouseEvents)
+        // Render the real NSButton view (including its coordinate orientation) for visual review.
+        let previewDirectory = URL(fileURLWithPath: "build/hover-lock-preview")
+        try FileManager.default.createDirectory(at: previewDirectory, withIntermediateDirectories: true)
+        for unlocked in [false, true] {
+            let button = SketchLockButton(frame: NSRect(x: 0, y: 0, width: 34, height: 34))
+            button.unlocked = unlocked
+            if let bitmap = button.bitmapImageRepForCachingDisplay(in: button.bounds) {
+                button.cacheDisplay(in: button.bounds, to: bitmap)
+                try bitmap.representation(using: .png, properties: [:])?.write(to:
+                    previewDirectory.appendingPathComponent(unlocked ? "unlocked.png" : "locked.png"))
+            }
+        }
         var adjustmentChanges = 0
         panel.onAdjustmentChange = { adjustmentChanges += 1 }
         lock?.lockButton.performClick(nil)
         check("Lock button unlocks movement and resizing through the existing state", panel.isAdjustingPosition &&
             host.adjustingPosition && !panel.ignoresMouseEvents && lock?.lockButton.unlocked == true)
+        panel.updateHoverLock(pointer: NSPoint(x: panel.frame.maxX + 200, y: panel.frame.maxY + 200), now: 3.1, enabled: true)
+        check("Unlocked target remains visible after pointer leaves the canvas", lock?.isVisible == true && lock?.parent === panel)
+        panel.updateHoverLock(pointer: pointer, now: 3.2, enabled: true)
         lock?.lockButton.performClick(nil)
         check("Second click relocks without flicker and updates menu observer", !panel.isAdjustingPosition &&
             !host.adjustingPosition && panel.ignoresMouseEvents && lock?.parent === panel && adjustmentChanges == 2)
@@ -164,6 +179,11 @@ enum VisualizationHostTests {
         } ?? false)
         panel.updateHoverLock(pointer: NSPoint(x: panel.frame.minX - 1, y: panel.frame.minY), now: 3.1, enabled: true)
         check("Pointer exit hides and detaches the interactive target", lock?.isVisible == false && lock?.parent == nil)
+        panel.setAdjustingPosition(true)
+        check("Menu adjustment immediately reveals the unlocked control without dwell", lock?.isVisible == true && lock?.lockButton.unlocked == true)
+        panel.updateHoverLock(pointer: pointer, now: 4, enabled: false)
+        check("Disabled canvas hides even an unlocked control", lock?.isVisible == false && lock?.parent == nil)
+        panel.setAdjustingPosition(false)
         let newPointer = NSPoint(x: panel.frame.midX, y: panel.frame.midY)
         panel.updateHoverLock(pointer: newPointer, now: 3.2, enabled: true)
         check("Pointer reentry does not immediately redisplay the lock", lock?.isVisible == false)
