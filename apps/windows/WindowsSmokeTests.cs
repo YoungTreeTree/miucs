@@ -17,7 +17,7 @@ internal static class WindowsSmokeTests
         Directory.CreateDirectory(output);
         VerifyLockGlyph(output);
         VerifyHoverLockWindow();
-        foreach (var factory in new Func<VisualizationView>[] { () => new PencilFlightView(), () => new StaffNoteView() })
+        foreach (var factory in new Func<VisualizationView>[] { () => new PencilFlightView(), () => new StaffNoteView(), () => new PixelKeyboardView() })
         {
             using var view = factory();
             var audio = new AudioChannel(); var keyboard = new KeyboardChannel();
@@ -46,7 +46,7 @@ internal static class WindowsSmokeTests
             var pixels = new byte[(int)view.Width * (int)view.Height * 4]; image.CopyPixels(pixels, (int)view.Width * 4, 0);
             int drawn = 0, transparent = 0;
             for (int i = 3; i < pixels.Length; i += 4) { if (pixels[i] > 0) drawn++; else transparent++; }
-            if (drawn < 100 || transparent < pixels.Length / 8) throw new InvalidOperationException(view.Id + " failed transparent drawing coverage");
+            if (drawn < 100 || transparent < pixels.Length / (view.Id == "pixel-keyboard" ? 40 : 8)) throw new InvalidOperationException(view.Id + " failed transparent drawing coverage");
             var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(image));
             using (var file = File.Create(Path.Combine(output, view.Id + ".png"))) encoder.Save(file);
             view.Deactivate(); view.Deactivate(); view.Activate();

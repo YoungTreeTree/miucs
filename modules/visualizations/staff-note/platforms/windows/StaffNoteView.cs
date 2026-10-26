@@ -6,7 +6,7 @@ using Miucs.Keyboard;
 
 namespace Miucs.Visualizations;
 
-public sealed class StaffNoteView : VisualizationView
+public class StaffNoteView : VisualizationView
 {
     public override string Id => "staff-note";
     public override double BaseWidth => 800;

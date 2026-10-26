@@ -94,7 +94,7 @@ internal sealed class DesktopHost : IDisposable
     private void SwitchVisualization(string id)
     {
         if (view != null && view.Id == id) return;
-        if (id != "pencil-flight" && id != "staff-note") return;
+        if (id != "pencil-flight" && id != "staff-note" && id != "pixel-keyboard") return;
         WindowFrame? previous = view == null ? null : CurrentFrame();
         hoverLock?.Reset();
         StopRendering();
@@ -102,7 +102,7 @@ internal sealed class DesktopHost : IDisposable
         {
             SaveFrame(); root.Children.Remove(view); view.Dispose();
         }
-        view = id == "staff-note" ? new StaffNoteView() : new PencilFlightView();
+        view = id switch { "staff-note" => new StaffNoteView(), "pixel-keyboard" => new PixelKeyboardView(), _ => new PencilFlightView() };
         preferences.Visualization = id;
         ApplyColor();
         root.Children.Insert(0, view);
@@ -211,6 +211,7 @@ internal sealed class DesktopHost : IDisposable
         var modes = new Forms.ToolStripMenuItem("可视化"); menu.Items.Add(modes);
         Add(modes.DropDownItems, "铅笔飞鸟", () => SwitchVisualization("pencil-flight"), view.Id == "pencil-flight");
         Add(modes.DropDownItems, "五线谱音符", () => SwitchVisualization("staff-note"), view.Id == "staff-note");
+        Add(modes.DropDownItems, "像素音乐键盘", () => SwitchVisualization("pixel-keyboard"), view.Id == "pixel-keyboard");
         var sizes = new Forms.ToolStripMenuItem("画面大小"); menu.Items.Add(sizes);
         foreach (double scale in new[] { .8, 1, 1.25, 1.5, 2 })
             Add(sizes.DropDownItems, $"{scale * 100:0}%", () => { SetFrame(CurrentFrame() with { Width = view.BaseWidth * scale }); SaveFrame(); SavePreferences(); });
@@ -220,7 +221,7 @@ internal sealed class DesktopHost : IDisposable
         Add(menu.Items, adjusting ? "完成调整（恢复鼠标穿透）" : "调整位置与大小…", () => SetAdjusting(!adjusting));
         menu.Items.Add(new Forms.ToolStripSeparator());
         Add(menu.Items, "重新连接音频", () => { if (!suspended) capture.Reconnect(); });
-        Add(menu.Items, "键盘星爆（仅内存处理物理键位）", () =>
+        Add(menu.Items, "键盘输入 · 星爆 / 猫爪", () =>
         {
             preferences.KeyboardEnabled = !preferences.KeyboardEnabled;
             if (preferences.KeyboardEnabled && !suspended) keyboardCapture.Start(); else keyboardCapture.Stop();

@@ -11,6 +11,11 @@ struct MiucsApp: App {
             EmptyView()
         }
         .commands {
+            CommandMenu("可视化") {
+                ForEach(appDelegate.visualizationDescriptors, id: \.id) { descriptor in
+                    Button(descriptor.name) { appDelegate.selectVisualization(id: descriptor.id) }
+                }
+            }
             CommandGroup(replacing: .appSettings) {
                 VisualizationColorCommand(store: appDelegate.appearanceStore)
             }
@@ -41,6 +46,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     private var moveItem: NSMenuItem?
     private var sizeItem: NSMenuItem?
     private let registry = BuiltInVisualizations.registry()
+    var visualizationDescriptors: [VisualizationDescriptor] { registry.descriptors }
     private var visualizationMenu: NSMenu?
     private var colorMenu: VisualizationColorMenu?
     private var appearanceSubscription: AnyCancellable?
@@ -192,7 +198,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     }
 
     @objc private func selectVisualization(_ sender: NSMenuItem) {
-        guard let id = sender.representedObject as? String, panel?.selectVisualization(id: id) == true else { return }
+        guard let id = sender.representedObject as? String else { return }
+        selectVisualization(id: id)
+    }
+
+    func selectVisualization(id: String) {
+        guard panel?.selectVisualization(id: id) == true else { return }
         updateVisualizationMenu()
         updateSizeMenu()
     }

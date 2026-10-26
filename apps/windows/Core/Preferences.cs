@@ -39,7 +39,7 @@ public sealed class Preferences
             var result = JsonSerializer.Deserialize<Preferences>(File.ReadAllText(path));
             if (result == null) return new();
             result.Frames ??= new();
-            result.Visualization = result.Visualization == "staff-note" ? "staff-note" : "pencil-flight";
+            result.Visualization = result.Visualization is "staff-note" or "pixel-keyboard" ? result.Visualization : "pencil-flight";
             result.Color = Palette.ContainsKey(result.Color ?? "") ? result.Color! : "graphite";
             foreach (var key in new List<string>(result.Frames.Keys))
                 if (result.Frames[key] == null || !result.Frames[key].IsValid) result.Frames.Remove(key);

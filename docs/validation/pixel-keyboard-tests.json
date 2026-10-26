@@ -1,0 +1,54 @@
+{
+  "checks" : [
+    {
+      "name" : "Third visualization is selectable with its own proportional layout",
+      "passed" : true
+    },
+    {
+      "name" : "Transparent photo-derived cat portrait loads independently of an app bundle",
+      "passed" : true
+    },
+    {
+      "name" : "Music and keyboard are consumed together",
+      "passed" : true
+    },
+    {
+      "name" : "Audio loss cannot reset held keys",
+      "passed" : true
+    },
+    {
+      "name" : "Key release works without audio",
+      "passed" : true
+    },
+    {
+      "name" : "600\/800\/1600 widths retain transparent margins and exact module proportions",
+      "passed" : true
+    },
+    {
+      "name" : "Embedded music is actually visible inside the screen pixels",
+      "passed" : true
+    },
+    {
+      "name" : "Cat portrait occupies the reserved left margin without covering staff",
+      "passed" : true
+    },
+    {
+      "name" : "Five global inks reach the embedded real staff renderer",
+      "passed" : true
+    },
+    {
+      "name" : "Hide clears held keys and the embedded music history",
+      "passed" : true
+    },
+    {
+      "name" : "Resume does not replay historical keyboard events",
+      "passed" : true
+    },
+    {
+      "name" : "Native synthetic audio plus keyboard demo exports successfully",
+      "passed" : true
+    }
+  ],
+  "failed" : 0,
+  "passed" : 12
+}

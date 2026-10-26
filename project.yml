@@ -30,6 +30,10 @@ targets:
       - path: modules/visualizations/pencil-flight/platforms/macos
       - path: modules/visualizations/staff-note/core
       - path: modules/visualizations/staff-note/platforms/macos
+      - path: modules/visualizations/pixel-keyboard/core
+      - path: modules/visualizations/pixel-keyboard/platforms/macos
+      - path: modules/visualizations/pixel-keyboard/assets/cat-head.png
+        buildPhase: resources
       - path: tools/macos/AudioDiagnostics.swift
       - path: tools/macos/InputDiagnostics.swift
       - path: tools/macos/FlightPreview.swift

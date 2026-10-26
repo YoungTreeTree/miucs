@@ -87,7 +87,7 @@ enum StaffNotePlatformTests {
         fallback.visualizationHost.dispose()
         let builtins = BuiltInVisualizations.registry(preferences: preferences)
         let native = builtins.makeSession(id: "staff-note") as? MacStaffNoteSession
-        check("Both production modules are registered and staff has no palette panel", builtins.descriptors.map(\.id) == ["pencil-flight", "staff-note"] && native?.settingsTitle == nil && native?.view is StaffNoteView)
+        check("All three production modules are registered and staff has no palette panel", builtins.descriptors.map(\.id) == ["pencil-flight", "staff-note", "pixel-keyboard"] && native?.settingsTitle == nil && native?.view is StaffNoteView)
         let generation = UUID()
         native?.activate(viewport: VisualizationViewport(width: 800, height: 160, scale: 1))
         let snapshot = AudioFeatureFrame(sessionID: generation, sequence: 1, receivedAt: 0,

@@ -65,7 +65,7 @@
       "passed" : true
     },
     {
-      "name" : "Both production modules are registered and staff has no palette panel",
+      "name" : "All three production modules are registered and staff has no palette panel",
       "passed" : true
     },
     {

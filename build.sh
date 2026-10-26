@@ -27,6 +27,8 @@ swiftc \
   "${app_sources[@]}"
 
 cp "$root/apps/macos/Info.plist" "$app/Contents/Info.plist"
+mkdir -p "$app/Contents/Resources"
+cp "$root/modules/visualizations/pixel-keyboard/assets/cat-head.png" "$app/Contents/Resources/PixelCatHead.png"
 
 # Ad-hoc signatures change on every build, so macOS drops the screen-recording grant.
 # A stable self-signed identity keeps the TCC permission across rebuilds.

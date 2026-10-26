@@ -93,3 +93,7 @@ flowchart LR
 运行步骤见 [CONTRIBUTING.md](../CONTRIBUTING.md)。重点证据包括通道积压/峰值/事件过期、并发读写、重连隔离、模块切换与原生视图释放，以及原有数值、旋律、恢复、飞行、窗口、配色测试。合成导出器与性能工具继续调用生产绘制路径，公开资源不包含真实桌面或声音。
 
 原分层重构的回归、数值对照、原生刷新及真实采集记录见 [分层验收汇总](validation/architecture-validation.json)，其中源码哈希对应当时版本。新增五线谱的规则、布局、绘图与回归记录见 [五线谱验收说明](staff-note.md)。
+
+### 像素音乐键盘
+
+`MacPixelKeyboardSession` 组合已有 `StaffNoteSimulation`、`StaffNoteView` 和独立的 `PixelKeyboardScene`。屏幕保留原始 800×160 坐标和 5:1 比例，放入 800×460 模块内的 640×128 谱面，屏幕左侧为照片转制的 64×64 像素猫头；不复制音高分析和轨迹算法。`PixelKeyboardView` 缓存静态机身、每个按下键帽和双爪像素图，运行中仅更新叠层显隐与两个猫爪位置。键盘状态拥有自己的代次、事件游标和已观察按下集合，音频重连不重置它。Windows 通过 `PixelKeyboardView : StaffNoteView` 复用现有屏幕绘制与场景，增加独立的可移植 `PixelKeyboardScene`。

@@ -10,6 +10,7 @@ enum BuiltInVisualizations {
         let registry = VisualizationRegistry()
         registry.register(PencilFlightSimulation.module) { MacPencilFlightSession(paletteStore: store) }
         registry.register(StaffNoteSimulation.module) { MacStaffNoteSession() }
+        registry.register(MacPixelKeyboardSession.module) { MacPixelKeyboardSession() }
         return registry
     }
 }
