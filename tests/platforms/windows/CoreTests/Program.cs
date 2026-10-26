@@ -12,6 +12,7 @@ internal static class Program
             PcmDecoderTests.Run();
             VisualizationTests.Run();
             ShellTests.Run();
+            HoverLockTests.Run();
             Console.WriteLine("PASS: all Windows portable core tests");
             return 0;
         }

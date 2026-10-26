@@ -11,7 +11,10 @@ final class VisualizationHostView: NSView {
     private var resizeStartFrame: NSRect?
     private var resizeStartMouse = NSPoint.zero
     var adjustingPosition = false {
-        didSet { overlay.adjustingPosition = adjustingPosition; overlay.needsDisplay = true }
+        didSet {
+            if !adjustingPosition { resizeStartFrame = nil }
+            overlay.adjustingPosition = adjustingPosition; overlay.needsDisplay = true
+        }
     }
     var activeView: NSView? { (controller.current as? any MacVisualizationSession)?.view }
     override var isFlipped: Bool { true }
@@ -139,7 +142,7 @@ private final class HostOverlayView: NSView {
         NSGraphicsContext.saveGraphicsState(); defer { NSGraphicsContext.restoreGraphicsState() }
         let scale = NSAffineTransform(); scale.scaleX(by: bounds.width / layout.width, yBy: bounds.height / layout.height); scale.concat()
         let text: String
-        if adjustingPosition { text = "拖动移动 · 右下角缩放 · 菜单栏完成" }
+        if adjustingPosition { text = "拖动移动 · 右下角缩放 · 点击锁完成" }
         else {
             switch state {
             case .connecting: text = "正在连接声音…"

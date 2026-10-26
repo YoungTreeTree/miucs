@@ -1,0 +1,34 @@
+name: macOS
+on:
+  push:
+    paths: ['apps/macos/**', 'modules/**/*.swift', 'tools/macos/**', 'tests/**/*.swift', 'scripts/*.sh', '.github/workflows/macos.yml']
+  pull_request:
+    paths: ['apps/macos/**', 'modules/**/*.swift', 'tools/macos/**', 'tests/**/*.swift', 'scripts/*.sh', '.github/workflows/macos.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-tests:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Native window, lifecycle and appearance regressions
+        run: |
+          zsh scripts/test-visualization-host.sh
+          zsh scripts/test-appearance.sh
+          zsh scripts/test-staff-note-platform.sh
+      - name: Compile complete application without personal signing identity
+        shell: zsh {0}
+        run: |
+          root="$PWD"
+          source scripts/swift-sources.sh
+          mkdir -p build
+          swiftc -parse-as-library -swift-version 6 -O \
+            -framework AppKit -framework SwiftUI -framework ScreenCaptureKit \
+            -framework CoreMedia -framework CoreAudio -framework Accelerate \
+            -o build/Miucs "${app_sources[@]}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Miucs-macos-validation
+          path: docs/validation/*tests.json

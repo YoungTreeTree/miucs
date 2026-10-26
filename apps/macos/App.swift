@@ -154,6 +154,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             self?.panel?.visualizationHost.applyAppearance(ink.appearance)
         }
         panel.orderFrontRegardless()
+        panel.onAdjustmentChange = { [weak self, weak panel] in
+            self?.moveItem?.title = panel?.isAdjustingPosition == true
+                ? "完成调整（恢复鼠标穿透）" : "调整位置与大小…"
+        }
         panel.onSizeChange = { [weak self] in self?.updateSizeMenu() }
         updateSizeMenu()
         updateVisualizationMenu()

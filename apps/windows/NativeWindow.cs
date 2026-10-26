@@ -17,6 +17,25 @@ internal static class NativeWindow
     [StructLayout(LayoutKind.Sequential)] private struct Rect { public int Left, Top, Right, Bottom; }
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)] private struct MonitorInfo { public int Size; public Rect Monitor, Work; public uint Flags; }
 
+    [StructLayout(LayoutKind.Sequential)] private struct CursorPoint { public int X, Y; }
+    [DllImport("user32.dll")] private static extern bool GetCursorPos(out CursorPoint point);
+
+    public static bool TryGetCursorPosition(out Point point)
+    {
+        bool found = GetCursorPos(out var native);
+        point = new Point(native.X, native.Y);
+        return found;
+    }
+
+    public static void PositionControl(Window window, Point origin, double width, double height)
+    {
+        SetWindowPos(new WindowInteropHelper(window).Handle, new IntPtr(-1), (int)Math.Round(origin.X),
+            (int)Math.Round(origin.Y), (int)Math.Ceiling(width), (int)Math.Ceiling(height), 0x0010);
+    }
+
+    internal static bool IsClickThrough(Window window) =>
+        (GetWindowLongPtr(new WindowInteropHelper(window).Handle, ExtendedStyle).ToInt64() & Transparent) != 0;
+
     public static void SetInteractive(Window window, bool interactive)
     {
         var hwnd = new WindowInteropHelper(window).Handle;

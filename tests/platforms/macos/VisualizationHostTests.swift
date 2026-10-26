@@ -75,7 +75,7 @@ enum VisualizationHostTests {
         let keyboard = KeyboardChannel(), keyboardID = UUID()
         keyboard.reset(sessionID: keyboardID, state: .running)
         let panel = VisualizerPanel(source: engine.channel, registry: registry, selectedID: "first",
-                                    preferences: preferences, persistsFrame: false, keyboardSource: keyboard)
+                                    preferences: preferences, persistsFrame: false, keyboardSource: keyboard, monitorsHover: false)
         let host = panel.visualizationHost
         host.controller.resume()
         check("Host mounts only the active native module", host.activeView === firstSession?.view &&
@@ -125,7 +125,79 @@ enum VisualizationHostTests {
         let noOp = host.select(id: "second"), invalid = host.select(id: "missing")
         check("Same and unknown IDs leave the current native view intact", noOp && !invalid &&
             host.activeView === secondSession?.view && journal.disposals == ["first"])
+        // The pointer sampler needs no input-monitoring/accessibility permission and never
+        // turns the whole locked canvas interactive to reveal the button.
+        var dwell = HoverLockDwell()
+        for step in 0..<30 { _ = dwell.update(inside: true, now: Double(step) / 10) }
+        check("Lock dwell stays hidden before three continuous seconds", !dwell.isVisible)
+        check("Lock dwell appears at three seconds", dwell.update(inside: true, now: 3))
+        check("Leaving resets lock dwell immediately", !dwell.update(inside: false, now: 3.1))
+        _ = dwell.update(inside: true, now: 4)
+        check("Reentry starts a new dwell", !dwell.update(inside: true, now: 4.1))
+        check("Sleep or a suspended sampler cannot satisfy hover dwell", !dwell.update(inside: true, now: 100))
+        check("A reversed clock resets dwell", !dwell.update(inside: true, now: 99))
+        let pointer = NSPoint(x: panel.frame.midX, y: panel.frame.midY)
+        for step in 0...30 { panel.updateHoverLock(pointer: pointer, now: Double(step) / 10, enabled: true) }
+        let lock = panel.hoverLockPanel
+        check("Only a small child target becomes interactive on locked dwell", lock != nil &&
+            lock?.parent === panel && lock?.frame.size == NSSize(width: 34, height: 34) &&
+            lock?.ignoresMouseEvents == false && panel.ignoresMouseEvents)
+        var adjustmentChanges = 0
+        panel.onAdjustmentChange = { adjustmentChanges += 1 }
+        lock?.lockButton.performClick(nil)
+        check("Lock button unlocks movement and resizing through the existing state", panel.isAdjustingPosition &&
+            host.adjustingPosition && !panel.ignoresMouseEvents && lock?.lockButton.unlocked == true)
+        lock?.lockButton.performClick(nil)
+        check("Second click relocks without flicker and updates menu observer", !panel.isAdjustingPosition &&
+            !host.adjustingPosition && panel.ignoresMouseEvents && lock?.parent === panel && adjustmentChanges == 2)
+        for _ in 0..<6 { lock?.lockButton.performClick(nil) }
+        check("Repeated toggles remain synchronized", !panel.isAdjustingPosition && panel.ignoresMouseEvents &&
+            lock?.lockButton.unlocked == false && adjustmentChanges == 8)
+        panel.setDrawingWidth(panel.frame.width + 20)
+        check("Lock target follows resized drawing and remains inside it", lock.map {
+            abs($0.frame.midX - panel.frame.midX) < 0.01 && panel.frame.contains($0.frame)
+        } ?? false)
+        let persistedFrame = preferences.dictionary(forKey: frameKey)
+        panel.setAdjustingPosition(true); panel.setAdjustingPosition(false)
+        check("Lock changes preserve existing saved geometry", persistedFrame.map {
+            NSDictionary(dictionary: $0).isEqual(to: preferences.dictionary(forKey: frameKey)!)
+        } ?? false)
+        panel.updateHoverLock(pointer: NSPoint(x: panel.frame.minX - 1, y: panel.frame.minY), now: 3.1, enabled: true)
+        check("Pointer exit hides and detaches the interactive target", lock?.isVisible == false && lock?.parent == nil)
+        let newPointer = NSPoint(x: panel.frame.midX, y: panel.frame.midY)
+        panel.updateHoverLock(pointer: newPointer, now: 3.2, enabled: true)
+        check("Pointer reentry does not immediately redisplay the lock", lock?.isVisible == false)
+        for step in 33...63 { panel.updateHoverLock(pointer: newPointer, now: Double(step) / 10, enabled: true) }
+        panel.setAdjustingPosition(true)
+        NotificationCenter.default.post(name: NSApplication.didChangeScreenParametersNotification, object: nil)
+        check("Display reconfiguration resets the control rather than stranding a click target", lock?.isVisible == false &&
+            lock?.parent == nil && panel.ignoresMouseEvents)
+        for step in 70...100 { panel.updateHoverLock(pointer: NSPoint(x: panel.frame.midX, y: panel.frame.midY),
+                                                   now: Double(step) / 10, enabled: true) }
+        panel.setAdjustingPosition(true)
+        let workspaceNotifications = NSWorkspace.shared.notificationCenter
+        workspaceNotifications.post(name: NSWorkspace.willSleepNotification, object: nil)
+        workspaceNotifications.post(name: NSWorkspace.screensDidSleepNotification, object: nil)
+        workspaceNotifications.post(name: NSWorkspace.sessionDidResignActiveNotification, object: nil)
+        check("Sleep and inactive session immediately relock and remove the target", panel.ignoresMouseEvents &&
+            !panel.isAdjustingPosition && lock?.isVisible == false && lock?.parent == nil)
+        workspaceNotifications.post(name: NSWorkspace.didWakeNotification, object: nil)
+        workspaceNotifications.post(name: NSWorkspace.screensDidWakeNotification, object: nil)
+        for step in 110...140 { panel.updateHoverLock(pointer: NSPoint(x: panel.frame.midX, y: panel.frame.midY),
+                                                    now: Double(step) / 10, enabled: true) }
+        panel.setAdjustingPosition(true)
+        check("Partial resume cannot reveal target or unlock an inactive session", lock?.isVisible == false &&
+            panel.ignoresMouseEvents && !panel.isAdjustingPosition)
+        workspaceNotifications.post(name: NSWorkspace.sessionDidBecomeActiveNotification, object: nil)
+        panel.updateHoverLock(pointer: NSPoint(x: panel.frame.midX, y: panel.frame.midY), now: 15, enabled: true)
+        check("Full resume begins with a fresh hidden dwell", lock?.isVisible == false && panel.ignoresMouseEvents)
+        for step in 151...180 { panel.updateHoverLock(pointer: NSPoint(x: panel.frame.midX, y: panel.frame.midY),
+                                                    now: Double(step) / 10, enabled: true) }
+        check("Continuous hover after full resume reveals a locked target", lock?.parent === panel &&
+            lock?.isVisible == true && panel.ignoresMouseEvents)
         panel.orderOut(nil)
+        check("Hiding locks drawing and removes the child target", panel.ignoresMouseEvents &&
+            !panel.isAdjustingPosition && lock?.isVisible == false && lock?.parent == nil)
         check("Hiding the host pauses animation while capture continues", !host.controller.isActive &&
             secondSession?.active == false && engine.isRunning && capture.stops == 0)
         check("Hiding a native view leaves the keyboard channel running", keyboard.subscribe().read().state == .running)
