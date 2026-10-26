@@ -112,7 +112,7 @@ final class VisualizerPanel: NSPanel, NSWindowDelegate {
                             width: layout.width, height: layout.height), display: false)
         }
         let legacyWidth = descriptor.id == "pencil-flight" ? preferences.object(forKey: "MiucsPencilFlightWidth") as? Double : nil
-        let width = saved?.width ?? (restored ? frame.width : legacyWidth ?? layout.width)
+        let width: Double = saved.map { Double($0.width) } ?? (restored ? Double(frame.width) : legacyWidth ?? layout.width)
         setDrawingWidth(width, persist: false)
         visualizationHost.updateViewport()
         if persistsFrame { setFrameAutosaveName(Self.autosaveName(for: descriptor.id)) }
@@ -130,7 +130,7 @@ final class VisualizerPanel: NSPanel, NSWindowDelegate {
     func setDrawingWidth(_ requested: Double, topLeft: NSPoint? = nil, persist: Bool = true) {
         guard requested.isFinite else { return }
         let layout = descriptor.layout, visible = visibleFrame()
-        let maximum = min(layout.maximumWidth, min(visible.width, visible.height / layout.aspectRatio))
+        let maximum = min(layout.maximumWidth, min(Double(visible.width), Double(visible.height) / layout.aspectRatio))
         let width = min(max(requested, min(layout.minimumWidth, maximum)), maximum)
         let height = width * layout.aspectRatio
         let anchor = topLeft ?? NSPoint(x: frame.minX, y: frame.maxY)
