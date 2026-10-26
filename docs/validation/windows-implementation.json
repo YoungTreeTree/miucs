@@ -1,0 +1,67 @@
+{
+  "dateUTC": "2026-10-26",
+  "baseline": "376162084339753ca57371c07d08cd2a05369730",
+  "executionPlatform": "Linux x86_64 dot cloud only",
+  "sdk": "8.0.427",
+  "checks": {
+    "portableTests": {
+      "status": "passed",
+      "assertions": 2315,
+      "audio": 222,
+      "keyboard": 21,
+      "pcm": 9,
+      "visualization": 29,
+      "shell": 2034
+    },
+    "numpyReference": {
+      "status": "passed",
+      "frames": 233,
+      "fields": 16,
+      "mismatchCount": 0
+    },
+    "dependencyBoundaries": "passed (existing Swift checker)",
+    "jsonSchema": "passed (8 fixtures, 12 invalid inputs)",
+    "windowsX64SelfContainedPublish": "passed",
+    "windowsNativeOffscreen": "not-run; implemented in Windows CI/smoke command",
+    "realWASAPILoopback": "not-run",
+    "realKeyboardHook": "not-run",
+    "desktopTransparencyAndMixedDPI": "not-run",
+    "remoteCI": "not-run (not yet pushed)"
+  },
+  "sourceSHA256": {
+    "apps/windows/Core/Preferences.cs": "5edd28f8fa5abb78e088284ed7f4c4640867c4b64722146882e9d8fee7c4bc4b",
+    "apps/windows/DesktopHost.cs": "e269ddd071e1e466cda75901e161a1dfee54795aaefe10bf9ac31d462921ec10",
+    "apps/windows/NativeWindow.cs": "77fee9d814db3bcf0781b1c759f3485699a50992698ba5688f536ca6dcd8a03b",
+    "apps/windows/Program.cs": "235123a1982172ce3a1fb688ad673e6da3af90fb33d90bb88df873aa68afa23d",
+    "apps/windows/WindowsSmokeTests.cs": "3744e660753746006edb9e21f499a7893a1176e6fa42e818e6fade6f8922c914",
+    "modules/audio/platforms/windows/Capture/LoopbackCapture.cs": "0c259ad349072dfe8ab75950bae082e665d561dec025154dbc60a631fac4ea18",
+    "modules/audio/platforms/windows/Capture/PcmDecoder.cs": "6130eee104d1527582949df51aff209330a6e42afcf7608933da222b604902b2",
+    "modules/audio/platforms/windows/Capture/WasapiNative.cs": "a32ac451659664edb99822df4a61bbe8760be5527a76d950c8daeb2280eb5321",
+    "modules/audio/platforms/windows/Core/AudioAnalyzer.cs": "4ee14bcaa5e3481d0ef6c5ca9fffd5cc01020acd29ae9d7f2bed82e73de996aa",
+    "modules/audio/platforms/windows/Core/AudioChannel.cs": "8208b0e977bb01eabd17fea182d515890267ffff3fbc62a7d895c0d2efe9b15e",
+    "modules/audio/platforms/windows/Core/AudioContract.cs": "128c90e14e27cafdc79307ba6b97f45cabf27321a75e69b181a6c8f0720780cb",
+    "modules/audio/platforms/windows/Core/AudioModels.cs": "fd46a438954dca16079ed7a83862a6045358c7d5267f1e5d1ff685559c0a1743",
+    "modules/audio/platforms/windows/Core/BeatTracker.cs": "41afc2c2c4925fe01b1e3d23829f6e4877cc5734050e8b5f9091b79c928836af",
+    "modules/audio/platforms/windows/Core/MelodyAnalyzer.cs": "acc96c8e6589db11bf94218ae71c2041c97455668d67a22781bf0c27f4aea5b4",
+    "modules/audio/platforms/windows/Core/Spectrum.cs": "6ca6d4fe1795a242c615f84d919a170daad0fa501306242fc41a0ffe086abccb",
+    "modules/keyboard/platforms/windows/Core/KeyboardChannel.cs": "acc0aaf79a887468a7d0a808bf6a7ac5e3b6587d4243753e73706bf36c53c66a",
+    "modules/keyboard/platforms/windows/KeyboardCapture.cs": "d870ffaade2fc884a22889b5714c7ecc252d8ad17e0ecf8e17be3af4b44e259f",
+    "modules/visualizations/api/platforms/windows/VisualizationView.cs": "06228c444ee90aaec1e9ab2443ac61837eee8c17c8cf99b31ecc418fbdec801e",
+    "modules/visualizations/pencil-flight/platforms/windows/FlightScene.cs": "231ae5d309ebd339f6d2774c17f8e1ec905f6dc0ed59527c023415f4e60a49a5",
+    "modules/visualizations/pencil-flight/platforms/windows/PencilFlightView.cs": "fb65470ec7a966f43791b6da5dd13d00db50a282754b2ed8fc08c99df2fb2d60",
+    "modules/visualizations/staff-note/platforms/windows/StaffNoteScene.cs": "5e42b3b0054c389d2d9b6a6f6df7d8731aa14450263014fdb97501653341de28",
+    "modules/visualizations/staff-note/platforms/windows/StaffNoteView.cs": "633a17b4ccfb8e2d7df4dfdde710d9c03f129a77a237446e3406d80a299231cd",
+    "tests/platforms/windows/CoreTests/AudioTests.cs": "e145f00061e12506949be2206febb64c7ada21bb95a32dbf3e07744a5dcb4a9a",
+    "tests/platforms/windows/CoreTests/KeyboardTests.cs": "14694ff1576de3c07a2529cf3eadd8ed03d1a5b2ebf83fa36ff47d84d7db34ce",
+    "tests/platforms/windows/CoreTests/PcmDecoderTests.cs": "13e954b8c5319ad55e68c3b98fb473232667d69f380368e77ce3647c0dae508e",
+    "tests/platforms/windows/CoreTests/Program.cs": "c9655b5d9e327d231af05f6f5668e374732d5b0a1f508c053db5612b178bbda5",
+    "tests/platforms/windows/CoreTests/ShellTests.cs": "17dc576d80d7a8e02e2d58cd13b015c86434dcb49e662c4e9ef1aef59a31a2e6",
+    "tests/platforms/windows/CoreTests/VisualizationTests.cs": "624041c323bfc6f91da912d652635e74e0d84f1b6e4560a24a726e4808bca4fb"
+  },
+  "limitations": [
+    "No Windows machine was used. Cross-build is not native acceptance.",
+    "Mono/stereo PCM16/24/32/float32, 8–192kHz only.",
+    "WPF appearance not pixel-identical to macOS.",
+    "No installer, code signature, auto-start, network/audio/key logging."
+  ]
+}

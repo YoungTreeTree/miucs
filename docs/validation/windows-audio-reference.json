@@ -1,0 +1,40 @@
+{
+  "status": "passed",
+  "frameCount": 233,
+  "reference": "NumPy 2.3.5 float64 rfft, existing independent reference.reference()",
+  "syntheticSeed": 20261026,
+  "sampleRate": 48000,
+  "channelCount": 2,
+  "analyzerSHA256": "5fdcdfe22ad07a12717086a4e4b94c3c18b62f695bfd5fb492a5157b6ace857a",
+  "inputSHA256": "f0a8f364224fa3bbd74c63e157c1c6de9e8dbf41d29d470901eca541945d81a3",
+  "maxAbsoluteErrors": {
+    "rms": 7.494005416219807e-16,
+    "rmsDBFS": 7.105427357601002e-14,
+    "peak": 0,
+    "crestDB": 7.105427357601002e-14,
+    "lowEnergy": 3.122502256758253e-17,
+    "lowShare": 1.1102230246251565e-15,
+    "midEnergy": 3.191891195797325e-16,
+    "midShare": 4.440892098500626e-16,
+    "highEnergy": 3.5561831257524545e-17,
+    "highShare": 9.43689570931383e-16,
+    "centroidHz": 6.821210263296962e-11,
+    "bandwidthHz": 8.094502845779061e-11,
+    "flatness": 2.0650148258027912e-14,
+    "balance": 0,
+    "sideEnergyRatio": 6.161737786669619e-15,
+    "correlation": 3.597122599785507e-14
+  },
+  "defaultTolerance": 1e-08,
+  "overrideTolerances": {
+    "centroidHz": 1e-06,
+    "bandwidthHz": 1e-05
+  },
+  "mismatches": [],
+  "mismatchCount": 0,
+  "notCovered": [
+    "Windows WASAPI hardware",
+    "real music melody accuracy",
+    "beat accuracy on real music"
+  ]
+}
