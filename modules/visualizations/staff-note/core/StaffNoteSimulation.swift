@@ -3,7 +3,7 @@ import Foundation
 @MainActor
 final class StaffNoteSimulation: VisualizationSession {
     static let module = VisualizationDescriptor(id: "staff-note", name: "五线谱音符",
-        layout: VisualizationLayout(width: 800, height: 160, minimumWidth: 600, maximumWidth: 1600))
+        layout: VisualizationLayout(width: 800, height: 160, minimumWidth: 80, maximumWidth: 1600))
     var descriptor: VisualizationDescriptor { Self.module }
     private(set) var scene = StaffNoteScene()
     private(set) var keyboardStars: StaffKeyboardStars

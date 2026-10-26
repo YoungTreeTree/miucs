@@ -3,7 +3,7 @@ import AppKit
 @MainActor
 final class MacPixelKeyboardSession: MacVisualizationSession {
     static let module = VisualizationDescriptor(id: "pixel-keyboard", name: "像素音乐键盘",
-        layout: VisualizationLayout(width: 800, height: 460, minimumWidth: 600, maximumWidth: 1600))
+        layout: VisualizationLayout(width: 800, height: 460, minimumWidth: 80, maximumWidth: 1600))
     let music = StaffNoteSimulation(keyboardKeys: MacStaffKeyboardLayout.keys)
     let drawing = PixelKeyboardView(frame: NSRect(x: 0, y: 0, width: 800, height: 460))
     private(set) var keyboard = PixelKeyboardScene(codes: MacStaffKeyboardLayout.keys)

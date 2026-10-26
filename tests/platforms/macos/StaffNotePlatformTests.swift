@@ -61,7 +61,7 @@ enum StaffNotePlatformTests {
         check("Reopening remembers the selected module and its saved rectangle", reopened.descriptor.id == "staff-note" && reopened.frame == staffFrame && reopened.ignoresMouseEvents)
         reopened.visualizationHost.dispose()
         panel.setDrawingWidth(10)
-        check("Staff has a readable minimum width of 600 points", panel.frame.width == min(600, visible.width) && abs(panel.frame.height * 5 - panel.frame.width) < 1e-8)
+        check("Staff minimum width is 10 percent of its 800-point layout", panel.frame.width == min(80, visible.width) && abs(panel.frame.height * 5 - panel.frame.width) < 1e-8)
         panel.setDrawingWidth(100_000)
         // AppKit rounds window frames to backing pixels. A 1024-point CI display
         // requests 204.8 points of height, which cannot be represented exactly.

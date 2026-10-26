@@ -213,8 +213,8 @@ internal sealed class DesktopHost : IDisposable
         Add(modes.DropDownItems, "五线谱音符", () => SwitchVisualization("staff-note"), view.Id == "staff-note");
         Add(modes.DropDownItems, "像素音乐键盘", () => SwitchVisualization("pixel-keyboard"), view.Id == "pixel-keyboard");
         var sizes = new Forms.ToolStripMenuItem("画面大小"); menu.Items.Add(sizes);
-        foreach (double scale in new[] { .8, 1, 1.25, 1.5, 2 })
-            Add(sizes.DropDownItems, $"{scale * 100:0}%", () => { SetFrame(CurrentFrame() with { Width = view.BaseWidth * scale }); SaveFrame(); SavePreferences(); });
+        foreach (int percent in new[] { 10, 80, 100, 125, 150, 200 })
+            Add(sizes.DropDownItems, $"{percent}%", () => { SetFrame(CurrentFrame() with { Width = view.BaseWidth * percent / 100d }); SaveFrame(); SavePreferences(); });
         var colors = new Forms.ToolStripMenuItem("线条颜色"); menu.Items.Add(colors);
         foreach (var entry in Preferences.Palette)
             Add(colors.DropDownItems, entry.Value.Name, () => { preferences.Color = entry.Key; ApplyColor(); SavePreferences(); }, preferences.Color == entry.Key);

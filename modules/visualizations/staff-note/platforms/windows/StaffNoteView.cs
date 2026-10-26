@@ -11,7 +11,7 @@ public class StaffNoteView : VisualizationView
     public override string Id => "staff-note";
     public override double BaseWidth => 800;
     public override double BaseHeight => 160;
-    public override double LayoutMinWidth => 600;
+    public override double LayoutMinWidth => 80;
     public override double LayoutMaxWidth => 1600;
     public StaffNoteScene Scene { get; } = new();
     private static readonly StreamGeometry Star = CreateStar();
