@@ -31,7 +31,7 @@ enum PerformanceProbe {
     static func melody(_ time: Double, note: Double, tick: Int, withGaps: Bool) -> MelodyFrame {
         let voiced = !withGaps || tick % 10 >= 4
         return MelodyFrame(time: time, pitchHz: voiced ? 440 * pow(2, (note - 69) / 12) : nil,
-                           confidence: voiced ? 1 : 0, isMelodic: voiced, estimator: withGaps ? .crepe : nil)
+                           confidence: voiced ? 1 : 0, isMelodic: voiced)
     }
     static func main() throws {
         NSApplication.shared.setActivationPolicy(.prohibited)

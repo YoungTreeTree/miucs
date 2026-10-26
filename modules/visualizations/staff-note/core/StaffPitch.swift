@@ -24,10 +24,7 @@ struct StaffPitch: Equatable, Sendable {
         return Self.middleY - Double(degree - 34) * Self.lineSpacing / 2
     }
     static func resolve(_ melody: MelodyFrame, previous: StaffPitch?) -> StaffPitch? {
-        // CREPE's isMelodic already includes its own confidence and vocal-energy
-        // gates. Its activation is not comparable to the spectral confidence.
-        let minimumConfidence = melody.estimator == .crepe ? 0.0 : 0.48
-        guard melody.isMelodic, melody.confidence.isFinite, melody.confidence >= minimumConfidence,
+        guard melody.isMelodic, melody.confidence.isFinite, melody.confidence >= 0.48,
               let hz = melody.pitchHz, hz.isFinite, hz > 0,
               let midi = melody.midi, midi.isFinite,
               midi >= Double(followingMIDI.lowerBound) - 0.5,

@@ -1,0 +1,285 @@
+{
+  "date": "2026-10-26",
+  "scope": "Remove abandoned vocal separation and neural singing-pitch paths; retain original-mixture melody, reliability/continuity checks, fixed staff positions, progressive joins, beat arcs and keyboard stars.",
+  "removedFiles": [
+    "docs/licenses/crepe.txt",
+    "docs/licenses/torchcrepe.txt",
+    "modules/audio/core/MelodyEstimating.swift",
+    "modules/audio/core/SingingPitchAnalyzer.swift",
+    "modules/audio/core/StreamingMonoResampler.swift",
+    "modules/audio/core/VocalPCMProcessor.swift",
+    "modules/audio/platforms/macos/CoreMLSingingPitch.swift",
+    "modules/audio/platforms/macos/RapidlyVocalProcessor.swift",
+    "scripts/benchmark-predominant-mixture.py",
+    "scripts/benchmark-rapidly.py",
+    "scripts/benchmark-singing-pitch.py",
+    "scripts/benchmark-vocal-energy.py",
+    "scripts/export-singing-pitch.py",
+    "scripts/plot-predominant-mixture.py",
+    "scripts/plot-singing-pitch.py",
+    "scripts/requirements-singing-pitch.txt",
+    "scripts/setup-rapidly.sh",
+    "scripts/setup-singing-pitch.sh",
+    "scripts/test-rapidly.sh",
+    "scripts/test-singing-model.py",
+    "scripts/test-singing-pitch.sh",
+    "tests/audio/SingingPitchTests.swift",
+    "tests/platforms/macos/RapidlyVocalTests.swift",
+    "tools/macos/RapidlyFileProbe.swift",
+    "tools/macos/SingingPitchFileProbe.swift"
+  ],
+  "tests": {
+    "melody-tests": {
+      "passed": 17,
+      "failed": 0
+    },
+    "audio-pipeline-tests": {
+      "passed": 3,
+      "failed": 0
+    },
+    "staff-note-tests": {
+      "passed": 89,
+      "failed": 0
+    },
+    "staff-note-platform-tests": {
+      "passed": 41,
+      "failed": 0
+    },
+    "audio-recovery-tests": {
+      "passed": 20,
+      "failed": 0
+    },
+    "contract-tests": {
+      "passed": 20,
+      "failed": 0
+    },
+    "staff-beat-tests": {
+      "passed": 29,
+      "failed": 0
+    }
+  },
+  "totalPassed": 219,
+  "totalFailed": 0,
+  "mixtureOutputParity": {
+    "method": "Same checksum-verified original mixture files, current native MelodyAnalyzer versus frozen pre-cleanup raw-mixture output; compare all decoded JSON fields without time or pitch fitting. Native probe block size 1024 vs prior 512 also exercises chunk invariance.",
+    "clips": 31,
+    "frames": 10717,
+    "exactlyEqual": true,
+    "tracks": [
+      {
+        "id": "Ani_2_01",
+        "frames": 291,
+        "exactlyEqual": true,
+        "inputSHA256": "fbcac7ca3b890c3da3241ddf172385c5ed3e809bd85e6458c131f21b971c62f1"
+      },
+      {
+        "id": "Ani_2_02",
+        "frames": 430,
+        "exactlyEqual": true,
+        "inputSHA256": "8db7f41f7e7689be4572fa05f00a982f3fefb02a91f55dbad401dcb22dfcbd13"
+      },
+      {
+        "id": "Ani_2_03",
+        "frames": 328,
+        "exactlyEqual": true,
+        "inputSHA256": "bf96872bca8df5df6448950b259c858d9088cd7efd2475273f80f643af604887"
+      },
+      {
+        "id": "Ani_2_04",
+        "frames": 295,
+        "exactlyEqual": true,
+        "inputSHA256": "f444d4ceba2c985496a725ff61fc2f36a3e4a9f5c375d64d49827dd6674ca176"
+      },
+      {
+        "id": "Ani_2_05",
+        "frames": 529,
+        "exactlyEqual": true,
+        "inputSHA256": "be97d7bba0fb034235eaff141b4f79f4e0b97df57788ea8efd525fa6e6b22fc0"
+      },
+      {
+        "id": "Ani_2_06",
+        "frames": 505,
+        "exactlyEqual": true,
+        "inputSHA256": "9f5758eeab393d8b17b480038925a8ada4add7b6ef09c1150e902bace40ff3f2"
+      },
+      {
+        "id": "Ani_2_07",
+        "frames": 349,
+        "exactlyEqual": true,
+        "inputSHA256": "201a734f7c928e88e58a8ae9d3a24b4571d5746b892f6a362accc4a5d96d69fb"
+      },
+      {
+        "id": "fdps_2_01",
+        "frames": 352,
+        "exactlyEqual": true,
+        "inputSHA256": "5db33772d9fc2ebf994032ecd1fa8a51491a643c6df6cbfc6dea0bb360bb0ea5"
+      },
+      {
+        "id": "fdps_2_02",
+        "frames": 334,
+        "exactlyEqual": true,
+        "inputSHA256": "3578010d6b8037a4b35309965ecd5473c21172f590e167ee5f832107eda4b593"
+      },
+      {
+        "id": "fdps_2_03",
+        "frames": 337,
+        "exactlyEqual": true,
+        "inputSHA256": "524d06c08270bb4401e60fae29b8db649dab571013b9bc20d1ac6f28d0745b00"
+      },
+      {
+        "id": "fdps_2_04",
+        "frames": 324,
+        "exactlyEqual": true,
+        "inputSHA256": "667cb2f3974617c2d77c7d77190cdb59dc8431999027f740b0ce175f45e9e097"
+      },
+      {
+        "id": "fdps_2_05",
+        "frames": 342,
+        "exactlyEqual": true,
+        "inputSHA256": "c2d58360c71793a45047508b78912c2cb5558c9fe6398f3ebe1196c40397f09b"
+      },
+      {
+        "id": "fdps_2_06",
+        "frames": 291,
+        "exactlyEqual": true,
+        "inputSHA256": "f8430a362c5127f2946eae825af5de5ce997407cec6c42f1f7dcf40f4efed2b7"
+      },
+      {
+        "id": "fdps_2_07",
+        "frames": 406,
+        "exactlyEqual": true,
+        "inputSHA256": "c1b51097e9c5efc42ff3e021e7e2a9047c12c88575129eace15187f9ce6282c7"
+      },
+      {
+        "id": "fdps_2_08",
+        "frames": 291,
+        "exactlyEqual": true,
+        "inputSHA256": "f9169c2f175c9a741258a8ec60261f2877ee242a7dc465cd3b83e613cb97699b"
+      },
+      {
+        "id": "fdps_2_09",
+        "frames": 325,
+        "exactlyEqual": true,
+        "inputSHA256": "dba255093c04b95bef733ec308618a8d6c0453348edf4afae299eaf0390d4d08"
+      },
+      {
+        "id": "fdps_2_10",
+        "frames": 309,
+        "exactlyEqual": true,
+        "inputSHA256": "7aac531203af2d370c0c9f80492daed098e8e54b0954614aa2d0ec84829d0ba2"
+      },
+      {
+        "id": "fdps_2_11",
+        "frames": 364,
+        "exactlyEqual": true,
+        "inputSHA256": "97159f409e517fae07c99917eac8bd34430c7d4ed2a0c46b985b9faba04b52c5"
+      },
+      {
+        "id": "fdps_2_12",
+        "frames": 359,
+        "exactlyEqual": true,
+        "inputSHA256": "52dda1cbc38fbb59414eda3b3c8ff65ce163e1df51548631d93e97151c956ba3"
+      },
+      {
+        "id": "geniusturtle_4_01",
+        "frames": 334,
+        "exactlyEqual": true,
+        "inputSHA256": "a834f247b25ac1c73fe9af787fac5589e4b18ff40a413428b479927ea4cd6808"
+      },
+      {
+        "id": "geniusturtle_4_02",
+        "frames": 306,
+        "exactlyEqual": true,
+        "inputSHA256": "5404760257d76b00f7f1c2e092a698414e055bb27cf7a7148b6944d38731d330"
+      },
+      {
+        "id": "geniusturtle_4_03",
+        "frames": 342,
+        "exactlyEqual": true,
+        "inputSHA256": "7c73881d1154b11bdbf96b01f1d86c66335b6f8ed95821fe1566a48ec4c2b0c3"
+      },
+      {
+        "id": "geniusturtle_4_04",
+        "frames": 309,
+        "exactlyEqual": true,
+        "inputSHA256": "92ecd45797d9ba79f2ea86366d10636ced4419d5d09f13d2aea7941d0e1c39d4"
+      },
+      {
+        "id": "geniusturtle_4_05",
+        "frames": 349,
+        "exactlyEqual": true,
+        "inputSHA256": "3487db1f1cbbce2eb2126f77974e3aa3d991a30c4da58e96da5ae59dca712b80"
+      },
+      {
+        "id": "geniusturtle_4_06",
+        "frames": 307,
+        "exactlyEqual": true,
+        "inputSHA256": "8903741ae6451b4b727779fe9ec2246a6fe0371a17e129333de7fdeaed1cfa26"
+      },
+      {
+        "id": "geniusturtle_4_07",
+        "frames": 328,
+        "exactlyEqual": true,
+        "inputSHA256": "93fc36eb7742b5933ef737dc52d6a2554f54774a075c64b4fa293462b1ba5471"
+      },
+      {
+        "id": "geniusturtle_4_08",
+        "frames": 333,
+        "exactlyEqual": true,
+        "inputSHA256": "c2062c63425f3722b728fb7783a05aa45a134358b89c89ca79a42fda9a2b81c8"
+      },
+      {
+        "id": "geniusturtle_4_09",
+        "frames": 342,
+        "exactlyEqual": true,
+        "inputSHA256": "c40ef27d55ec9373341bc6530d3c6132df75920789e3ad2c0542bec61d49d53a"
+      },
+      {
+        "id": "geniusturtle_4_10",
+        "frames": 289,
+        "exactlyEqual": true,
+        "inputSHA256": "0da3a40eafcb9bbc873c3044b5ac45c4a417983048f3bce856db29154a41d9d3"
+      },
+      {
+        "id": "geniusturtle_4_11",
+        "frames": 382,
+        "exactlyEqual": true,
+        "inputSHA256": "8fa26ba3261f656078bb1c158b227a75c3aa47a0259105db7749622209f69319"
+      },
+      {
+        "id": "geniusturtle_4_12",
+        "frames": 335,
+        "exactlyEqual": true,
+        "inputSHA256": "91000c673d9a176fb6cc9b780a388899ca1085c9c5f819570cfa15cfbc60a317"
+      }
+    ]
+  },
+  "package": {
+    "path": "dist/Miucs.app",
+    "sizeBytes": 2017108,
+    "files": [
+      "Contents/Info.plist",
+      "Contents/_CodeSignature/CodeResources",
+      "Contents/MacOS/Miucs"
+    ],
+    "binarySHA256": "8f4a706d40f614b65729f4360f78f69b5d79a2bf68bddc76d385d8d2410a449e",
+    "strictSignatureVerified": true,
+    "linksRapidly": false,
+    "linksCoreML": false,
+    "containsModelResources": false,
+    "installedOrRestarted": false
+  },
+  "sourceSHA256": {
+    "build.sh": "949c047e8ff509f0dcd35e66459aec81e40e88bcfa424442671769b7a2a03f30",
+    "apps/macos/App.swift": "d594ad94da8cc9521cb4db77f2f4b72e86ff9b6ea68bf091910a7a1beb1130e0",
+    "modules/audio/core/AudioAnalysisPipeline.swift": "39364bbad9d38b44763620e2e9d14d83b3bb88dfe81257bc0711e86eb002e2cd",
+    "modules/audio/core/MelodyAnalyzer.swift": "b0ab87ca59ea900e992a1c303277921bc576e6706f85fb06e87175ea170f48e1",
+    "modules/audio/core/MelodyFrame.swift": "f53eef6bd33fc28199092bbab9ff28655de22c1d07c3a05593f5a77e303cba20",
+    "modules/audio/platforms/macos/AudioEngine.swift": "7835575c2367eb9c1ba01090d0d1ed79b753bf57871be94cd3f5636f6aa5214a",
+    "modules/visualizations/staff-note/core/StaffNoteScene.swift": "e74c21712b148102aebc4dcf055d460cda7ef1a4d95ad2488edc1a3845c674fd",
+    "modules/visualizations/staff-note/core/StaffPitch.swift": "8964e76630b44271a28df8c6e2b42da2185263c2d5acbd747b0d00ed18e65578",
+    "modules/visualizations/staff-note/core/StaffPitchTracker.swift": "3fde5ae30b8d0c9d083fc63b0bd0f0044aab68aa6ef76f6b3ce31adbb259ffe2"
+  },
+  "compatibility": "Legacy v1 estimator metadata is accepted by schema and ignored by Swift decoding; all current candidates use the same confidence gate. Legacy mode preferences are no longer read.",
+  "history": "Prior comparisons and validation reports are archived; abandoned experiment implementations are available at Git revision 757e7e3. Local ignored model caches, backups and personal license files were not touched."
+}

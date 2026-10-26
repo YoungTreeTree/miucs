@@ -240,43 +240,43 @@ enum StaffNotePlatformTests {
         contourView.updatePreview(bridging); contourView.updateLayer()
         check("The native trace still separates actual silence", segments(contourPath()) == 2)
 
-        var neuralContour = StaffNoteScene()
-        func sung(_ time: Double, _ midi: Double?) -> MelodyFrame {
+        var gapContour = StaffNoteScene()
+        func observed(_ time: Double, _ midi: Double?) -> MelodyFrame {
             MelodyFrame(time: time, pitchHz: midi.map { 440 * pow(2, ($0 - 69) / 12) },
-                confidence: midi == nil ? 0 : 0.35, isMelodic: midi != nil, estimator: .crepe)
+                confidence: midi == nil ? 0 : 1, isMelodic: midi != nil)
         }
         for hop in 0...1 {
-            neuralContour.receive(audio: StaffNotePreview.audio(Double(hop) * 0.02))
-            neuralContour.receive(melody: sung(Double(hop) * 0.02, 71))
-            neuralContour.advance(seconds: 0.02)
+            gapContour.receive(audio: StaffNotePreview.audio(Double(hop) * 0.02))
+            gapContour.receive(melody: observed(Double(hop) * 0.02, 71))
+            gapContour.advance(seconds: 0.02)
         }
-        neuralContour.receive(audio: StaffNotePreview.audio(0.04)); neuralContour.receive(melody: sung(0.04, nil))
-        contourView.updatePreview(neuralContour); contourView.updateLayer()
-        check("A neural dropout draws only existing history, with no held-note horizontal extension",
-            contourPath().currentPoint.x < 560 && neuralContour.trace.count == 2 && !neuralContour.hasContinuousTraceTail)
-        neuralContour.advance(seconds: 0.06); neuralContour.receive(audio: StaffNotePreview.audio(0.10))
-        neuralContour.receive(melody: sung(0.10, 72))
-        contourView.updatePreview(neuralContour); contourView.updateLayer()
-        check("An 80ms neural gap starts joining from its real endpoints while the live path reaches the note",
-            segments(contourPath()) == 2 && neuralContour.trace.count == 3 && contourPath().currentPoint.x == 560)
-        neuralContour.advance(seconds: 0.02); neuralContour.receive(audio: StaffNotePreview.audio(0.12))
-        neuralContour.receive(melody: sung(0.12, nil))
-        neuralContour.advance(seconds: 0.14); neuralContour.receive(audio: StaffNotePreview.audio(0.26))
-        neuralContour.receive(melody: sung(0.26, 72))
-        contourView.updatePreview(neuralContour); contourView.updateLayer()
+        gapContour.receive(audio: StaffNotePreview.audio(0.04)); gapContour.receive(melody: observed(0.04, nil))
+        contourView.updatePreview(gapContour); contourView.updateLayer()
+        check("A pitch dropout draws only existing history, with no held-note horizontal extension",
+            contourPath().currentPoint.x < 560 && gapContour.trace.count == 2 && !gapContour.hasContinuousTraceTail)
+        gapContour.advance(seconds: 0.06); gapContour.receive(audio: StaffNotePreview.audio(0.10))
+        gapContour.receive(melody: observed(0.10, 72))
+        contourView.updatePreview(gapContour); contourView.updateLayer()
+        check("An 80ms pitch gap starts joining from its real endpoints while the live path reaches the note",
+            segments(contourPath()) == 2 && gapContour.trace.count == 3 && contourPath().currentPoint.x == 560)
+        gapContour.advance(seconds: 0.02); gapContour.receive(audio: StaffNotePreview.audio(0.12))
+        gapContour.receive(melody: observed(0.12, nil))
+        gapContour.advance(seconds: 0.14); gapContour.receive(audio: StaffNotePreview.audio(0.26))
+        gapContour.receive(melody: observed(0.26, 72))
+        contourView.updatePreview(gapContour); contourView.updateLayer()
         let multipleJoins = segments(contourPath()) > 1
-        var settledNeural = neuralContour; settledNeural.advance(seconds: 0.35)
-        contourView.updatePreview(settledNeural); contourView.updateLayer()
-        check("Overlapping neural gap joins settle back into one native path", multipleJoins && segments(contourPath()) == 1)
+        var settledContour = gapContour; settledContour.advance(seconds: 0.35)
+        contourView.updatePreview(settledContour); contourView.updateLayer()
+        check("Overlapping pitch gap joins settle back into one native path", multipleJoins && segments(contourPath()) == 1)
 
         var gradual = StaffNotePreview.sampleScene(midi: 71)
-        gradual.receive(melody: sung(gradual.elapsed, nil))
+        gradual.receive(melody: observed(gradual.elapsed, nil))
         for _ in 0..<45 {
             gradual.advance(seconds: 1.0 / 60)
             gradual.receive(audio: StaffNotePreview.audio(gradual.elapsed))
-            gradual.receive(melody: sung(gradual.elapsed, nil))
+            gradual.receive(melody: observed(gradual.elapsed, nil))
         }
-        gradual.receive(melody: sung(gradual.elapsed + 0.001, 60))
+        gradual.receive(melody: observed(gradual.elapsed + 0.001, 60))
         let joinDirectory = URL(fileURLWithPath: "build/staff-join-preview")
         try FileManager.default.createDirectory(at: joinDirectory, withIntermediateDirectories: true)
         var joinPaths = [CGPath]()

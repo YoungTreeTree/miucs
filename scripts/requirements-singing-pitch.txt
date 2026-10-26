@@ -1,4 +1,0 @@
-# Build-time only; the macOS app uses native Core ML.
-torch==2.9.1
-coremltools==9.0
-numpy==2.2.6

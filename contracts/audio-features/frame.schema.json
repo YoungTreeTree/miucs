@@ -84,7 +84,7 @@
         },
         "lowEnergy": {
           "type": "number",
-          "description": "20–250 Hz band power, squared full-scale amplitude units; Nyquist limited.",
+          "description": "20\u2013250 Hz band power, squared full-scale amplitude units; Nyquist limited.",
           "minimum": 0
         },
         "lowShare": {
@@ -102,7 +102,7 @@
         },
         "midEnergy": {
           "type": "number",
-          "description": "250–4000 Hz band power, squared full-scale amplitude units; Nyquist limited.",
+          "description": "250\u20134000 Hz band power, squared full-scale amplitude units; Nyquist limited.",
           "minimum": 0
         },
         "midShare": {
@@ -120,7 +120,7 @@
         },
         "highEnergy": {
           "type": "number",
-          "description": "4000–20000 Hz band power, squared full-scale amplitude units; Nyquist limited.",
+          "description": "4000\u201320000 Hz band power, squared full-scale amplitude units; Nyquist limited.",
           "minimum": 0
         },
         "highShare": {
@@ -369,7 +369,8 @@
                 "crepe",
                 null
               ],
-              "description": "Optional pitch estimator identity; absent for the legacy spectral method. isMelodic includes the estimator-specific voicing gate."
+              "description": "Legacy v1 metadata, ignored by current consumers. It does not select a model or change confidence thresholds.",
+              "deprecated": true
             }
           },
           "required": [

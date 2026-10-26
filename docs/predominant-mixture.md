@@ -1,6 +1,6 @@
 # 混音主旋律
 
-2026-10-26 起，默认直接跟随混音中最突出的旋律。歌声和主奏乐器都可驱动音符；不先判断声源是不是人，也不把最大 FFT 峰直接当作音高。音量、节拍轻弧、键盘星爆、固定谱位与平滑补线同时保留。
+2026-10-26 起，直接跟随混音中最突出的旋律。歌声和主奏乐器都可驱动音符；不先判断声源是不是人，也不把最大 FFT 峰直接当作音高。音量、节拍轻弧、键盘星爆、固定谱位与平滑补线同时保留。
 
 ## 实现与取舍
 
@@ -8,9 +8,9 @@
 
 五线谱继续只接收 G2～C6；每个音对应固定高度。半音/全音可直接跟随，较大跳跃保留原混音路径的 100/125/150ms 连续确认和半音边界滞回。显示范围限制仅用于谱面，不用来分类人声。静音不报音、不延长旧音符；真实候选恢复后沿用已有的平滑补线。
 
-菜单「音高来源」提供「混音主旋律」和「人声旋律（Rapidly）」。新版首次以混音启动，后续选择保存在 `MiucsPitchSource.v2`；旧 `MiucsVocalSeparation.v1` 不覆盖此次默认切换。保留旧人声分离/CREPE 路径供比较，但混音模式不实例化分离器或 Core ML 模型，也不经过其水印输出。
+运行路径已统一为混音主旋律。人声来源菜单、偏好、SDK/模型、分离延迟补偿、模型专用重采样和推理工具已移除；原有混音可靠性判断及轨迹平滑连接保留。旧来源偏好不会影响当前启动。
 
-## 同一音频的配对结果
+## 移除前的同一音频配对结果（历史）
 
 使用已有 MIR-1K《童话》三位演唱者的 31 段翻唱，总计 230.82 秒。两条路径接收同一份先合成的混音，以 512 点分块推进；旧版为 Rapidly 96ms 试用 + CREPE Tiny + 对齐的 -9dB 相对能量门控。基准完整保留试用水印。人工标注按相同 20ms 网格配对，50 音分内命中，不移动时间、不重新拟合调高；表内是逐片段宏平均。
 
@@ -44,15 +44,16 @@
 
 ## 验证与复现
 
-本次旋律、音频管线、采集恢复共 **51 项检查通过**；覆盖泛音强于基频、缺失基频、混音伴奏、反相立体声、不同采样率、增益不变性、静音/噪声拒绝、默认混音及来源切换重连。安装版使用原 `Miucs Dev` 签名，启动日志确认混音路径及 48kHz 双声道 PCM；五线谱窗口恢复。汇总见[安装验证](validation/predominant-mixture-validation.json)。
+清理后的回归与原始混音逐帧等价检查见[清理验证](validation/remove-vocal-separation.json)。移除前的 51 项检查及安装结果仍保存在[历史安装验证](validation/predominant-mixture-validation.json)。
 
 ```sh
 zsh scripts/test-melody.sh
 zsh scripts/test-audio-pipeline.sh
 zsh scripts/test-audio-recovery.sh
-python3 scripts/benchmark-predominant-mixture.py
-python3 scripts/plot-predominant-mixture.py
-zsh build.sh --rapidly  # 同时保留可选的人声模式；默认运行混音
+zsh scripts/test-staff-note.sh
+zsh scripts/test-staff-note-platform.sh
+python3 scripts/benchmark-pop-melody.py --output build/current-mixture-benchmark.json
+zsh build.sh
 ```
 
-基准需要先前已校验的本地样本、Rapidly 与 CREPE 资源；准备步骤见[原始歌曲基准](melody-benchmark.md)、[人声模式](singing-pitch.md)。生产混音模式不依赖这些模型或 Python。
+当前歌曲基准使用原生 Swift 探针和已校验的音频样本，首次准备见[歌曲基准](melody-benchmark.md)。应用不依赖 Python。上面的历史人声配对报告对应提交 `757e7e3`；如需复现分离对照，应在该历史版本使用对应脚本，当前源码不再保留这套实验依赖。

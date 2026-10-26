@@ -26,7 +26,7 @@ enum StaffContinuityProbe {
         let input = URL(fileURLWithPath: CommandLine.arguments[2])
         let output = URL(fileURLWithPath: CommandLine.arguments[3])
         try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
-        let latency = 0.12, refresh = 1.0 / 60
+        let latency = 4096.0 / 48_000 / 2, refresh = 1.0 / 60
         var reports = [[String: Any]]()
         for track in manifest.tracks {
             let frames = try JSONDecoder().decode([MelodyFrame].self,
@@ -64,7 +64,7 @@ enum StaffContinuityProbe {
             var subpaths = 0
             path.applyWithBlock { if $0.pointee.type == .moveToPoint { subpaths += 1 } }
             reports.append(["id": track.id, "inputFrames": frames.count, "gatedFramesInStaffRange": inRange.count,
-                "gatedFramesBelowOldCutoff": inRange.filter { $0.confidence < 0.48 }.count,
+                "framesBelowConfidenceCutoff": inRange.filter { $0.confidence < 0.48 }.count,
                 "tracePoints": points.count, "segments": grouped.count,
                 "nativeVisibleSubpaths": subpaths,
                 "segmentsShorterThan120ms": spans.filter { $0 < 0.12 - 1e-9 }.count])
@@ -76,8 +76,8 @@ enum StaffContinuityProbe {
                     .write(to: output.appendingPathComponent(track.id + ".png"))
             }
         }
-        try JSONSerialization.data(withJSONObject: ["displayHz": 60, "modelLatencySeconds": latency,
-            "method": "Saved gated melody frames; audible accompaniment; production simulation and native vector renderer. Visual continuity only, not a new pitch-accuracy measurement.",
+        try JSONSerialization.data(withJSONObject: ["displayHz": 60, "windowCenterAgeSeconds": latency,
+            "method": "Saved mixture melody frames; audible accompaniment; production simulation and native vector renderer. Visual continuity only, not a new pitch-accuracy measurement.",
             "tracks": reports], options: [.prettyPrinted, .sortedKeys])
             .write(to: output.appendingPathComponent("report.json"))
         print("Staff continuity replay: \(reports.count) clips → \(output.path)")

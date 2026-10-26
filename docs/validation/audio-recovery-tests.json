@@ -77,15 +77,11 @@
       "passed" : true
     },
     {
-      "name" : "Mixture is default; source switches replace capture once and respect a stopped engine",
-      "passed" : true
-    },
-    {
       "name" : "A replacement survives the old in-flight start completing later",
       "passed" : true
     }
   ],
   "failed" : 0,
   "method" : "injected capture transport, actual retry tasks, workspace notifications and controlled monotonic clock; no machine sleep or device changes",
-  "passed" : 21
+  "passed" : 20
 }

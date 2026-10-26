@@ -25,8 +25,6 @@ struct StaffNoteScene {
     static let width = 800.0, height = 160.0, noteX = 640.0
     static let historyDuration = 8.0, historyCapacity = 512
     static let trailSpeed = 70.0
-    /// Pitch-filter context may expire; the visual trail has its own lifecycle.
-    static let maximumSingingContextGap = 0.12
     static let maximumSwayAngle = 20.0 * Double.pi / 180
     private(set) var elapsed = 0.0
     private(set) var pitch: StaffPitch?
@@ -51,7 +49,6 @@ struct StaffNoteScene {
     private var volumeTracker = StaffVolumeTracker()
     private var lastTraceMelodyTime: Double?
     private var lastObservationTime: Double?
-    private var pitchWasUnvoiced = false
     var noteCenterX: Double { Self.noteX }
     var noteY: Double { baseY }
     var hasContinuousTraceTail: Bool {
@@ -97,10 +94,7 @@ struct StaffNoteScene {
         // Missing F0 invalidates the note, not the continuous music session.
         // Leave history untouched and join it only when another real point arrives.
         if let melody, !melody.isMelodic || melody.pitchHz == nil {
-            if melody.estimator == .crepe, let lastTraceMelodyTime,
-               melody.time - lastTraceMelodyTime <= Self.maximumSingingContextGap + 1e-9 {
-                invalidatePitch(); pitchTracker.reset(); pitchWasUnvoiced = true
-            } else { resetPitchContext() }
+            resetPitchContext()
             stopSway(); return
         }
         guard let melody, melody.time.isFinite,
@@ -108,16 +102,8 @@ struct StaffNoteScene {
             // Do not move to an edge, extend history, or let a dropout bypass jump confirmation.
             pitchTracker.reset(); return
         }
-        if pitchWasUnvoiced {
-            let gap = melody.time - (lastTraceMelodyTime ?? -.infinity)
-            let distance = referencePitch.map { abs(resolved.midi - $0.midi) } ?? Int.max
-            if melody.estimator != .crepe || gap > Self.maximumSingingContextGap + 1e-9 || distance > 5 {
-                // Reset note confirmation independently of the visual line.
-                resetPitchContext()
-            }
-        }
         let reconnecting = !hasContinuousTraceTail
-        switch pitchTracker.receive(resolved, time: melody.time, previous: referencePitch, singingModel: melody.estimator == .crepe) {
+        switch pitchTracker.receive(resolved, time: melody.time, previous: referencePitch) {
         case .ignored: return
         case .hold: return
         case .accept(let accepted):
@@ -137,7 +123,6 @@ struct StaffNoteScene {
             }
         }
         lastTraceMelodyTime = melody.time
-        pitchWasUnvoiced = false
         trace.append(StaffTracePoint(time: time, pitch: pitch, y: y, segment: segment, join: join))
         if trace.count > Self.historyCapacity { trace.removeFirst(trace.count - Self.historyCapacity) }
     }
@@ -167,7 +152,7 @@ struct StaffNoteScene {
         lastTraceMelodyTime = nil
     }
     private mutating func resetPitchContext() {
-        invalidatePitch(); pitchTracker.reset(); referencePitch = nil; pitchWasUnvoiced = false
+        invalidatePitch(); pitchTracker.reset(); referencePitch = nil
     }
     private mutating func resetMelodyInput() {
         resetPitchContext(); breakTrace()
@@ -189,7 +174,6 @@ struct StaffNoteScene {
         if !sounding { resetMelodyInput() }
         else if melodyAge >= 0.24 {
             invalidatePitch()
-            if pitchWasUnvoiced, melodyAge >= 0.4 { resetPitchContext() }
         }
         trace.removeAll { elapsed - $0.time >= Self.historyDuration }
         if trace.isEmpty { breakTrace() }

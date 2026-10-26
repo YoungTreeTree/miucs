@@ -4,26 +4,12 @@ import Foundation
 /// Analysis order and latest-melody pairing match the existing capture pipeline.
 final class AudioAnalysisPipeline {
     private let features: AudioFeatureAnalyzer
-    private let melody: any MelodyEstimating
+    private let melody: MelodyAnalyzer
     private var latestMelody: MelodyFrame?
     private var sampleRate: Double?
     private var channelCount: Int?
-    private var vocals: (any VocalPCMProcessor)?
-    private let requiresVocalInput: Bool
-    private let onVocalFailure: (Error) -> Void
-    private let onMelodyFailure: (Error) -> Void
-    private var melodyFailed = false
-    private var inputSamples: Int64 = 0
-    private var melodyTimeOffset = 0.0
-
-    init(features: AudioFeatureAnalyzer, melody: any MelodyEstimating,
-         vocals: (any VocalPCMProcessor)? = nil,
-         requiresVocalInput: Bool = false,
-         onVocalFailure: @escaping (Error) -> Void = { _ in },
-         onMelodyFailure: @escaping (Error) -> Void = { _ in }) {
+    init(features: AudioFeatureAnalyzer, melody: MelodyAnalyzer) {
         self.features = features; self.melody = melody
-        self.vocals = vocals; self.onVocalFailure = onVocalFailure
-        self.requiresVocalInput = requiresVocalInput; self.onMelodyFailure = onMelodyFailure
     }
 
     func process(_ block: AudioPCMBlock) throws -> [(audio: AudioFeatures, melody: MelodyFrame?)] {
@@ -35,48 +21,13 @@ final class AudioAnalysisPipeline {
         guard count > 0 else { return [] }
         if sampleRate != block.sampleRate || channelCount != block.channels.count {
             latestMelody = nil
-            melody.reset(); vocals?.reset()
-            inputSamples = 0; melodyTimeOffset = 0
+            melody.reset()
             sampleRate = block.sampleRate; channelCount = block.channels.count
         }
-        if !melodyFailed {
-            do { try melody.receiveMixture(channels: block.channels, sampleRate: block.sampleRate) }
-            catch { try suspendMelody(after: error) }
+        if let last = try melody.process(channels: block.channels, sampleRate: block.sampleRate).last {
+            latestMelody = last
         }
-        let melodyBlock: AudioPCMBlock?
-        if let vocals {
-            do {
-                melodyBlock = try vocals.process(block)
-            } catch {
-                // Separation failure must not interrupt level/onset capture.
-                // Start fresh at this block's original PCM position on fallback.
-                self.vocals = nil; melody.reset(); latestMelody = nil
-                melodyTimeOffset = Double(inputSamples) / block.sampleRate
-                onVocalFailure(error)
-                melodyBlock = requiresVocalInput ? nil : block
-            }
-        } else { melodyBlock = requiresVocalInput ? nil : block }
-        inputSamples += Int64(count)
-        if !melodyFailed, let melodyBlock {
-            do {
-                if var last = try melody.process(channels: melodyBlock.channels, sampleRate: melodyBlock.sampleRate).last {
-                    last.time += melodyTimeOffset
-                    latestMelody = last
-                }
-            } catch {
-                // A singing model failure must not silently start tracking the
-                // accompaniment or stop level/onset/keyboard animations.
-                try suspendMelody(after: error)
-            }
-        }
-        if vocals != nil, let last = latestMelody,
-           Double(inputSamples) / block.sampleRate - last.time > 0.5 { latestMelody = nil }
         return try features.process(channels: block.channels, sampleRate: block.sampleRate).map { ($0, latestMelody) }
     }
 
-    private func suspendMelody(after error: Error) throws {
-        guard requiresVocalInput else { throw error }
-        melodyFailed = true; latestMelody = nil; melody.reset()
-        onMelodyFailure(error)
-    }
 }

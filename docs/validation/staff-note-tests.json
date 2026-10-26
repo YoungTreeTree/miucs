@@ -29,11 +29,11 @@
       "passed" : true
     },
     {
-      "name" : "Gated CREPE confidence uses its own scale rather than the spectral cutoff",
+      "name" : "Low-confidence candidates cannot bypass the mixed-spectrum cutoff",
       "passed" : true
     },
     {
-      "name" : "Trusting the CREPE gate still rejects unvoiced, nonfinite and out-of-range observations",
+      "name" : "The melody gate rejects unvoiced, nonfinite and out-of-range observations",
       "passed" : true
     },
     {
@@ -289,39 +289,31 @@
       "passed" : true
     },
     {
-      "name" : "Explicit unvoiced singing stops the label, sway and live tail while accompaniment continues",
+      "name" : "Explicit absent pitch stops the label, sway and live tail while accompaniment continues",
       "passed" : true
     },
     {
-      "name" : "A vocal rest does not create history or reposition the last note",
+      "name" : "A pitch gap does not create history or reposition the last note",
       "passed" : true
     },
     {
-      "name" : "Singing resumes at its real pitch and reconnects the visual line across a vocal rest",
+      "name" : "Pitch resumes at its real pitch and reconnects the visual line across a pitch gap",
       "passed" : true
     },
     {
-      "name" : "40-120ms neural dropouts reconnect real endpoints even with 120-200ms model latency",
+      "name" : "40-120ms pitch dropouts reconnect real endpoints even with 120-200ms input latency",
       "passed" : true
     },
     {
-      "name" : "Pending neural gaps never append held notes, extend a live tail or allow new sway",
+      "name" : "Pending pitch gaps never append held notes, extend a live tail or allow new sway",
       "passed" : true
     },
     {
-      "name" : "Vocal gaps up to two seconds and large note changes preserve a continuous visual contour without invented samples",
+      "name" : "Pitch gaps up to two seconds and large note changes preserve a continuous visual contour without invented samples",
       "passed" : true
     },
     {
-      "name" : "A short dropout cannot bypass jump confirmation or revive its tail during confirmation",
-      "passed" : true
-    },
-    {
-      "name" : "A confirmed nearby jump reconnects within the same bounded gap",
-      "passed" : true
-    },
-    {
-      "name" : "Raw-audio silence cancels a pending neural bridge immediately",
+      "name" : "Raw-audio silence cancels a pending trace bridge immediately",
       "passed" : true
     },
     {
@@ -342,10 +334,6 @@
     },
     {
       "name" : "A return after history expiry draws only the new real point",
-      "passed" : true
-    },
-    {
-      "name" : "Gated neural pitch confirms a normal leap in 40ms without the old 125ms hold",
       "passed" : true
     },
     {
@@ -371,7 +359,7 @@
   ],
   "failed" : 0,
   "maximumRemainingFractionAt150ms" : 0.017351562048803712,
-  "passed" : 92,
+  "passed" : 89,
   "pitchConfirmationMillisecondsAt48kHz" : {
     "60->64" : 106.66666666666667,
     "60->67" : 128,

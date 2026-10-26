@@ -121,15 +121,15 @@
       "passed" : true
     },
     {
-      "name" : "A neural dropout draws only existing history, with no held-note horizontal extension",
+      "name" : "A pitch dropout draws only existing history, with no held-note horizontal extension",
       "passed" : true
     },
     {
-      "name" : "An 80ms neural gap starts joining from its real endpoints while the live path reaches the note",
+      "name" : "An 80ms pitch gap starts joining from its real endpoints while the live path reaches the note",
       "passed" : true
     },
     {
-      "name" : "Overlapping neural gap joins settle back into one native path",
+      "name" : "Overlapping pitch gap joins settle back into one native path",
       "passed" : true
     },
     {

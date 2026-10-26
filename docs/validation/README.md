@@ -4,11 +4,13 @@
 
 ## 当前功能对应的记录
 
+- [移除人声分离依赖](remove-vocal-separation.json)：清理后的构建、测试与混音输出等价检查。下方人声对照/安装记录保留的是移除前版本。
+
 - [混音主旋律](predominant-mixture-validation.json)：默认来源、51 项针对性检查、安装及重启；[31 段同音频对照](predominant-mixture-benchmark.json)、[编译结束后的串行性能复测](predominant-mixture-runtime.json)。算法准确性、声音目标变化及退步见[说明](../predominant-mixture.md)。
 - [轻弧水波](staff-beat-arcs-validation.json)：最新选定的节拍视觉设计、29 项绘制/生命周期检查；[满载性能](staff-beat-arcs-performance.json)、[真实窗口刷新间隔](staff-beat-arcs-cadence-800.json)。
 - [平滑补线](staff-join-validation.json)：真实音高恢复时的渐进连接，保留固定谱位与静音行为；[模拟规则](staff-note-tests.json)、[原生布局绘图](staff-note-platform-tests.json)。
 - [节拍识别](beat-tracker-tests.json)、[通道契约](contract-tests.json)、[音频特征](audio-feature-tests.json)、[音频管线](audio-pipeline-tests.json)、[采集恢复](audio-recovery-tests.json)。
-- [旋律规则](melody-tests.json)与保留的[人声门控规则](singing-pitch-tests.json)。
+- [旋律规则](melody-tests.json)；[人声门控规则](singing-pitch-tests.json)为已移除模型的历史快照。
 - [当前五线谱合成演示元数据](staff-beat-demo.json)：对应 `docs/assets/miucs-staff-note.gif`，音频和键盘输入均为合成数据，不含用户录音或桌面。
 
 ## 历史记录

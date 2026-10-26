@@ -36,8 +36,6 @@ final class AudioEngine: NSObject, ObservableObject {
     var melody: MelodyFrame? { channel.snapshot?.melody }
     @Published private(set) var status = "正在连接系统音频…"
     @Published private(set) var isRunning = false
-    @Published private(set) var vocalStatus = "等待音频连接"
-    @Published private(set) var vocalSeparationEnabled: Bool
 
     private let factory: AudioCaptureFactory?
     private let timing: AudioRecoveryTiming
@@ -65,7 +63,6 @@ final class AudioEngine: NSObject, ObservableObject {
     private var suspended: Bool { systemSleeping || screensSleeping }
 
     init(factory: AudioCaptureFactory? = nil, timing: AudioRecoveryTiming = AudioRecoveryTiming(),
-         vocalSeparationEnabled: Bool = false,
          monitorsSystem: Bool = true,
          now: @escaping @Sendable () -> Double = { ProcessInfo.processInfo.systemUptime },
          audioExpected: @escaping @MainActor () async -> Bool = {
@@ -74,7 +71,6 @@ final class AudioEngine: NSObject, ObservableObject {
          permissionGranted: @escaping @MainActor () -> Bool = { CGPreflightScreenCaptureAccess() }) {
         self.channel = FeatureChannel(now: now)
         self.factory = factory
-        self.vocalSeparationEnabled = vocalSeparationEnabled
         self.timing = timing; self.monitorsSystem = monitorsSystem
         self.now = now; self.audioExpected = audioExpected; self.permissionGranted = permissionGranted
         super.init()
@@ -92,12 +88,6 @@ final class AudioEngine: NSObject, ObservableObject {
         installObservers()
         invalidateCapture()
         await connect()
-    }
-
-    func setVocalSeparationEnabled(_ enabled: Bool) async {
-        guard vocalSeparationEnabled != enabled else { return }
-        vocalSeparationEnabled = enabled
-        if wanted { await reconnect() }
     }
 
     func stop() {
@@ -158,13 +148,7 @@ final class AudioEngine: NSObject, ObservableObject {
                 capture = try await factory(excludesExistingApplications, onFrame, onFailure)
             } else {
                 capture = try await ScreenAudioCapture.make(excludingExistingApplications: excludesExistingApplications,
-                    useVocals: vocalSeparationEnabled, onFrame: onFrame, onFailure: onFailure,
-                    onVocalStatus: { [weak self] description in
-                        Task { @MainActor in
-                            guard let self, self.isCurrent(token) else { return }
-                            self.vocalStatus = description
-                        }
-                    })
+                    onFrame: onFrame, onFailure: onFailure)
             }
             candidate = capture
             guard isCurrent(token) else { await capture.stop(); return }
@@ -247,7 +231,6 @@ final class AudioEngine: NSObject, ObservableObject {
             stopping = Task { await previousStop?.value; await old.stop() }
         }
         channel.reset(sessionID: generation, state: suspended ? .suspended : .stopped)
-        vocalStatus = suspended ? "等待系统恢复" : "等待音频连接"
         expectedAudioSince = nil
     }
 
@@ -328,10 +311,9 @@ private final class ScreenAudioCapture: NSObject, AudioCaptureSession, SCStreamD
 
     private init(onFailure: @escaping @Sendable (Error) -> Void) { self.onFailure = onFailure }
 
-    static func make(excludingExistingApplications: Bool, useVocals: Bool,
+    static func make(excludingExistingApplications: Bool,
                      onFrame: @escaping @Sendable (AudioFeatures, MelodyFrame?) -> Void,
-                     onFailure: @escaping @Sendable (Error) -> Void,
-                     onVocalStatus: @escaping @Sendable (String) -> Void) async throws -> ScreenAudioCapture {
+                     onFailure: @escaping @Sendable (Error) -> Void) async throws -> ScreenAudioCapture {
         let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: !excludingExistingApplications)
         guard let display = content.displays.first else {
             throw NSError(domain: SCStreamErrorDomain, code: SCStreamError.Code.noCaptureSource.rawValue)
@@ -345,10 +327,9 @@ private final class ScreenAudioCapture: NSObject, AudioCaptureSession, SCStreamD
         config.minimumFrameInterval = CMTime(value: 1, timescale: 1)
         config.showsCursor = false; config.capturesAudio = true
         config.sampleRate = 48_000; config.channelCount = 2; config.excludesCurrentProcessAudio = true
-        // Loading the model can take longer than a frame; keep it off the UI actor.
+        // Prepare FFT state off the UI actor.
         capture.output = try await Task.detached(priority: .userInitiated) {
-            try StreamOutput(useVocals: useVocals, onFrame: onFrame, onFailure: onFailure,
-                             onVocalStatus: onVocalStatus)
+            try StreamOutput(onFrame: onFrame, onFailure: onFailure)
         }.value
         capture.stream = SCStream(filter: filter, configuration: config, delegate: capture)
         try capture.stream.addStreamOutput(capture.output, type: .audio, sampleHandlerQueue: capture.output.queue)
@@ -405,37 +386,11 @@ private final class StreamOutput: NSObject, SCStreamOutput, @unchecked Sendable 
     private var didLogBuffer = false
     private var didLogError = false
 
-    init(useVocals: Bool, onFrame: @escaping @Sendable (AudioFeatures, MelodyFrame?) -> Void,
-         onFailure: @escaping @Sendable (Error) -> Void,
-         onVocalStatus: @escaping @Sendable (String) -> Void) throws {
+    init(onFrame: @escaping @Sendable (AudioFeatures, MelodyFrame?) -> Void,
+         onFailure: @escaping @Sendable (Error) -> Void) throws {
         self.onFrame = onFrame; self.onFailure = onFailure
-        var vocals: RapidlyVocalProcessor?
-        var pitchEstimator: any MelodyEstimating = try MelodyAnalyzer()
-        if useVocals {
-            do {
-                let singing = try SingingPitchAnalyzer(predictor: CoreMLSingingPitch(modelURL: CoreMLSingingPitch.bundledURL()),
-                                                      usesMixtureReference: true)
-                let candidate = try RapidlyVocalProcessor(configuration: RapidlyConfiguration.bundled())
-                vocals = candidate; pitchEstimator = singing
-                onVocalStatus("\(candidate.statusDescription) · CREPE 歌声音高")
-                AudioEngine.trace("vocal analysis: \(candidate.statusDescription), CREPE tiny with aligned vocal energy gate, maximum separation latency=\(candidate.maximumLatencySeconds)s")
-            } catch {
-                onVocalStatus("音高暂停 · \(error)")
-                AudioEngine.trace("vocal analysis unavailable: \(error)")
-            }
-        } else {
-            onVocalStatus("混音主旋律 · 已连接")
-            AudioEngine.trace("melody analysis: predominant mixture, harmonic salience + reliability + contour continuity; no vocal separation or neural model")
-        }
-        analysis = try AudioAnalysisPipeline(features: AudioFeatureAnalyzer(), melody: pitchEstimator, vocals: vocals,
-            requiresVocalInput: useVocals,
-            onVocalFailure: { error in
-                onVocalStatus("音高暂停 · 人声分离中断")
-                AudioEngine.trace("vocal analysis failed; pitch suspended: \(error)")
-            }, onMelodyFailure: { error in
-                onVocalStatus("音高暂停 · 歌声音高模型异常")
-                AudioEngine.trace("singing pitch failed; pitch suspended: \(error)")
-            })
+        analysis = try AudioAnalysisPipeline()
+        AudioEngine.trace("melody analysis: predominant mixture, harmonic salience + reliability + contour continuity")
     }
 
     func stream(
