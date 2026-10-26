@@ -6,3 +6,7 @@ xcuserdata/
 .DS_Store
 __pycache__/
 *.pyc
+
+# Windows/.NET build products
+**/bin/
+**/obj/

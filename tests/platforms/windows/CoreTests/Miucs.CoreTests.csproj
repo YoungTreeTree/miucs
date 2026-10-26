@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings></PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../../../modules/audio/platforms/windows/Core/**/*.cs" />
+    <Compile Include="../../../../modules/audio/platforms/windows/Capture/PcmDecoder.cs" />
+    <Compile Include="../../../../modules/keyboard/platforms/windows/Core/**/*.cs" />
+    <Compile Include="../../../../modules/visualizations/**/platforms/windows/*Scene.cs" />
+    <Compile Include="../../../../apps/windows/Core/**/*.cs" />
+    <None Include="../../../../contracts/audio-features/samples/*.json" Link="samples/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

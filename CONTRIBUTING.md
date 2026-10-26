@@ -1,13 +1,13 @@
 # 参与 Miucs 开发
 
-当前可运行版本是 macOS 原生应用。请先阅读 [架构说明](docs/architecture.md)、[音频契约](contracts/audio-features/README.md) 和 [可视化契约](contracts/visualization/README.md)。Windows 欢迎共同设计实现，但目前没有可运行应用。
+当前可运行版本是 macOS 原生应用。请先阅读 [架构说明](docs/architecture.md)、[音频契约](contracts/audio-features/README.md) 和 [可视化契约](contracts/visualization/README.md)。Windows 已新增独立 .NET 8/WPF 实现和构建入口；跨平台核心测试/交叉构建与 Windows 实机验收分开记录，后者尚待执行。
 
 ## 平台支持
 
 | 平台 | 音频采集 / 恢复 | 分析后端 | 铅笔飞鸟绘制 | 五线谱音符绘制 | 应用外壳 |
 | --- | --- | --- | --- | --- | --- |
 | macOS 14+ / Apple Silicon | 已实现，含自动恢复 | Swift 分析 + Accelerate FFT | AppKit，共用五种笔色 | AppKit，共用五种笔色 | 已实现 |
-| Windows | 规划中 | 未实现；语言待定 | 规划中；工具箱待定 | 规划中；工具箱待定 | 规划中 |
+| Windows 10/11 x64 | WASAPI 已实现；实机待验 | C# FFT/混音旋律/节拍；合成测试 | WPF 已实现；实机待验 | WPF 已实现；实机待验 | 托盘/透明窗口已实现；实机待验 |
 
 通用核心当前以 Swift 源码实现。语言无关契约与样本为跨平台协作入口，不表示 Windows 已能直接构建这些代码。
 
@@ -103,7 +103,7 @@ zsh scripts/render-demo.sh --staff
 
 分别从 [音频适配](modules/audio/platforms/windows/README.md)、[飞鸟绘制](modules/visualizations/pencil-flight/platforms/windows/README.md)、[五线谱绘制](modules/visualizations/staff-note/platforms/windows/README.md) 和 [应用外壳](apps/windows/README.md) 开始。先通过 Schema 与合成样本验证时间、单位、缺失值、事件容量和重连隔离，再做平台采集/恢复、绘制与窗口测试。
 
-Windows 可选择其他语言；优先维持数据语义与可复现数值，不引入 macOS 目录依赖。实际实现确定工具链后补充构建入口与 CI，在真实平台通过验收后更新支持矩阵。预留目录仅放职责说明，不用返回假数据的空实现表示支持。
+Windows 使用 .NET 8/C# 与 WPF，不引入 macOS 目录依赖。`scripts/build-windows.ps1` 先执行可移植核心测试再发布；Linux 也可运行 `scripts/test-windows.sh` 进行测试及交叉构建。新增 `.github/workflows/windows.yml` 包含 Windows 离屏检查；工作流未在本轮远程运行。真实平台验收见 `docs/windows-acceptance.md`，通过前不宣称完整稳定支持。
 
 
 混音主旋律是唯一运行路径。修改时运行 `test-melody.sh`、`test-audio-pipeline.sh`、`test-audio-recovery.sh` 及五线谱回归；识别质量使用 `python3 scripts/benchmark-pop-melody.py --output build/current-mixture-benchmark.json`，需要已准备的本地音频样本。首次准备命令见上方歌曲基准。此前人声分离对照仅保留历史报告，可从提交 `757e7e3` 恢复相应实验代码；当前构建不下载或打包 SDK/模型。验证入口见[验证索引](docs/validation/README.md)。

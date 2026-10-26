@@ -22,7 +22,7 @@
 
 事件携带 `sequence`、`receivedAt`、`kind`、`keyCode`、`modifiers`、可选的 `heldDuration` 和 `modifierIsPressed`。事件种类为 `pressed`、`released`、`repeated`、`modifiersChanged`。普通松开或连发的 `heldDuration` 只有在同代次观察到按下时才有值；中途开始监听不会编造按住起点。新增的可选字段兼容缺少该字段的 v1 数据。
 
-`keyCode` 是 UInt16 平台物理键标识；macOS 为虚拟键码，不是 Unicode 或输入法上屏文字。Windows 尚未实现，后续适配需要明确自己的键码表。修饰键保留 `modifiersChanged` 和聚合标志；`modifierIsPressed` 表示该物理侧的按下/松开，Caps Lock 则表示切换后的锁定状态。macOS 使用设备左右侧标志识别 Shift、Control、Option、Command；只有聚合标志且无法判断左右侧的合成事件返回 `nil`，不能据此猜测一次按下。Fn 使用独立状态位。修饰键仍不进入普通 `heldKeys`、敲击频率或按住时长，Caps Lock 也不当成长按。
+`keyCode` 是 UInt16 平台物理键标识；macOS 为虚拟键码，不是 Unicode 或输入法上屏文字。Windows 使用物理 set-1 扫描码，扩展键 OR `0x100`（A=`0x1E`、左 Control=`0x1D`、右 Control=`0x11D`）；不是虚拟键对应的字符，完整 ANSI 映射见 Windows `StaffNoteScene.cs`。修饰键保留 `modifiersChanged` 和聚合标志；`modifierIsPressed` 表示该物理侧的按下/松开，Caps Lock 则表示切换后的锁定状态。macOS 使用设备左右侧标志识别 Shift、Control、Option、Command；只有聚合标志且无法判断左右侧的合成事件返回 `nil`，不能据此猜测一次按下。Fn 使用独立状态位。修饰键仍不进入普通 `heldKeys`、敲击频率或按住时长，Caps Lock 也不当成长按。
 
 所有时间均使用主机单调时钟，不能与音频 PCM 窗口时间直接相减。长按连发仍算活动，因此会更新 `idleDuration`，但不增加敲击频率。
 

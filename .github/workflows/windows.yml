@@ -1,0 +1,37 @@
+name: Windows
+on:
+  push:
+    paths: ['apps/windows/**', 'modules/**/platforms/windows/**', 'tests/platforms/windows/**', 'contracts/**', 'scripts/*windows*', '.github/workflows/windows.yml']
+  pull_request:
+    paths: ['apps/windows/**', 'modules/**/platforms/windows/**', 'tests/platforms/windows/**', 'contracts/**', 'scripts/*windows*', '.github/workflows/windows.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  portable-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - run: dotnet run --project tests/platforms/windows/CoreTests/Miucs.CoreTests.csproj -c Release
+  windows-build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - shell: pwsh
+        run: ./scripts/build-windows.ps1
+      - shell: pwsh
+        run: |
+          $process = Start-Process -FilePath ./dist/windows/win-x64/Miucs.exe -ArgumentList '--smoke-test', 'build/windows-smoke' -Wait -PassThru
+          if ($process.ExitCode -ne 0) { throw "Native WPF smoke failed" }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Miucs-windows-x64
+          path: |
+            dist/windows/win-x64/
+            build/windows-smoke/
