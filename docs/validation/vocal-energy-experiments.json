@@ -1,0 +1,368 @@
+{
+  "method": "Exploratory PyTorch candidates on the same previously frozen Rapidly vocal PCM. Development selection only on fdps_2. Regression clips were previously used, not unseen data. Not the final native paired benchmark.",
+  "baselineGitRevision": "a55c496",
+  "candidateSources": [
+    {
+      "name": "Silero VAD",
+      "version": "6.2.3",
+      "source": "https://github.com/snakers4/silero-vad",
+      "wheelSHA256": "7b7f5436cfcb02fae583a05b512ea96467fd449fe54cb49a5e4f06c51a1e43b8",
+      "modelSHA256": "e1122837f4154c511485fe0b9c64455f7b929c96fbb8d79fbdb336383ebd3720",
+      "framing": "512 samples at 16kHz, recurrent state, most recent completed window only",
+      "coreMLConversionMaximumDifference": 1.9744038581848145e-07
+    },
+    {
+      "name": "FCPE previous",
+      "version": "torchfcpe 0.0.4",
+      "source": "https://github.com/CNChTu/FCPE",
+      "wheelSHA256": "f042c463d850d76c6f4899a0b84f0b694bb560adf05f4de951097a756d17472d",
+      "modelSHA256": "b9aeaeb673436eeda50ceafd632aa681aa63417e52eae4207503d180c9b10015"
+    },
+    {
+      "name": "FCPE DDSP-200K",
+      "source": "https://huggingface.co/ChiTu/FCPE",
+      "revision": "aeec888cd3eecd9a350945205a86340ef9293548",
+      "modelSHA256": "8544427eebbf2baef6213cc9a05057e46961617a8e5bd96975a0d42da6a09059"
+    }
+  ],
+  "frozenVocalPCM": {
+    "Ani_2_01.wav": "bc31fcfef12a7accd8343a7ccfe76944df096273753acfd8e42426c0666ddcab",
+    "Ani_2_02.wav": "d15376ca028166dffea012530586685c7eb10379a15e86b47ad65873bf042c28",
+    "Ani_2_03.wav": "4ba80ddb3c15c359a0a421f39f895a59965562a1296695a5bac0853aaea34220",
+    "Ani_2_04.wav": "b0b9cf33654f5566b9ec8c5e086b72f70d585321cbcb0757023c83d2b065bde4",
+    "Ani_2_05.wav": "8baf26598157d61ce22140eff57c70f7ce7282a55ab46520b2214a394ac43ede",
+    "Ani_2_06.wav": "be3b787f9f323d47e5b2844d9cfe083f582928610b9e1ac31abb728eab9c93bb",
+    "Ani_2_07.wav": "ec2daafb199de055a5116edfc2b1ea8a88549751564526515b7965006b95ac7a",
+    "fdps_2_01.wav": "b943b00cfa72b1fd1722bfdab336084fab8bfe741115a1d930856fab82058c64",
+    "fdps_2_02.wav": "2f525474e7a8dc3d916453df3b8aa9241aad283da1a57fc2d0c943a4332796e8",
+    "fdps_2_03.wav": "6ed04fdcdd97abd84bf3f3932946335f4b8df4a5d8ac4999db3ff32fa1c2fa27",
+    "fdps_2_04.wav": "3bd947af13faa42a75508f72bd888ee5e59c33869741fe3c554e4b2dbb0df286",
+    "fdps_2_05.wav": "a31af3ad3bbb981994a380f3b9d4ae88be2582f0ac644b9a7c6800bba9fc8b4c",
+    "fdps_2_06.wav": "0929a1363c23c0d13998cfff9a24d5ec48a17a3429bb8439ffc6fb7082f335f9",
+    "fdps_2_07.wav": "5fe0a543f7b68cd51abe3ae08de8366741336fe7d2e2a386585af69b888d5c59",
+    "fdps_2_08.wav": "f834fe03579f32db8e6865e36653a2bd707e7aad42c050162fad60c8395db5db",
+    "fdps_2_09.wav": "a7187e6556b852e4bc8c4fbf79919f969c7d895d5c25f5280162bbeb8efdef9f",
+    "fdps_2_10.wav": "b523b3e17d4f9da937e6aac6f30856f14bbcb24462d5413d898bfcfdee3aa530",
+    "fdps_2_11.wav": "388616f6f307eda15d41ca638c93252d8792b0cb63cca8cc4bba04d7a64f7d80",
+    "fdps_2_12.wav": "fbcace8acd0e4ea53b3376d92dc890fabc96938f7ebba2e4dad1ecaa4d5e1d76",
+    "geniusturtle_4_01.wav": "c413e93e8f9a88f2aa75be42a88ed95f6a47c76d332a4582cbba600e0c6fc3de",
+    "geniusturtle_4_02.wav": "86dc0f1bc47837cc25db1bfed79d91ab7efe66171407d73476b4473822346d25",
+    "geniusturtle_4_03.wav": "a144ea145ef63b56ab089aeff86a69fc72f2b953f6157e80285f9b18e1357612",
+    "geniusturtle_4_04.wav": "fb618fbd5c52484a2a6dd8210682f76100ddf7db41ed203e33b04ede476016b2",
+    "geniusturtle_4_05.wav": "951e7b2442955dafd4175f692a5d37475232ab7eefa23c783ebe2d98fc76eb3d",
+    "geniusturtle_4_06.wav": "17ea0d1bb9f224bfa4e3d2c20a7712ea804af1719520f6be2285e6e1788be4ff",
+    "geniusturtle_4_07.wav": "19eea440fab2ef695996dddb4be3825f8d915ce66e512fe4f41c4131128d608d",
+    "geniusturtle_4_08.wav": "19c2c3656c5575845b7d7871eba3ebd8761566be6f795c291a91d9ee849142af",
+    "geniusturtle_4_09.wav": "1ae5d3438b72a93765d159e76872563172af729a211c6a09ef81baec01433166",
+    "geniusturtle_4_10.wav": "fa29358cf62c3c4031f81fdb26b5ed1eed3905c28fe0d343a4c4245ae2401237",
+    "geniusturtle_4_11.wav": "f9de8b413025ec60f3ab2308e8d1113e2c3f44a44fe9d4066a23c0dc22efecce",
+    "geniusturtle_4_12.wav": "932fa2737db66ef040cc1bef8e0d2e609d52ada1c2a41217bb816587d67af85e"
+  },
+  "sileroWithCREPE": {
+    "all": {
+      "baseline": {
+        "rawPitchAccuracy": 0.7080138635440191,
+        "rawChromaAccuracy": 0.7236876618101471,
+        "octaveErrorRate": 0.015673798266128,
+        "otherPitchErrorRate": 0.0913441669401727,
+        "missRate": 0.18496817124968012,
+        "voicingFalseAlarm": 0.48559198071828485,
+        "overallAccuracy": 0.6632582615147677
+      },
+      "current": {
+        "rawPitchAccuracy": 0.7176204424275752,
+        "rawChromaAccuracy": 0.7365065074234166,
+        "octaveErrorRate": 0.01888606499584115,
+        "otherPitchErrorRate": 0.11100406494343958,
+        "missRate": 0.15248942763314405,
+        "voicingFalseAlarm": 0.49239392173621194,
+        "overallAccuracy": 0.6694268453969834
+      }
+    },
+    "development": {
+      "baseline": {
+        "rawPitchAccuracy": 0.673460899917587,
+        "rawChromaAccuracy": 0.691534346321657,
+        "octaveErrorRate": 0.018073446404070163,
+        "otherPitchErrorRate": 0.1078818859205048,
+        "missRate": 0.20058376775783826,
+        "voicingFalseAlarm": 0.47783559496557465,
+        "overallAccuracy": 0.6310250215546217
+      },
+      "current": {
+        "rawPitchAccuracy": 0.7002107021831848,
+        "rawChromaAccuracy": 0.7218258042036747,
+        "octaveErrorRate": 0.021615102020489857,
+        "otherPitchErrorRate": 0.12661330732782491,
+        "missRate": 0.15156088846850044,
+        "voicingFalseAlarm": 0.46513395801758284,
+        "overallAccuracy": 0.6568274764583363
+      }
+    },
+    "previouslyHeldOut": {
+      "baseline": {
+        "rawPitchAccuracy": 0.7298367879396608,
+        "rawChromaAccuracy": 0.7439950189607727,
+        "octaveErrorRate": 0.014158231021111902,
+        "otherPitchErrorRate": 0.08089929179469976,
+        "missRate": 0.1751056892445276,
+        "voicingFalseAlarm": 0.49049075066736497,
+        "overallAccuracy": 0.6836160972790706
+      },
+      "current": {
+        "rawPitchAccuracy": 0.7286160678450849,
+        "rawChromaAccuracy": 0.7457785305095691,
+        "octaveErrorRate": 0.01716246266448407,
+        "otherPitchErrorRate": 0.10114559606909096,
+        "missRate": 0.15307587342134002,
+        "voicingFalseAlarm": 0.5096107409269248,
+        "overallAccuracy": 0.6773843415687606
+      }
+    }
+  },
+  "sileroSelection": {
+    "crepeOnset": 0.5,
+    "crepeSustain": 0.4,
+    "voiceActivity": 0.1,
+    "decision": "Not adopted: overall accuracy on regression subset declined from 68.36% to 67.74%."
+  },
+  "fcpeWithSilero": [
+    {
+      "all": {
+        "rawPitchAccuracy": 0.6998504626291706,
+        "rawChromaAccuracy": 0.7081883189053924,
+        "octaveErrorRate": 0.00833785627622181,
+        "otherPitchErrorRate": 0.1794175697037537,
+        "missRate": 0.11239411139085381,
+        "voicingFalseAlarm": 0.4475801429414742,
+        "overallAccuracy": 0.6631919747920256
+      },
+      "development": {
+        "rawPitchAccuracy": 0.702863004214969,
+        "rawChromaAccuracy": 0.7117929345582684,
+        "octaveErrorRate": 0.008929930343299542,
+        "otherPitchErrorRate": 0.1856071528509414,
+        "missRate": 0.1025999125907902,
+        "voicingFalseAlarm": 0.42147079071883337,
+        "overallAccuracy": 0.6705073949172583
+      },
+      "previouslyHeldOut": {
+        "rawPitchAccuracy": 0.6979478047855088,
+        "rawChromaAccuracy": 0.7059117195456814,
+        "octaveErrorRate": 0.007963914760172715,
+        "otherPitchErrorRate": 0.1755083592950035,
+        "missRate": 0.11857992115931504,
+        "voicingFalseAlarm": 0.46407026013472086,
+        "overallAccuracy": 0.6585717094497734
+      },
+      "variant": "previous",
+      "onset": 0.2,
+      "vad": 0.1,
+      "look": 4
+    },
+    {
+      "all": {
+        "rawPitchAccuracy": 0.6929560601919503,
+        "rawChromaAccuracy": 0.7101923137059584,
+        "octaveErrorRate": 0.017236253514008027,
+        "otherPitchErrorRate": 0.16667622223270787,
+        "missRate": 0.12313146406133384,
+        "voicingFalseAlarm": 0.45996875605328086,
+        "overallAccuracy": 0.6566519823880875
+      },
+      "development": {
+        "rawPitchAccuracy": 0.6986329986103432,
+        "rawChromaAccuracy": 0.719075125456122,
+        "octaveErrorRate": 0.02044212684577862,
+        "otherPitchErrorRate": 0.16754378428215358,
+        "missRate": 0.1133810902617245,
+        "voicingFalseAlarm": 0.43605590680930656,
+        "overallAccuracy": 0.6652496842009802
+      },
+      "previouslyHeldOut": {
+        "rawPitchAccuracy": 0.6893706254013862,
+        "rawChromaAccuracy": 0.7045821168111182,
+        "octaveErrorRate": 0.015211491409731867,
+        "otherPitchErrorRate": 0.16612828830674217,
+        "missRate": 0.12928959488213973,
+        "voicingFalseAlarm": 0.47507160820736993,
+        "overallAccuracy": 0.6512218549273132
+      },
+      "variant": "DDSP",
+      "onset": 0.5,
+      "vad": 0.1,
+      "look": 4
+    }
+  ],
+  "fcpeFraming": "32 completed 64ms Mel FFT windows, 10ms hop; stream output every 20ms. Tested 0/40/80ms extra wait; selected 40ms on development. Left history padding uses log(1e-5); no padded future or whole-song context.",
+  "ensemble": [
+    {
+      "onset": 0.4,
+      "fc": 0.05,
+      "tolerance": 1,
+      "rawPitchAccuracy": 0.712075167837274,
+      "missRate": 0.17880345837556183,
+      "voicingFalseAlarm": 0.4333663090491274,
+      "overallAccuracy": 0.6762623440054314
+    }
+  ],
+  "ensembleDecision": "Not adopted: about +1.3 percentage points overall for a second ~40MB model; energy gate gained more with no new model or wait.",
+  "energyDevelopmentGrid": [
+    {
+      "onset": 0.4,
+      "minimumRatioDB": -24,
+      "rawPitchAccuracy": 0.734824427983236,
+      "missRate": 0.07796545165465603,
+      "voicingFalseAlarm": 0.6412943618303416,
+      "overallAccuracy": 0.6328268074079727
+    },
+    {
+      "onset": 0.4,
+      "minimumRatioDB": -18,
+      "rawPitchAccuracy": 0.7302200411405485,
+      "missRate": 0.08701078411869967,
+      "voicingFalseAlarm": 0.5545082074786772,
+      "overallAccuracy": 0.6531738182766376
+    },
+    {
+      "onset": 0.4,
+      "minimumRatioDB": -12,
+      "rawPitchAccuracy": 0.7075343612745634,
+      "missRate": 0.12410646282059444,
+      "voicingFalseAlarm": 0.4502462625910495,
+      "overallAccuracy": 0.6653002364900422
+    },
+    {
+      "onset": 0.4,
+      "minimumRatioDB": -9,
+      "rawPitchAccuracy": 0.6781908932516366,
+      "missRate": 0.16002395729618282,
+      "voicingFalseAlarm": 0.3562147585783712,
+      "overallAccuracy": 0.6673173024138964
+    },
+    {
+      "onset": 0.4,
+      "minimumRatioDB": -6,
+      "rawPitchAccuracy": 0.5958403141073155,
+      "missRate": 0.2551912744997777,
+      "voicingFalseAlarm": 0.29518879467504316,
+      "overallAccuracy": 0.6240472731721437
+    },
+    {
+      "onset": 0.4,
+      "minimumRatioDB": -3,
+      "rawPitchAccuracy": 0.3754507026783798,
+      "missRate": 0.49195671967106275,
+      "voicingFalseAlarm": 0.23992465594926826,
+      "overallAccuracy": 0.47676550444589916
+    },
+    {
+      "onset": 0.5,
+      "minimumRatioDB": -24,
+      "rawPitchAccuracy": 0.7025963796199935,
+      "missRate": 0.14800178822686474,
+      "voicingFalseAlarm": 0.5482437454689558,
+      "overallAccuracy": 0.6342308318198142
+    },
+    {
+      "onset": 0.5,
+      "minimumRatioDB": -18,
+      "rawPitchAccuracy": 0.6985717029222337,
+      "missRate": 0.15448622924348457,
+      "voicingFalseAlarm": 0.4713290133816132,
+      "overallAccuracy": 0.6520485532274035
+    },
+    {
+      "onset": 0.5,
+      "minimumRatioDB": -12,
+      "rawPitchAccuracy": 0.6777007084024467,
+      "missRate": 0.18420818106025103,
+      "voicingFalseAlarm": 0.3813037837100524,
+      "overallAccuracy": 0.6615895353002933
+    },
+    {
+      "onset": 0.5,
+      "minimumRatioDB": -9,
+      "rawPitchAccuracy": 0.6512319331109567,
+      "missRate": 0.2145613954489488,
+      "voicingFalseAlarm": 0.3018070790244629,
+      "overallAccuracy": 0.6618507386933956
+    },
+    {
+      "onset": 0.5,
+      "minimumRatioDB": -6,
+      "rawPitchAccuracy": 0.5716279484567552,
+      "missRate": 0.3056598958334747,
+      "voicingFalseAlarm": 0.24724554841674332,
+      "overallAccuracy": 0.618769590123417
+    },
+    {
+      "onset": 0.5,
+      "minimumRatioDB": -3,
+      "rawPitchAccuracy": 0.35842461608777776,
+      "missRate": 0.5328079814176522,
+      "voicingFalseAlarm": 0.20122581354599967,
+      "overallAccuracy": 0.4746264915818721
+    },
+    {
+      "onset": 0.6,
+      "minimumRatioDB": -24,
+      "rawPitchAccuracy": 0.6731705398711293,
+      "missRate": 0.2025759241303949,
+      "voicingFalseAlarm": 0.4599993883865607,
+      "overallAccuracy": 0.6359597341622248
+    },
+    {
+      "onset": 0.6,
+      "minimumRatioDB": -18,
+      "rawPitchAccuracy": 0.6691458631733692,
+      "missRate": 0.20906036514701473,
+      "voicingFalseAlarm": 0.3933860051229121,
+      "overallAccuracy": 0.650811791578712
+    },
+    {
+      "onset": 0.6,
+      "minimumRatioDB": -12,
+      "rawPitchAccuracy": 0.6489838183082571,
+      "missRate": 0.23740267378231092,
+      "voicingFalseAlarm": 0.3194251242087617,
+      "overallAccuracy": 0.656248909331241
+    },
+    {
+      "onset": 0.6,
+      "minimumRatioDB": -9,
+      "rawPitchAccuracy": 0.6239418106935348,
+      "missRate": 0.266329120494241,
+      "voicingFalseAlarm": 0.24949615376077902,
+      "overallAccuracy": 0.6552063764666732
+    },
+    {
+      "onset": 0.6,
+      "minimumRatioDB": -6,
+      "rawPitchAccuracy": 0.5484729980531292,
+      "missRate": 0.3511268175998113,
+      "voicingFalseAlarm": 0.20087805711373474,
+      "overallAccuracy": 0.613377293342331
+    },
+    {
+      "onset": 0.6,
+      "minimumRatioDB": -3,
+      "rawPitchAccuracy": 0.344639172067968,
+      "missRate": 0.5664379592436188,
+      "voicingFalseAlarm": 0.17269789459279403,
+      "overallAccuracy": 0.4720276135013619
+    }
+  ],
+  "energyPythonRegression": [
+    {
+      "onset": 0.4,
+      "minimumRatioDB": -9,
+      "rawPitchAccuracy": 0.7125853015761675,
+      "missRate": 0.14433957926396634,
+      "voicingFalseAlarm": 0.40033873526331004,
+      "overallAccuracy": 0.6870914999030693
+    }
+  ],
+  "finalNativeReport": "vocal-energy-benchmark.json",
+  "limits": "Python exploration used scipy resampling and model-time evaluation for candidate selection; selected native results use the production Swift resampler and common human-label grid. Exploratory model/PCM caches stay in ignored build/, and do not ship with the app."
+}

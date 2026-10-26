@@ -1,0 +1,216 @@
+{
+  "checks" : [
+    {
+      "name" : "44100Hz 50BPM pulse timing and rate",
+      "passed" : true
+    },
+    {
+      "name" : "44100Hz 60BPM pulse timing and rate",
+      "passed" : true
+    },
+    {
+      "name" : "44100Hz 90BPM pulse timing and rate",
+      "passed" : true
+    },
+    {
+      "name" : "44100Hz 120BPM pulse timing and rate",
+      "passed" : true
+    },
+    {
+      "name" : "44100Hz 150BPM pulse timing and rate",
+      "passed" : true
+    },
+    {
+      "name" : "44100Hz 180BPM pulse timing and rate",
+      "passed" : true
+    },
+    {
+      "name" : "44100Hz 200BPM pulse timing and rate",
+      "passed" : true
+    },
+    {
+      "name" : "48000Hz 50BPM pulse timing and rate",
+      "passed" : true
+    },
+    {
+      "name" : "48000Hz 60BPM pulse timing and rate",
+      "passed" : true
+    },
+    {
+      "name" : "48000Hz 90BPM pulse timing and rate",
+      "passed" : true
+    },
+    {
+      "name" : "48000Hz 120BPM pulse timing and rate",
+      "passed" : true
+    },
+    {
+      "name" : "48000Hz 150BPM pulse timing and rate",
+      "passed" : true
+    },
+    {
+      "name" : "48000Hz 180BPM pulse timing and rate",
+      "passed" : true
+    },
+    {
+      "name" : "48000Hz 200BPM pulse timing and rate",
+      "passed" : true
+    },
+    {
+      "name" : "Weak subdivisions retain quarter-note pulse",
+      "passed" : true
+    },
+    {
+      "name" : "Quiet spaces between kicks retain quarter-note pulse",
+      "passed" : true
+    },
+    {
+      "name" : "Repeated timestamps never advance the pulse clock",
+      "passed" : true
+    },
+    {
+      "name" : "Silence immediately suppresses pulse output",
+      "passed" : true
+    },
+    {
+      "name" : "Stalls do not replay old pulses or preserve a stale tempo",
+      "passed" : true
+    },
+    {
+      "name" : "Steady sound does not invent a metronome",
+      "passed" : true
+    },
+    {
+      "name" : "Invalid numerical input clears tracking safely",
+      "passed" : true
+    },
+    {
+      "name" : "Uncorrelated attacks do not create a persistent beat clock",
+      "passed" : true
+    },
+    {
+      "name" : "A real tempo change relearns from 120 to 150 BPM",
+      "passed" : true
+    },
+    {
+      "name" : "A sustained sound after rhythm stops does not keep coasting",
+      "passed" : true
+    }
+  ],
+  "failed" : 0,
+  "passed" : 24,
+  "syntheticTiming" : [
+    {
+      "firstBeatSeconds" : 5.183219954648516,
+      "medianBPM" : 50.006384780181499,
+      "phaseErrorP95Milliseconds" : 13.098577855929605,
+      "pulsesAfter6s" : 8,
+      "sampleRate" : 44100,
+      "targetBPM" : 50
+    },
+    {
+      "firstBeatSeconds" : 4.3827842839564344,
+      "medianBPM" : 60.017419598485127,
+      "phaseErrorP95Milliseconds" : 13.10748802032613,
+      "pulsesAfter6s" : 10,
+      "sampleRate" : 44100,
+      "targetBPM" : 60
+    },
+    {
+      "firstBeatSeconds" : 3.0489480322503208,
+      "medianBPM" : 90.059953968438023,
+      "phaseErrorP95Milliseconds" : 16.772627027110687,
+      "pulsesAfter6s" : 15,
+      "sampleRate" : 44100,
+      "targetBPM" : 90
+    },
+    {
+      "firstBeatSeconds" : 2.8829585515738234,
+      "medianBPM" : 120.00019855314395,
+      "phaseErrorP95Milliseconds" : 13.249840602373553,
+      "pulsesAfter6s" : 20,
+      "sampleRate" : 44100,
+      "targetBPM" : 120
+    },
+    {
+      "firstBeatSeconds" : 2.7835646891030748,
+      "medianBPM" : 150.00768017344339,
+      "phaseErrorP95Milliseconds" : 13.35967054765419,
+      "pulsesAfter6s" : 24,
+      "sampleRate" : 44100,
+      "targetBPM" : 150
+    },
+    {
+      "firstBeatSeconds" : 2.7162595729184433,
+      "medianBPM" : 179.77342326123872,
+      "phaseErrorP95Milliseconds" : 24.3320042759958,
+      "pulsesAfter6s" : 30,
+      "sampleRate" : 44100,
+      "targetBPM" : 180
+    },
+    {
+      "firstBeatSeconds" : 2.7832199546485277,
+      "medianBPM" : 199.99230473856429,
+      "phaseErrorP95Milliseconds" : 13.293843185227416,
+      "pulsesAfter6s" : 33,
+      "sampleRate" : 44100,
+      "targetBPM" : 200
+    },
+    {
+      "firstBeatSeconds" : 5.1809502723031766,
+      "medianBPM" : 50.008102749214544,
+      "phaseErrorP95Milliseconds" : 11.237033609905467,
+      "pulsesAfter6s" : 8,
+      "sampleRate" : 48000,
+      "targetBPM" : 50
+    },
+    {
+      "firstBeatSeconds" : 4.3816332609922979,
+      "medianBPM" : 59.998572528824319,
+      "phaseErrorP95Milliseconds" : 11.577197740999523,
+      "pulsesAfter6s" : 10,
+      "sampleRate" : 48000,
+      "targetBPM" : 60
+    },
+    {
+      "firstBeatSeconds" : 3.0470547273520801,
+      "medianBPM" : 90.08001617589558,
+      "phaseErrorP95Milliseconds" : 20.414480689343151,
+      "pulsesAfter6s" : 15,
+      "sampleRate" : 48000,
+      "targetBPM" : 90
+    },
+    {
+      "firstBeatSeconds" : 2.8809406010790584,
+      "medianBPM" : 120.01226706904617,
+      "phaseErrorP95Milliseconds" : 11.294227335454821,
+      "pulsesAfter6s" : 20,
+      "sampleRate" : 48000,
+      "targetBPM" : 120
+    },
+    {
+      "firstBeatSeconds" : 2.7820759496664271,
+      "medianBPM" : 149.95766649410947,
+      "phaseErrorP95Milliseconds" : 12.34743585412712,
+      "pulsesAfter6s" : 24,
+      "sampleRate" : 48000,
+      "targetBPM" : 150
+    },
+    {
+      "firstBeatSeconds" : 2.7213333333333352,
+      "medianBPM" : 179.77116838376588,
+      "phaseErrorP95Milliseconds" : 22.385833362141838,
+      "pulsesAfter6s" : 30,
+      "sampleRate" : 48000,
+      "targetBPM" : 180
+    },
+    {
+      "firstBeatSeconds" : 2.7813333333333352,
+      "medianBPM" : 199.9887341475841,
+      "phaseErrorP95Milliseconds" : 11.421243995961561,
+      "pulsesAfter6s" : 33,
+      "sampleRate" : 48000,
+      "targetBPM" : 200
+    }
+  ]
+}

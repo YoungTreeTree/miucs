@@ -1,0 +1,214 @@
+{
+  "draw" : {
+    "maxMs" : 30.58520844206214,
+    "meanMs" : 0.22371927240715017,
+    "medianMs" : 0.16016652807593346,
+    "p95Ms" : 0.3503747284412384,
+    "p99Ms" : 0.61708316206932068
+  },
+  "drawsOver16_67ms" : 1,
+  "fps" : 59.329469831461239,
+  "frames" : 891,
+  "framesWithActiveJoins" : 864,
+  "framesWithRings" : 917,
+  "hiddenStopsRendering" : true,
+  "interval" : {
+    "maxMs" : 70.148124825209379,
+    "meanMs" : 16.855030102927365,
+    "medianMs" : 16.672291792929173,
+    "p95Ms" : 23.504666518419981,
+    "p99Ms" : 28.268958441913128
+  },
+  "intervalsOver25ms" : 30,
+  "keyboardPressesPerSecond" : 20,
+  "longFrames" : [
+    {
+      "atSeconds" : 3.0971020418219268,
+      "currentDrawMs" : 0.14629168435931206,
+      "intervalMs" : 27.440916746854782,
+      "previousDrawMs" : 0.53695822134613991
+    },
+    {
+      "atSeconds" : 3.3457603333517909,
+      "currentDrawMs" : 0.15500001609325409,
+      "intervalMs" : 26.309208478778601,
+      "previousDrawMs" : 0.16041658818721771
+    },
+    {
+      "atSeconds" : 3.434114208444953,
+      "currentDrawMs" : 0.21029170602560043,
+      "intervalMs" : 28.268958441913128,
+      "previousDrawMs" : 0.16637519001960754
+    },
+    {
+      "atSeconds" : 3.7150997500866652,
+      "currentDrawMs" : 0.21224981173872948,
+      "intervalMs" : 25.649833492934704,
+      "previousDrawMs" : 0.18166657537221909
+    },
+    {
+      "atSeconds" : 3.9832733748480678,
+      "currentDrawMs" : 0.26791682466864586,
+      "intervalMs" : 29.376666527241468,
+      "previousDrawMs" : 0.22999988868832588
+    },
+    {
+      "atSeconds" : 4.2796952500939369,
+      "currentDrawMs" : 0.2787499688565731,
+      "intervalMs" : 26.663749944418669,
+      "previousDrawMs" : 0.22295815870165825
+    },
+    {
+      "atSeconds" : 4.3137981668114662,
+      "currentDrawMs" : 0.22587506100535393,
+      "intervalMs" : 26.594083290547132,
+      "previousDrawMs" : 0.220458023250103
+    },
+    {
+      "atSeconds" : 4.6366253751330078,
+      "currentDrawMs" : 0.27270801365375519,
+      "intervalMs" : 30.755541753023863,
+      "previousDrawMs" : 0.28804177418351173
+    },
+    {
+      "atSeconds" : 5.0147296250797808,
+      "currentDrawMs" : 0.17558317631483078,
+      "intervalMs" : 27.756708208471537,
+      "previousDrawMs" : 0.23999996483325958
+    },
+    {
+      "atSeconds" : 5.2455494999885559,
+      "currentDrawMs" : 0.187708530575037,
+      "intervalMs" : 26.002458296716213,
+      "previousDrawMs" : 0.22608321160078049
+    },
+    {
+      "atSeconds" : 5.5964336250908673,
+      "currentDrawMs" : 0.16075000166893005,
+      "intervalMs" : 26.904208585619926,
+      "previousDrawMs" : 0.23412518203258514
+    },
+    {
+      "atSeconds" : 6.0081990831531584,
+      "currentDrawMs" : 0.18683355301618576,
+      "intervalMs" : 38.759916555136442,
+      "previousDrawMs" : 0.15504192560911179
+    },
+    {
+      "atSeconds" : 6.3961527501232922,
+      "currentDrawMs" : 0.13349996879696846,
+      "intervalMs" : 26.415125001221895,
+      "previousDrawMs" : 1.6843331977725029
+    },
+    {
+      "atSeconds" : 6.4848350416868925,
+      "currentDrawMs" : 30.58520844206214,
+      "intervalMs" : 70.148124825209379,
+      "previousDrawMs" : 0.2399166114628315
+    },
+    {
+      "atSeconds" : 6.5325837498530746,
+      "currentDrawMs" : 0.18350034952163696,
+      "intervalMs" : 47.748708166182041,
+      "previousDrawMs" : 30.58520844206214
+    },
+    {
+      "atSeconds" : 6.5950819584541023,
+      "currentDrawMs" : 0.4864581860601902,
+      "intervalMs" : 41.990541853010654,
+      "previousDrawMs" : 0.27495855465531349
+    },
+    {
+      "atSeconds" : 6.6624311250634491,
+      "currentDrawMs" : 0.14108326286077499,
+      "intervalMs" : 26.229458395391703,
+      "previousDrawMs" : 0.11404184624552727
+    },
+    {
+      "atSeconds" : 9.4790422501973808,
+      "currentDrawMs" : 0.2193748950958252,
+      "intervalMs" : 25.962083600461483,
+      "previousDrawMs" : 0.12066680938005447
+    },
+    {
+      "atSeconds" : 10.667131166439503,
+      "currentDrawMs" : 0.13883365318179131,
+      "intervalMs" : 28.070291504263878,
+      "previousDrawMs" : 0.17812522128224373
+    },
+    {
+      "atSeconds" : 10.861787416506559,
+      "currentDrawMs" : 0.18116692081093788,
+      "intervalMs" : 25.103166699409485,
+      "previousDrawMs" : 0.1882500946521759
+    },
+    {
+      "atSeconds" : 10.933377000037581,
+      "currentDrawMs" : 0.66608330234885216,
+      "intervalMs" : 27.817333582788706,
+      "previousDrawMs" : 2.3276670835912228
+    },
+    {
+      "atSeconds" : 11.099929749965668,
+      "currentDrawMs" : 0.23479154333472252,
+      "intervalMs" : 25.058166589587927,
+      "previousDrawMs" : 0.23100012913346291
+    },
+    {
+      "atSeconds" : 11.54563962481916,
+      "currentDrawMs" : 0.36533363163471222,
+      "intervalMs" : 25.652958080172539,
+      "previousDrawMs" : 0.58383308351039886
+    },
+    {
+      "atSeconds" : 12.028609749861062,
+      "currentDrawMs" : 0.37941662594676018,
+      "intervalMs" : 25.312708225101233,
+      "previousDrawMs" : 0.16774982213973999
+    },
+    {
+      "atSeconds" : 12.080036458093673,
+      "currentDrawMs" : 0.30462536960840225,
+      "intervalMs" : 26.848291512578726,
+      "previousDrawMs" : 0.1554582267999649
+    },
+    {
+      "atSeconds" : 12.314865708351135,
+      "currentDrawMs" : 0.18379185348749161,
+      "intervalMs" : 27.851416729390621,
+      "previousDrawMs" : 0.2604583278298378
+    },
+    {
+      "atSeconds" : 13.075367750134319,
+      "currentDrawMs" : 0.43141655623912811,
+      "intervalMs" : 38.763708434998989,
+      "previousDrawMs" : 0.22983318194746971
+    },
+    {
+      "atSeconds" : 13.163771791849285,
+      "currentDrawMs" : 0.36312500014901161,
+      "intervalMs" : 26.816667057573795,
+      "previousDrawMs" : 0.23250002413988113
+    },
+    {
+      "atSeconds" : 13.498859791550785,
+      "currentDrawMs" : 0.16408367082476616,
+      "intervalMs" : 28.718125075101852,
+      "previousDrawMs" : 0.29570842161774635
+    },
+    {
+      "atSeconds" : 14.949882291723043,
+      "currentDrawMs" : 0.16191648319363594,
+      "intervalMs" : 29.852208215743303,
+      "previousDrawMs" : 0.23774988949298859
+    }
+  ],
+  "measurementSeconds" : 15,
+  "method" : "real native transparent window; synthetic capture transport; 1s warmup; no recording",
+  "moduleID" : "staff-note",
+  "resumedFramesInOneSecond" : 61,
+  "syntheticKeyboardPresses" : 340,
+  "widthPoints" : 800,
+  "withBeats" : true,
+  "withPitchGaps" : true
+}

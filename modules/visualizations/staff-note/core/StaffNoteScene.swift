@@ -1,11 +1,23 @@
 import Foundation
 
+struct StaffTraceJoin: Equatable, Sendable {
+    let startedAt: Double
+    let duration: Double
+
+    func progress(at time: Double) -> Double {
+        let t = min(1, max(0, (time - startedAt) / duration))
+        return t * t * (3 - 2 * t)
+    }
+}
+
 struct StaffTracePoint: Equatable, Sendable {
     let time: Double
     let pitch: StaffPitch
     /// Lightly smoothed notation height, independent of note animation and sway.
     let y: Double
     let segment: Int
+    /// Presentation time starts when the result arrives, independently of model latency.
+    let join: StaffTraceJoin?
 }
 
 /// Logical coordinates stay fixed: loudness and decorative sway never enter notation.
@@ -13,6 +25,8 @@ struct StaffNoteScene {
     static let width = 800.0, height = 160.0, noteX = 640.0
     static let historyDuration = 8.0, historyCapacity = 512
     static let trailSpeed = 70.0
+    /// Pitch-filter context may expire; the visual trail has its own lifecycle.
+    static let maximumSingingContextGap = 0.12
     static let maximumSwayAngle = 20.0 * Double.pi / 180
     private(set) var elapsed = 0.0
     private(set) var pitch: StaffPitch?
@@ -36,6 +50,8 @@ struct StaffNoteScene {
     private var pitchTracker = StaffPitchTracker()
     private var volumeTracker = StaffVolumeTracker()
     private var lastTraceMelodyTime: Double?
+    private var lastObservationTime: Double?
+    private var pitchWasUnvoiced = false
     var noteCenterX: Double { Self.noteX }
     var noteY: Double { baseY }
     var hasContinuousTraceTail: Bool {
@@ -55,6 +71,7 @@ struct StaffNoteScene {
     mutating func receive(audio: AudioFeatures?, age: Double = 0) {
         guard let audio, age.isFinite, age >= 0, age < 0.4 else {
             sounding = false; audioAge = .infinity; volumeTracker.reset()
+            lastObservationTime = nil
             resetMelodyInput(); stopSway(); return
         }
         audioAge = age; sounding = !audio.isSilent
@@ -63,6 +80,7 @@ struct StaffNoteScene {
         if sounding {
             volumeTracker.receive(envelope: envelope, time: audio.time)
         } else {
+            lastObservationTime = nil
             volumeTracker.reset(); resetMelodyInput(); stopSway()
         }
     }
@@ -70,18 +88,35 @@ struct StaffNoteScene {
     /// Called once per new melody analysis result, with its age in the PCM/host timeline.
     mutating func receive(melody: MelodyFrame?, age: Double = 0) {
         guard sounding, age.isFinite, age >= 0, age < 0.24 else {
-            invalidatePitch(); breakTrace(); pitchTracker.reset(); return
+            invalidatePitch(); pitchTracker.reset(); return
         }
-        // An explicit unvoiced result is a musical rest, even while accompaniment
-        // is loud. Do not bridge it with the previous note or a horizontal tail.
+        if let melody {
+            guard melody.time.isFinite, lastObservationTime.map({ melody.time > $0 }) ?? true else { return }
+            lastObservationTime = melody.time
+        }
+        // Missing F0 invalidates the note, not the continuous music session.
+        // Leave history untouched and join it only when another real point arrives.
         if let melody, !melody.isMelodic || melody.pitchHz == nil {
-            resetMelodyInput(); stopSway(); return
+            if melody.estimator == .crepe, let lastTraceMelodyTime,
+               melody.time - lastTraceMelodyTime <= Self.maximumSingingContextGap + 1e-9 {
+                invalidatePitch(); pitchTracker.reset(); pitchWasUnvoiced = true
+            } else { resetPitchContext() }
+            stopSway(); return
         }
         guard let melody, melody.time.isFinite,
               let resolved = StaffPitch.resolve(melody, previous: referencePitch) else {
             // Do not move to an edge, extend history, or let a dropout bypass jump confirmation.
             pitchTracker.reset(); return
         }
+        if pitchWasUnvoiced {
+            let gap = melody.time - (lastTraceMelodyTime ?? -.infinity)
+            let distance = referencePitch.map { abs(resolved.midi - $0.midi) } ?? Int.max
+            if melody.estimator != .crepe || gap > Self.maximumSingingContextGap + 1e-9 || distance > 5 {
+                // Reset note confirmation independently of the visual line.
+                resetPitchContext()
+            }
+        }
+        let reconnecting = !hasContinuousTraceTail
         switch pitchTracker.receive(resolved, time: melody.time, previous: referencePitch, singingModel: melody.estimator == .crepe) {
         case .ignored: return
         case .hold: return
@@ -92,13 +127,18 @@ struct StaffNoteScene {
         guard isPitchReliable, let pitch else { return }
         let time = elapsed - age
         var y = pitch.y
+        var join: StaffTraceJoin?
         if let last = trace.last, last.segment == segment, let lastTraceMelodyTime {
             // A 25ms time constant softens corners without flattening genuine sustained notes.
             let dt = max(0, melody.time - lastTraceMelodyTime)
             y = last.y + (pitch.y - last.y) * (1 - exp(-dt / 0.025))
+            if reconnecting, dt >= 0.08 - 1e-9 {
+                join = StaffTraceJoin(startedAt: elapsed, duration: 0.18 + min(0.12, dt * 0.12))
+            }
         }
         lastTraceMelodyTime = melody.time
-        trace.append(StaffTracePoint(time: time, pitch: pitch, y: y, segment: segment))
+        pitchWasUnvoiced = false
+        trace.append(StaffTracePoint(time: time, pitch: pitch, y: y, segment: segment, join: join))
         if trace.count > Self.historyCapacity { trace.removeFirst(trace.count - Self.historyCapacity) }
     }
 
@@ -115,6 +155,7 @@ struct StaffNoteScene {
     mutating func resetInput(clearHistory: Bool) {
         receive(audio: nil)
         melodyAge = .infinity
+        lastObservationTime = nil
         nextSwayDirection = -1
         if clearHistory { trace.removeAll(keepingCapacity: true) }
     }
@@ -125,8 +166,11 @@ struct StaffNoteScene {
         if lastTraceMelodyTime != nil { segment += 1 }
         lastTraceMelodyTime = nil
     }
+    private mutating func resetPitchContext() {
+        invalidatePitch(); pitchTracker.reset(); referencePitch = nil; pitchWasUnvoiced = false
+    }
     private mutating func resetMelodyInput() {
-        invalidatePitch(); breakTrace(); pitchTracker.reset(); referencePitch = nil
+        resetPitchContext(); breakTrace()
     }
     private mutating func stopSway() {
         // Cancel outward impulses while preserving a smooth return to the upright angle.
@@ -143,7 +187,10 @@ struct StaffNoteScene {
         elapsed += seconds; audioAge += seconds; melodyAge += seconds
         if audioAge >= 0.4 { sounding = false; stopSway() }
         if !sounding { resetMelodyInput() }
-        else if melodyAge >= 0.24 { invalidatePitch(); breakTrace() }
+        else if melodyAge >= 0.24 {
+            invalidatePitch()
+            if pitchWasUnvoiced, melodyAge >= 0.4 { resetPitchContext() }
+        }
         trace.removeAll { elapsed - $0.time >= Self.historyDuration }
         if trace.isEmpty { breakTrace() }
         // Long scheduling gaps age history in full, without simulating old actions.

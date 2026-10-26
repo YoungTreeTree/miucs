@@ -1,8 +1,10 @@
 # Rapidly 实时人声分析
 
+> 2026-10-26 起默认使用[混音主旋律](predominant-mixture.md)。本文记录保留的人声模式及历史验证。
+
 macOS 可选接入 Rapidly v1.1.0 的 `music-stem-separation-96ms.v1.1.rapidly`，边采集系统声音、边分离人声、边计算音高。只使用名为 `vocals` 的输出，其余五个输出的增益为零。模型内部为单声道，SDK 负责输入声道和采样率转换。
 
-菜单栏「音高来源」可以选择 **Rapidly 人声分离**或**原始混音**，选择自动保存。状态行显示实际运行来源；没有授权时显示「Rapidly 试用 · 含水印」，加载失败则明确显示音高暂停，音量与起音仍继续更新。切换会重新建立音频会话，不补播旧旋律；键盘监听继续独立运行。
+菜单栏「音高来源」可以选择 **人声旋律（Rapidly）**或**混音主旋律**，选择自动保存。状态行显示实际运行来源；没有授权时显示「Rapidly 试用 · 含水印」，加载失败则明确显示音高暂停，音量与起音仍继续更新。切换会重新建立音频会话，不补播旧旋律；键盘监听继续独立运行。
 
 ## 授权与本地处理
 
@@ -22,7 +24,7 @@ python3 scripts/benchmark-rapidly.py
 
 `setup-rapidly.sh` 将官方签名的 XCFramework、音乐模型、LICENSE 和 NOTICE 下载到忽略的 `build/rapidly/`，逐文件检查固定 SHA-256。模型和文本来自 SDK 提交 `a75155656556b38709fe77a706958dcbe1f13624`；XCFramework 使用官方 v1.1.0 发布包及 Swift Package 声明的校验和。构建把 macOS framework、模型和完整授权说明放入本地应用，并完成嵌套签名。不要把这些专有二进制、模型或授权文件提交到源码仓库；向他人分发带 SDK 的应用需要相应授权。
 
-普通 `zsh build.sh` 和现有 Xcode 配置不下载、不链接 SDK，首次启动默认使用原始混音；如果保留了此前的 Rapidly 偏好，则提示音高暂停，可在菜单明确选择原始混音。Rapidly 本地试用构建通过上述 CLI 开关启用。应用运行不依赖 Python；Python 只用于离线对照。
+普通 `zsh build.sh` 和现有 Xcode 配置不下载、不链接 SDK，首次启动默认使用混音主旋律；如果在新版来源偏好中手动选择了人声模式而当前包没有 SDK，则提示音高暂停，可在菜单选择混音主旋律。Rapidly 本地试用构建通过上述 CLI 开关启用。应用运行不依赖 Python；Python 只用于离线对照。
 
 基准使用已准备的《童话》混音和人工标注，首次准备见[旋律基准](melody-benchmark.md)。输出为 [Rapidly 对照报告](validation/rapidly-benchmark.json)，SDK 接口与时间对齐检查为 [原生测试](validation/rapidly-vocal-tests.json)。这些歌曲之前已用于评估，不重新宣称为未见样本。
 
@@ -30,7 +32,7 @@ python3 scripts/benchmark-rapidly.py
 
 ## 分析与时间语义
 
-- `AudioAnalysisPipeline` 仅将分离后 PCM 送给 `SingingPitchAnalyzer`（CREPE Tiny + 有效基频门控）。音量、起音、频谱和立体声特征始终由原始 PCM 计算，数值与关闭分离时一致。五线谱与飞鸟共用人声音高，键盘星爆保持独立。
+- `AudioAnalysisPipeline` 仅将分离后 PCM 送给 `SingingPitchAnalyzer`（CREPE Tiny + 有效基频门控），同时提供按原始样本序号对齐的混音能量参考。音量、起音、频谱和立体声特征始终由原始 PCM 计算，数值与关闭分离时一致。五线谱与飞鸟共用人声音高，键盘星爆保持独立。
 - 每个采集会话独占一个原生 processor，在串行音频队列处理，模型加载离开主线程。每次向 SDK 提交最多 512 个采样点，及时取走输出，避免在原生队列堆积音频。
 - SDK 报告的最大模型延迟为 4608/48000 = **96ms**。输出首样本仍对应原始输入首样本，48kHz 和 44.1kHz 的全部输出相加测试均验证零样本偏移；因此不凭延迟常数修改音高时间戳，也不利用歌曲标注搜索最佳时间偏移。
 - 预热时没有音高，原始特征照常发布。音高帧保留原始 PCM 时间，绘制继续按真实帧龄判定过期。音频格式变化会重建 processor，采集重连会创建全新状态。

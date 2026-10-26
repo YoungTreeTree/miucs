@@ -1,0 +1,2389 @@
+{
+  "createdAt": "2026-10-23T18:28:23.975801+00:00",
+  "machine": "macOS-26.6.2-arm64-arm-64bit",
+  "baselineGitRevision": "a55c496",
+  "sourceSHA256": {
+    "modules/audio/core/AudioAnalysisPipeline.swift": "1bf519b5b635fa972092b4c2c17b835eb2c17f061b3173f82b5fa8c48f003a8e",
+    "modules/audio/core/AudioFeatureAnalyzer.swift": "6f8992a7fcd665ca3868f062427f615ee99e4a383b664c8dfb71b7bc28da1561",
+    "modules/audio/core/AudioFeatures.swift": "c2776598ba786ad5a05aa455ebd48ebc1f5694e6a32f83064f2ef5f37c3ca1da",
+    "modules/audio/core/AudioPCMBlock.swift": "be6a8497fc212a1e64b5d9be14c58d0048b562a05a602c93e950eae853cd8d41",
+    "modules/audio/core/FeatureChannel.swift": "a007d1f6998bbcf862e6048c850c006c56032b85198d192df050bc54ebfcff4a",
+    "modules/audio/core/MelodyAnalyzer.swift": "b0ab87ca59ea900e992a1c303277921bc576e6706f85fb06e87175ea170f48e1",
+    "modules/audio/core/MelodyEstimating.swift": "e81fe2cfba4fc8ade3f685b93f244157df84b6340df690e8f3b34ad0a98a9a1e",
+    "modules/audio/core/MelodyFrame.swift": "5dc6fd34c525f5b432a0384bc361216b9c727b97719a5cd805466f5881e3e18f",
+    "modules/audio/core/SingingPitchAnalyzer.swift": "f9d2e38a3fafbbfff85058c07a4cb0d63868fbede264a097099b362c729b96ce",
+    "modules/audio/core/SpectrumTransform.swift": "b492a773e1b8697cf6ff87686f2d36c2acd85d102515a8fbdbc76abb213ed940",
+    "modules/audio/core/StreamingMonoResampler.swift": "91b56c675158144f5ab88834ddc274d84ecdccd49c53ef4cc973ab5405ef386e",
+    "modules/audio/core/VocalPCMProcessor.swift": "b1b3a3b5fe8f9d9810bb6e44755e118c52dd33a78555e3a2d75973ab8e3bfc14",
+    "modules/audio/platforms/macos/AccelerateSpectrumTransform.swift": "bcc163720d55fb7d67850edb6b6206adf9684fb8f7e2b588b7f87f1243e01742",
+    "modules/audio/platforms/macos/RapidlyVocalProcessor.swift": "53e9245f5dbbce56b38fec630694d2ed4a9f6a6303705f2faea39e3c5e7705d4",
+    "modules/audio/platforms/macos/CoreMLSingingPitch.swift": "c2fa6f3b292edf9c3aee4a58cbb63e733943f9dd96479cdabbf14fd9528464b0",
+    "tools/macos/SingingPitchFileProbe.swift": "5b84809741aed670578d37f8f28cec620c4a8e97ca0060536634da1ce64112ab"
+  },
+  "separatorSHA256": "584bcd6c2f20c48d4758ff35b6e06b3468cbc0e47ce8209b7031633c9e2ebb04",
+  "model": {
+    "model": "CREPE tiny",
+    "weightsSHA256": "d4993eea36ed1a0ad9ac549c740dae5265b049ce72004f00c2f59e01c0be8432",
+    "exporterSHA256": "aaa26d65f1611b411112eb79deae4461aca83b0f56cf4ede5918944f432ec688",
+    "torchcrepeVersion": "0.0.24",
+    "torchcrepeRevision": "19e2ec3d494c0797a5ff2a11408ec5838fba6681",
+    "torchVersion": "2.9.1",
+    "coremltoolsVersion": "9.0",
+    "maxActivationDifference": 1.1920928955078125e-07,
+    "validationCases": 10
+  },
+  "method": "Paired identical watermarked vocal PCM; original mix reference aligned by sample index; causal 512-sample feed; common 20ms human-label grid; macro per-clip mean. No time/pitch fitting.",
+  "gate": {
+    "minimumVocalToMixtureDB": -9,
+    "minimumDBFS": -65,
+    "onset": 0.4,
+    "sustain": 0.3,
+    "onsetConfirmationSeconds": 0.02
+  },
+  "limits": "Previously used corpus of 31 covers, not unseen data or the commercial master; no licensed separator A/B; performance excludes capture, display, loading, I/O and baseline computation.",
+  "all": {
+    "baseline": {
+      "rawPitchAccuracy": 0.7066596024077685,
+      "rawChromaAccuracy": 0.7212594777645867,
+      "octaveErrorRate": 0.014599875356817936,
+      "otherPitchErrorRate": 0.09365409905529612,
+      "missRate": 0.18508642318011742,
+      "voicingFalseAlarm": 0.48376992271663505,
+      "overallAccuracy": 0.6631319420110545
+    },
+    "current": {
+      "rawPitchAccuracy": 0.7099568183529522,
+      "rawChromaAccuracy": 0.724130430163098,
+      "octaveErrorRate": 0.014173611810146003,
+      "otherPitchErrorRate": 0.1306141343898948,
+      "missRate": 0.14525543544700711,
+      "voicingFalseAlarm": 0.39962215066099593,
+      "overallAccuracy": 0.6848805702914508
+    }
+  },
+  "development": {
+    "baseline": {
+      "rawPitchAccuracy": 0.6717831160817752,
+      "rawChromaAccuracy": 0.6882561618459944,
+      "octaveErrorRate": 0.016473045764219242,
+      "otherPitchErrorRate": 0.11337238494665448,
+      "missRate": 0.19837145320735128,
+      "voicingFalseAlarm": 0.48028087837863137,
+      "overallAccuracy": 0.6308017033038428
+    },
+    "current": {
+      "rawPitchAccuracy": 0.6740408233511089,
+      "rawChromaAccuracy": 0.6901945637706713,
+      "octaveErrorRate": 0.016153740419562305,
+      "otherPitchErrorRate": 0.14861663577880665,
+      "missRate": 0.161188800450522,
+      "voicingFalseAlarm": 0.3676054356810326,
+      "overallAccuracy": 0.6621840578848319
+    }
+  },
+  "previouslyHeldOut": {
+    "baseline": {
+      "rawPitchAccuracy": 0.7286868569294487,
+      "rawChromaAccuracy": 0.7421036772921186,
+      "octaveErrorRate": 0.013416820362669741,
+      "otherPitchErrorRate": 0.08120044480812237,
+      "missRate": 0.17669587789975916,
+      "voicingFalseAlarm": 0.4859735296669531,
+      "overallAccuracy": 0.683551040141925
+    },
+    "current": {
+      "rawPitchAccuracy": 0.7326406046699055,
+      "rawChromaAccuracy": 0.7455636089372625,
+      "octaveErrorRate": 0.012923004267356758,
+      "otherPitchErrorRate": 0.1192441335126873,
+      "missRate": 0.13519225755005038,
+      "voicingFalseAlarm": 0.41984323380623606,
+      "overallAccuracy": 0.6992152097061575
+    }
+  },
+  "performance": {
+    "audioSeconds": 230.82018749999995,
+    "processingSeconds": 32.23607866419479,
+    "perClipP95MillisecondsRange": [
+      2.9955836944282055,
+      3.403708338737488
+    ],
+    "worstBlockMilliseconds": 12.312749866396189
+  },
+  "accompanimentControls": [
+    {
+      "id": "fdps_2_01-accompaniment",
+      "inputSHA256": "1504e84c654b43242a60fb7217fe6517c933ea2ffb085ac555b1e11c80508b82",
+      "baselineFalseAlarm": 0.4175531914893617,
+      "currentFalseAlarm": 0.2074468085106383
+    },
+    {
+      "id": "Ani_2_01-accompaniment",
+      "inputSHA256": "962b874364115dc422417513c6e237447cdb287bf0178ce69baf1496e0f9c4ef",
+      "baselineFalseAlarm": 0.3729903536977492,
+      "currentFalseAlarm": 0.26366559485530544
+    },
+    {
+      "id": "geniusturtle_4_01-accompaniment",
+      "inputSHA256": "5b5ef51736b774a72a5ecd1fad445669011660df1cad5dbf2d321d3867ef8d98",
+      "baselineFalseAlarm": 0.3949579831932773,
+      "currentFalseAlarm": 0.2689075630252101
+    }
+  ],
+  "tracks": [
+    {
+      "id": "Ani_2_01",
+      "originalSplit": "held_out",
+      "inputSHA256": "fbcac7ca3b890c3da3241ddf172385c5ed3e809bd85e6458c131f21b971c62f1",
+      "baseline": {
+        "frames": 310,
+        "referenceVoicedFrames": 176,
+        "referenceUnvoicedFrames": 134,
+        "rawPitchAccuracy": 0.8295454545454546,
+        "rawChromaAccuracy": 0.8295454545454546,
+        "octaveErrorRate": 0.0,
+        "otherPitchErrorRate": 0.03409090909090909,
+        "missRate": 0.13636363636363635,
+        "voicingFalseAlarm": 0.5298507462686567,
+        "overallAccuracy": 0.6741935483870968
+      },
+      "current": {
+        "frames": 310,
+        "referenceVoicedFrames": 176,
+        "referenceUnvoicedFrames": 134,
+        "rawPitchAccuracy": 0.8465909090909091,
+        "rawChromaAccuracy": 0.8465909090909091,
+        "octaveErrorRate": 0.0,
+        "otherPitchErrorRate": 0.045454545454545456,
+        "missRate": 0.10795454545454546,
+        "voicingFalseAlarm": 0.48507462686567165,
+        "overallAccuracy": 0.7032258064516129
+      },
+      "scoreBaseline": null,
+      "scoreCurrent": null,
+      "runtime": {
+        "audioSeconds": 6.272,
+        "firstOutputAfterInputSeconds": 0.08533333333333333,
+        "firstPitchAfterInputSeconds": 0.16,
+        "initializationMilliseconds": 19.799625035375357,
+        "mode": "Rapidly 试用 · 含水印",
+        "model": "CREPE tiny",
+        "pitchMilliseconds": {
+          "max": 1.1920416727662086,
+          "p50": 0.00012526288628578186,
+          "p95": 0.7268334738910198
+        },
+        "processingMilliseconds": 906.1726639047265,
+        "sampleRate": 48000,
+        "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+        "totalAnalysisMilliseconds": {
+          "max": 4.334583412855864,
+          "p50": 0.8580419234931469,
+          "p95": 3.2345000654459
+        },
+        "vocalEnergyReference": true,
+        "windowCenterAgeSeconds": {
+          "max": 0.1280000000000001,
+          "p50": 0.11733333333333373,
+          "p95": 0.1279999999999999
+        }
+      }
+    },
+    {
+      "id": "Ani_2_02",
+      "originalSplit": "held_out",
+      "inputSHA256": "8db7f41f7e7689be4572fa05f00a982f3fefb02a91f55dbad401dcb22dfcbd13",
+      "baseline": {
+        "frames": 459,
+        "referenceVoicedFrames": 309,
+        "referenceUnvoicedFrames": 150,
+        "rawPitchAccuracy": 0.5501618122977346,
+        "rawChromaAccuracy": 0.5533980582524272,
+        "octaveErrorRate": 0.003236245954692557,
+        "otherPitchErrorRate": 0.14563106796116504,
+        "missRate": 0.30097087378640774,
+        "voicingFalseAlarm": 0.56,
+        "overallAccuracy": 0.514161220043573
+      },
+      "current": {
+        "frames": 459,
+        "referenceVoicedFrames": 309,
+        "referenceUnvoicedFrames": 150,
+        "rawPitchAccuracy": 0.6148867313915858,
+        "rawChromaAccuracy": 0.6181229773462783,
+        "octaveErrorRate": 0.003236245954692557,
+        "otherPitchErrorRate": 0.20711974110032363,
+        "missRate": 0.17475728155339806,
+        "voicingFalseAlarm": 0.6933333333333334,
+        "overallAccuracy": 0.514161220043573
+      },
+      "scoreBaseline": null,
+      "scoreCurrent": null,
+      "runtime": {
+        "audioSeconds": 9.2480625,
+        "firstOutputAfterInputSeconds": 0.08533333333333333,
+        "firstPitchAfterInputSeconds": 0.16,
+        "initializationMilliseconds": 6.741750054061413,
+        "mode": "Rapidly 试用 · 含水印",
+        "model": "CREPE tiny",
+        "pitchMilliseconds": {
+          "max": 0.9624166414141655,
+          "p50": 0.00016670674085617065,
+          "p95": 0.694583635777235
+        },
+        "processingMilliseconds": 1288.1945366971195,
+        "sampleRate": 48000,
+        "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+        "totalAnalysisMilliseconds": {
+          "max": 5.427041556686163,
+          "p50": 0.615791417658329,
+          "p95": 3.100666683167219
+        },
+        "vocalEnergyReference": true,
+        "windowCenterAgeSeconds": {
+          "max": 0.1280000000000001,
+          "p50": 0.11866666666666603,
+          "p95": 0.1279999999999999
+        }
+      }
+    },
+    {
+      "id": "Ani_2_03",
+      "originalSplit": "held_out",
+      "inputSHA256": "bf96872bca8df5df6448950b259c858d9088cd7efd2475273f80f643af604887",
+      "baseline": {
+        "frames": 350,
+        "referenceVoicedFrames": 278,
+        "referenceUnvoicedFrames": 72,
+        "rawPitchAccuracy": 0.7086330935251799,
+        "rawChromaAccuracy": 0.7086330935251799,
+        "octaveErrorRate": 0.0,
+        "otherPitchErrorRate": 0.0683453237410072,
+        "missRate": 0.22302158273381295,
+        "voicingFalseAlarm": 0.5277777777777778,
+        "overallAccuracy": 0.66
+      },
+      "current": {
+        "frames": 350,
+        "referenceVoicedFrames": 278,
+        "referenceUnvoicedFrames": 72,
+        "rawPitchAccuracy": 0.762589928057554,
+        "rawChromaAccuracy": 0.7661870503597122,
+        "octaveErrorRate": 0.0035971223021582736,
+        "otherPitchErrorRate": 0.12949640287769784,
+        "missRate": 0.10431654676258993,
+        "voicingFalseAlarm": 0.4722222222222222,
+        "overallAccuracy": 0.7142857142857143
+      },
+      "scoreBaseline": null,
+      "scoreCurrent": null,
+      "runtime": {
+        "audioSeconds": 7.072,
+        "firstOutputAfterInputSeconds": 0.08533333333333333,
+        "firstPitchAfterInputSeconds": 0.16,
+        "initializationMilliseconds": 6.685583386570215,
+        "mode": "Rapidly 试用 · 含水印",
+        "model": "CREPE tiny",
+        "pitchMilliseconds": {
+          "max": 0.8814581669867039,
+          "p50": 0.00012526288628578186,
+          "p95": 0.6975415162742138
+        },
+        "processingMilliseconds": 972.887247800827,
+        "sampleRate": 48000,
+        "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+        "totalAnalysisMilliseconds": {
+          "max": 3.314875066280365,
+          "p50": 0.5621667951345444,
+          "p95": 3.0146664939820766
+        },
+        "vocalEnergyReference": true,
+        "windowCenterAgeSeconds": {
+          "max": 0.1280000000000001,
+          "p50": 0.11866666666666603,
+          "p95": 0.1279999999999999
+        }
+      }
+    },
+    {
+      "id": "Ani_2_04",
+      "originalSplit": "held_out",
+      "inputSHA256": "f444d4ceba2c985496a725ff61fc2f36a3e4a9f5c375d64d49827dd6674ca176",
+      "baseline": {
+        "frames": 315,
+        "referenceVoicedFrames": 266,
+        "referenceUnvoicedFrames": 49,
+        "rawPitchAccuracy": 0.6842105263157895,
+        "rawChromaAccuracy": 0.6879699248120301,
+        "octaveErrorRate": 0.0037593984962406013,
+        "otherPitchErrorRate": 0.09774436090225563,
+        "missRate": 0.21428571428571427,
+        "voicingFalseAlarm": 0.3877551020408163,
+        "overallAccuracy": 0.6730158730158731
+      },
+      "current": {
+        "frames": 315,
+        "referenceVoicedFrames": 266,
+        "referenceUnvoicedFrames": 49,
+        "rawPitchAccuracy": 0.706766917293233,
+        "rawChromaAccuracy": 0.7293233082706767,
+        "octaveErrorRate": 0.022556390977443608,
+        "otherPitchErrorRate": 0.19548872180451127,
+        "missRate": 0.07518796992481203,
+        "voicingFalseAlarm": 0.2857142857142857,
+        "overallAccuracy": 0.707936507936508
+      },
+      "scoreBaseline": null,
+      "scoreCurrent": null,
+      "runtime": {
+        "audioSeconds": 6.3680625,
+        "firstOutputAfterInputSeconds": 0.08533333333333333,
+        "firstPitchAfterInputSeconds": 0.16,
+        "initializationMilliseconds": 6.159416865557432,
+        "mode": "Rapidly 试用 · 含水印",
+        "model": "CREPE tiny",
+        "pitchMilliseconds": {
+          "max": 1.3563749380409718,
+          "p50": 0.00012526288628578186,
+          "p95": 0.6909165531396866
+        },
+        "processingMilliseconds": 885.7016209512949,
+        "sampleRate": 48000,
+        "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+        "totalAnalysisMilliseconds": {
+          "max": 4.569333046674728,
+          "p50": 0.6006667390465736,
+          "p95": 3.1014583073556423
+        },
+        "vocalEnergyReference": true,
+        "windowCenterAgeSeconds": {
+          "max": 0.1280000000000001,
+          "p50": 0.11733333333333373,
+          "p95": 0.1279999999999999
+        }
+      }
+    },
+    {
+      "id": "Ani_2_05",
+      "originalSplit": "held_out",
+      "inputSHA256": "be97d7bba0fb034235eaff141b4f79f4e0b97df57788ea8efd525fa6e6b22fc0",
+      "baseline": {
+        "frames": 564,
+        "referenceVoicedFrames": 404,
+        "referenceUnvoicedFrames": 160,
+        "rawPitchAccuracy": 0.7623762376237624,
+        "rawChromaAccuracy": 0.7648514851485149,
+        "octaveErrorRate": 0.0024752475247524753,
+        "otherPitchErrorRate": 0.06435643564356436,
+        "missRate": 0.1707920792079208,
+        "voicingFalseAlarm": 0.425,
+        "overallAccuracy": 0.7092198581560284
+      },
+      "current": {
+        "frames": 564,
+        "referenceVoicedFrames": 404,
+        "referenceUnvoicedFrames": 160,
+        "rawPitchAccuracy": 0.745049504950495,
+        "rawChromaAccuracy": 0.745049504950495,
+        "octaveErrorRate": 0.0,
+        "otherPitchErrorRate": 0.09653465346534654,
+        "missRate": 0.15841584158415842,
+        "voicingFalseAlarm": 0.4,
+        "overallAccuracy": 0.7039007092198581
+      },
+      "scoreBaseline": null,
+      "scoreCurrent": null,
+      "runtime": {
+        "audioSeconds": 11.36,
+        "firstOutputAfterInputSeconds": 0.08533333333333333,
+        "firstPitchAfterInputSeconds": 0.16,
+        "initializationMilliseconds": 6.349124945700169,
+        "mode": "Rapidly 试用 · 含水印",
+        "model": "CREPE tiny",
+        "pitchMilliseconds": {
+          "max": 1.018583308905363,
+          "p50": 0.00016670674085617065,
+          "p95": 0.6865831092000008
+        },
+        "processingMilliseconds": 1555.9922959655523,
+        "sampleRate": 48000,
+        "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+        "totalAnalysisMilliseconds": {
+          "max": 3.765000030398369,
+          "p50": 0.5489583127200603,
+          "p95": 3.061458468437195
+        },
+        "vocalEnergyReference": true,
+        "windowCenterAgeSeconds": {
+          "max": 0.1280000000000001,
+          "p50": 0.11733333333333462,
+          "p95": 0.1279999999999999
+        }
+      }
+    },
+    {
+      "id": "Ani_2_06",
+      "originalSplit": "held_out",
+      "inputSHA256": "9f5758eeab393d8b17b480038925a8ada4add7b6ef09c1150e902bace40ff3f2",
+      "baseline": {
+        "frames": 539,
+        "referenceVoicedFrames": 408,
+        "referenceUnvoicedFrames": 131,
+        "rawPitchAccuracy": 0.7671568627450981,
+        "rawChromaAccuracy": 0.7745098039215687,
+        "octaveErrorRate": 0.007352941176470588,
+        "otherPitchErrorRate": 0.07107843137254902,
+        "missRate": 0.15441176470588236,
+        "voicingFalseAlarm": 0.5954198473282443,
+        "overallAccuracy": 0.6790352504638218
+      },
+      "current": {
+        "frames": 539,
+        "referenceVoicedFrames": 408,
+        "referenceUnvoicedFrames": 131,
+        "rawPitchAccuracy": 0.7573529411764706,
+        "rawChromaAccuracy": 0.7647058823529411,
+        "octaveErrorRate": 0.007352941176470588,
+        "otherPitchErrorRate": 0.09558823529411764,
+        "missRate": 0.13970588235294118,
+        "voicingFalseAlarm": 0.2824427480916031,
+        "overallAccuracy": 0.7476808905380334
+      },
+      "scoreBaseline": null,
+      "scoreCurrent": null,
+      "runtime": {
+        "audioSeconds": 10.8480625,
+        "firstOutputAfterInputSeconds": 0.08533333333333333,
+        "firstPitchAfterInputSeconds": 0.16,
+        "initializationMilliseconds": 6.537875160574913,
+        "mode": "Rapidly 试用 · 含水印",
+        "model": "CREPE tiny",
+        "pitchMilliseconds": {
+          "max": 1.1403332464396954,
+          "p50": 0.00012526288628578186,
+          "p95": 0.7009166292846203
+        },
+        "processingMilliseconds": 1496.4054878801107,
+        "sampleRate": 48000,
+        "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+        "totalAnalysisMilliseconds": {
+          "max": 3.466458525508642,
+          "p50": 0.679749995470047,
+          "p95": 3.0652498826384544
+        },
+        "vocalEnergyReference": true,
+        "windowCenterAgeSeconds": {
+          "max": 0.1280000000000001,
+          "p50": 0.11733333333333462,
+          "p95": 0.1279999999999999
+        }
+      }
+    },
+    {
+      "id": "Ani_2_07",
+      "originalSplit": "held_out",
+      "inputSHA256": "201a734f7c928e88e58a8ae9d3a24b4571d5746b892f6a362accc4a5d96d69fb",
+      "baseline": {
+        "frames": 372,
+        "referenceVoicedFrames": 242,
+        "referenceUnvoicedFrames": 130,
+        "rawPitchAccuracy": 0.7644628099173554,
+        "rawChromaAccuracy": 0.7644628099173554,
+        "octaveErrorRate": 0.0,
+        "otherPitchErrorRate": 0.07851239669421488,
+        "missRate": 0.15702479338842976,
+        "voicingFalseAlarm": 0.5307692307692308,
+        "overallAccuracy": 0.6612903225806451
+      },
+      "current": {
+        "frames": 372,
+        "referenceVoicedFrames": 242,
+        "referenceUnvoicedFrames": 130,
+        "rawPitchAccuracy": 0.7851239669421488,
+        "rawChromaAccuracy": 0.7851239669421488,
+        "octaveErrorRate": 0.0,
+        "otherPitchErrorRate": 0.1322314049586777,
+        "missRate": 0.08264462809917356,
+        "voicingFalseAlarm": 0.46923076923076923,
+        "overallAccuracy": 0.696236559139785
+      },
+      "scoreBaseline": null,
+      "scoreCurrent": null,
+      "runtime": {
+        "audioSeconds": 7.514875,
+        "firstOutputAfterInputSeconds": 0.08533333333333333,
+        "firstPitchAfterInputSeconds": 0.16,
+        "initializationMilliseconds": 6.367125082761049,
+        "mode": "Rapidly 试用 · 含水印",
+        "model": "CREPE tiny",
+        "pitchMilliseconds": {
+          "max": 0.9052916429936886,
+          "p50": 0.00012526288628578186,
+          "p95": 0.6892085075378418
+        },
+        "processingMilliseconds": 1022.426086012274,
+        "sampleRate": 48000,
+        "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+        "totalAnalysisMilliseconds": {
+          "max": 3.4056250005960464,
+          "p50": 0.5822498351335526,
+          "p95": 2.9955836944282055
+        },
+        "vocalEnergyReference": true,
+        "windowCenterAgeSeconds": {
+          "max": 0.1280000000000001,
+          "p50": 0.11733333333333373,
+          "p95": 0.1279999999999999
+        }
+      }
+    },
+    {
+      "id": "fdps_2_01",
+      "originalSplit": "development",
+      "inputSHA256": "5db33772d9fc2ebf994032ecd1fa8a51491a643c6df6cbfc6dea0bb360bb0ea5",
+      "baseline": {
+        "frames": 375,
+        "referenceVoicedFrames": 246,
+        "referenceUnvoicedFrames": 129,
+        "rawPitchAccuracy": 0.7520325203252033,
+        "rawChromaAccuracy": 0.7520325203252033,
+        "octaveErrorRate": 0.0,
+        "otherPitchErrorRate": 0.08130081300813008,
+        "missRate": 0.16666666666666666,
+        "voicingFalseAlarm": 0.6744186046511628,
+        "overallAccuracy": 0.6053333333333333
+      },
+      "current": {
+        "frames": 375,
+        "referenceVoicedFrames": 246,
+        "referenceUnvoicedFrames": 129,
+        "rawPitchAccuracy": 0.7601626016260162,
+        "rawChromaAccuracy": 0.7601626016260162,
+        "octaveErrorRate": 0.0,
+        "otherPitchErrorRate": 0.10975609756097561,
+        "missRate": 0.13008130081300814,
+        "voicingFalseAlarm": 0.4728682170542636,
+        "overallAccuracy": 0.68
+      },
+      "scoreBaseline": {
+        "notes": [
+          {
+            "start": 1.24,
+            "end": 1.66,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 52.46529986249612,
+            "performedMedianMIDI": 48.54835,
+            "matchesScore": false,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 1.74,
+            "end": 2.04,
+            "expectedMIDI": 54,
+            "estimatedMedianMIDI": 53.15746634395575,
+            "performedMedianMIDI": 53.5043,
+            "matchesScore": false,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 2.06,
+            "end": 2.38,
+            "expectedMIDI": 53,
+            "estimatedMedianMIDI": 52.231546136685445,
+            "performedMedianMIDI": 52.1935,
+            "matchesScore": false,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 2.5,
+            "end": 3.04,
+            "expectedMIDI": 54,
+            "estimatedMedianMIDI": 53.81857405047618,
+            "performedMedianMIDI": 53.8978,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 3.26,
+            "end": 3.52,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 47.34024086817364,
+            "performedMedianMIDI": 47.3489,
+            "matchesScore": false,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 3.54,
+            "end": 4.0,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 48.9034214712717,
+            "performedMedianMIDI": 48.9173,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 4.78,
+            "end": 5.14,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 48.88184407263534,
+            "performedMedianMIDI": 48.6214,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 5.16,
+            "end": 5.5,
+            "expectedMIDI": 54,
+            "estimatedMedianMIDI": 54.037542692282635,
+            "performedMedianMIDI": 53.8978,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 5.58,
+            "end": 5.96,
+            "expectedMIDI": 53,
+            "estimatedMedianMIDI": 53.876689284064355,
+            "performedMedianMIDI": 53.5043,
+            "matchesScore": false,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 6.02,
+            "end": 6.46,
+            "expectedMIDI": 54,
+            "estimatedMedianMIDI": 54.02393618855629,
+            "performedMedianMIDI": 54.0979,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 6.58,
+            "end": 6.92,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": null,
+            "performedMedianMIDI": 47.4857,
+            "matchesScore": false,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 6.96,
+            "end": 7.5,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 49.21673079013664,
+            "performedMedianMIDI": 49.2184,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          }
+        ],
+        "correct": 6,
+        "total": 12,
+        "performanceCorrect": 8
+      },
+      "scoreCurrent": {
+        "notes": [
+          {
+            "start": 1.24,
+            "end": 1.66,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 52.15190491456228,
+            "performedMedianMIDI": 48.54835,
+            "matchesScore": false,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 1.74,
+            "end": 2.04,
+            "expectedMIDI": 54,
+            "estimatedMedianMIDI": 53.029088903521675,
+            "performedMedianMIDI": 53.5043,
+            "matchesScore": false,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 2.06,
+            "end": 2.38,
+            "expectedMIDI": 53,
+            "estimatedMedianMIDI": 52.220778891195835,
+            "performedMedianMIDI": 52.1935,
+            "matchesScore": false,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 2.5,
+            "end": 3.04,
+            "expectedMIDI": 54,
+            "estimatedMedianMIDI": 53.80790386391815,
+            "performedMedianMIDI": 53.8978,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 3.26,
+            "end": 3.52,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 47.48205120720188,
+            "performedMedianMIDI": 47.3489,
+            "matchesScore": false,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 3.54,
+            "end": 4.0,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 48.9034214712717,
+            "performedMedianMIDI": 48.9173,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 4.78,
+            "end": 5.14,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 48.85957490876963,
+            "performedMedianMIDI": 48.6214,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 5.16,
+            "end": 5.5,
+            "expectedMIDI": 54,
+            "estimatedMedianMIDI": 53.999914011448126,
+            "performedMedianMIDI": 53.8978,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 5.58,
+            "end": 5.96,
+            "expectedMIDI": 53,
+            "estimatedMedianMIDI": 53.88624585385111,
+            "performedMedianMIDI": 53.5043,
+            "matchesScore": false,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 6.02,
+            "end": 6.46,
+            "expectedMIDI": 54,
+            "estimatedMedianMIDI": 54.05590926896164,
+            "performedMedianMIDI": 54.0979,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 6.58,
+            "end": 6.92,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": null,
+            "performedMedianMIDI": 47.4857,
+            "matchesScore": false,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 6.96,
+            "end": 7.5,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 49.21673079013664,
+            "performedMedianMIDI": 49.2184,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          }
+        ],
+        "correct": 6,
+        "total": 12,
+        "performanceCorrect": 8
+      },
+      "runtime": {
+        "audioSeconds": 7.584,
+        "firstOutputAfterInputSeconds": 0.08533333333333333,
+        "firstPitchAfterInputSeconds": 0.16,
+        "initializationMilliseconds": 6.271083373576403,
+        "mode": "Rapidly 试用 · 含水印",
+        "model": "CREPE tiny",
+        "pitchMilliseconds": {
+          "max": 0.9435834363102913,
+          "p50": 8.335337042808533e-05,
+          "p95": 0.6839167326688766
+        },
+        "processingMilliseconds": 1031.4087946899235,
+        "sampleRate": 48000,
+        "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+        "totalAnalysisMilliseconds": {
+          "max": 3.5371254198253155,
+          "p50": 0.5904999561607838,
+          "p95": 3.0165836215019226
+        },
+        "vocalEnergyReference": true,
+        "windowCenterAgeSeconds": {
+          "max": 0.1280000000000001,
+          "p50": 0.11733333333333373,
+          "p95": 0.1279999999999999
+        }
+      }
+    },
+    {
+      "id": "fdps_2_02",
+      "originalSplit": "development",
+      "inputSHA256": "3578010d6b8037a4b35309965ecd5473c21172f590e167ee5f832107eda4b593",
+      "baseline": {
+        "frames": 356,
+        "referenceVoicedFrames": 223,
+        "referenceUnvoicedFrames": 133,
+        "rawPitchAccuracy": 0.6412556053811659,
+        "rawChromaAccuracy": 0.6457399103139013,
+        "octaveErrorRate": 0.004484304932735426,
+        "otherPitchErrorRate": 0.15246636771300448,
+        "missRate": 0.20179372197309417,
+        "voicingFalseAlarm": 0.47368421052631576,
+        "overallAccuracy": 0.598314606741573
+      },
+      "current": {
+        "frames": 356,
+        "referenceVoicedFrames": 223,
+        "referenceUnvoicedFrames": 133,
+        "rawPitchAccuracy": 0.6053811659192825,
+        "rawChromaAccuracy": 0.6188340807174888,
+        "octaveErrorRate": 0.013452914798206279,
+        "otherPitchErrorRate": 0.15695067264573992,
+        "missRate": 0.2242152466367713,
+        "voicingFalseAlarm": 0.2556390977443609,
+        "overallAccuracy": 0.6573033707865169
+      },
+      "scoreBaseline": null,
+      "scoreCurrent": null,
+      "runtime": {
+        "audioSeconds": 7.2000625,
+        "firstOutputAfterInputSeconds": 0.08533333333333333,
+        "firstPitchAfterInputSeconds": 0.16,
+        "initializationMilliseconds": 6.374625023454428,
+        "mode": "Rapidly 试用 · 含水印",
+        "model": "CREPE tiny",
+        "pitchMilliseconds": {
+          "max": 1.4732498675584793,
+          "p50": 0.00012479722499847412,
+          "p95": 0.6626248359680176
+        },
+        "processingMilliseconds": 969.4229210726917,
+        "sampleRate": 48000,
+        "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+        "totalAnalysisMilliseconds": {
+          "max": 3.5713333636522293,
+          "p50": 0.5369586870074272,
+          "p95": 3.019583411514759
+        },
+        "vocalEnergyReference": true,
+        "windowCenterAgeSeconds": {
+          "max": 0.1280000000000001,
+          "p50": 0.11866666666666603,
+          "p95": 0.1279999999999999
+        }
+      }
+    },
+    {
+      "id": "fdps_2_03",
+      "originalSplit": "development",
+      "inputSHA256": "524d06c08270bb4401e60fae29b8db649dab571013b9bc20d1ac6f28d0745b00",
+      "baseline": {
+        "frames": 359,
+        "referenceVoicedFrames": 248,
+        "referenceUnvoicedFrames": 111,
+        "rawPitchAccuracy": 0.6935483870967742,
+        "rawChromaAccuracy": 0.6975806451612904,
+        "octaveErrorRate": 0.004032258064516129,
+        "otherPitchErrorRate": 0.04435483870967742,
+        "missRate": 0.25806451612903225,
+        "voicingFalseAlarm": 0.4954954954954955,
+        "overallAccuracy": 0.6350974930362117
+      },
+      "current": {
+        "frames": 359,
+        "referenceVoicedFrames": 248,
+        "referenceUnvoicedFrames": 111,
+        "rawPitchAccuracy": 0.7056451612903226,
+        "rawChromaAccuracy": 0.7137096774193549,
+        "octaveErrorRate": 0.008064516129032258,
+        "otherPitchErrorRate": 0.08064516129032258,
+        "missRate": 0.2056451612903226,
+        "voicingFalseAlarm": 0.32432432432432434,
+        "overallAccuracy": 0.6963788300835655
+      },
+      "scoreBaseline": null,
+      "scoreCurrent": null,
+      "runtime": {
+        "audioSeconds": 7.2640625,
+        "firstOutputAfterInputSeconds": 0.08533333333333333,
+        "firstPitchAfterInputSeconds": 0.16,
+        "initializationMilliseconds": 6.636291742324829,
+        "mode": "Rapidly 试用 · 含水印",
+        "model": "CREPE tiny",
+        "pitchMilliseconds": {
+          "max": 0.8893334306776524,
+          "p50": 0.00016670674085617065,
+          "p95": 0.6949999369680882
+        },
+        "processingMilliseconds": 991.4934225380421,
+        "sampleRate": 48000,
+        "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+        "totalAnalysisMilliseconds": {
+          "max": 3.4887916408479214,
+          "p50": 0.5578333511948586,
+          "p95": 3.057666588574648
+        },
+        "vocalEnergyReference": true,
+        "windowCenterAgeSeconds": {
+          "max": 0.1280000000000001,
+          "p50": 0.11866666666666603,
+          "p95": 0.1279999999999999
+        }
+      }
+    },
+    {
+      "id": "fdps_2_04",
+      "originalSplit": "development",
+      "inputSHA256": "667cb2f3974617c2d77c7d77190cdb59dc8431999027f740b0ce175f45e9e097",
+      "baseline": {
+        "frames": 345,
+        "referenceVoicedFrames": 263,
+        "referenceUnvoicedFrames": 82,
+        "rawPitchAccuracy": 0.7300380228136882,
+        "rawChromaAccuracy": 0.7984790874524715,
+        "octaveErrorRate": 0.06844106463878327,
+        "otherPitchErrorRate": 0.06463878326996197,
+        "missRate": 0.13688212927756654,
+        "voicingFalseAlarm": 0.4878048780487805,
+        "overallAccuracy": 0.6782608695652174
+      },
+      "current": {
+        "frames": 345,
+        "referenceVoicedFrames": 263,
+        "referenceUnvoicedFrames": 82,
+        "rawPitchAccuracy": 0.7224334600760456,
+        "rawChromaAccuracy": 0.752851711026616,
+        "octaveErrorRate": 0.030418250950570342,
+        "otherPitchErrorRate": 0.09885931558935361,
+        "missRate": 0.1482889733840304,
+        "voicingFalseAlarm": 0.36585365853658536,
+        "overallAccuracy": 0.7014492753623188
+      },
+      "scoreBaseline": null,
+      "scoreCurrent": null,
+      "runtime": {
+        "audioSeconds": 6.9760625,
+        "firstOutputAfterInputSeconds": 0.08533333333333333,
+        "firstPitchAfterInputSeconds": 0.16,
+        "initializationMilliseconds": 6.5897502936422825,
+        "mode": "Rapidly 试用 · 含水印",
+        "model": "CREPE tiny",
+        "pitchMilliseconds": {
+          "max": 1.2213336303830147,
+          "p50": 0.00012526288628578186,
+          "p95": 0.6874585524201393
+        },
+        "processingMilliseconds": 959.8402925767004,
+        "sampleRate": 48000,
+        "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+        "totalAnalysisMilliseconds": {
+          "max": 4.012458026409149,
+          "p50": 0.6230003200471401,
+          "p95": 3.103458322584629
+        },
+        "vocalEnergyReference": true,
+        "windowCenterAgeSeconds": {
+          "max": 0.1280000000000001,
+          "p50": 0.11733333333333373,
+          "p95": 0.12799999999999967
+        }
+      }
+    },
+    {
+      "id": "fdps_2_05",
+      "originalSplit": "development",
+      "inputSHA256": "c2d58360c71793a45047508b78912c2cb5558c9fe6398f3ebe1196c40397f09b",
+      "baseline": {
+        "frames": 364,
+        "referenceVoicedFrames": 249,
+        "referenceUnvoicedFrames": 115,
+        "rawPitchAccuracy": 0.6506024096385542,
+        "rawChromaAccuracy": 0.6506024096385542,
+        "octaveErrorRate": 0.0,
+        "otherPitchErrorRate": 0.12449799196787148,
+        "missRate": 0.2248995983935743,
+        "voicingFalseAlarm": 0.40869565217391307,
+        "overallAccuracy": 0.6318681318681318
+      },
+      "current": {
+        "frames": 364,
+        "referenceVoicedFrames": 249,
+        "referenceUnvoicedFrames": 115,
+        "rawPitchAccuracy": 0.7389558232931727,
+        "rawChromaAccuracy": 0.7429718875502008,
+        "octaveErrorRate": 0.004016064257028112,
+        "otherPitchErrorRate": 0.18473895582329317,
+        "missRate": 0.07228915662650602,
+        "voicingFalseAlarm": 0.4782608695652174,
+        "overallAccuracy": 0.6703296703296703
+      },
+      "scoreBaseline": null,
+      "scoreCurrent": null,
+      "runtime": {
+        "audioSeconds": 7.3600625,
+        "firstOutputAfterInputSeconds": 0.08533333333333333,
+        "firstPitchAfterInputSeconds": 0.16,
+        "initializationMilliseconds": 6.431708578020334,
+        "mode": "Rapidly 试用 · 含水印",
+        "model": "CREPE tiny",
+        "pitchMilliseconds": {
+          "max": 0.8217082358896732,
+          "p50": 0.00016670674085617065,
+          "p95": 0.6867917254567146
+        },
+        "processingMilliseconds": 1011.3392057828605,
+        "sampleRate": 48000,
+        "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+        "totalAnalysisMilliseconds": {
+          "max": 3.41879203915596,
+          "p50": 0.5366248078644276,
+          "p95": 3.0212081037461758
+        },
+        "vocalEnergyReference": true,
+        "windowCenterAgeSeconds": {
+          "max": 0.1280000000000001,
+          "p50": 0.11866666666666603,
+          "p95": 0.1279999999999999
+        }
+      }
+    },
+    {
+      "id": "fdps_2_06",
+      "originalSplit": "development",
+      "inputSHA256": "f8430a362c5127f2946eae825af5de5ce997407cec6c42f1f7dcf40f4efed2b7",
+      "baseline": {
+        "frames": 310,
+        "referenceVoicedFrames": 249,
+        "referenceUnvoicedFrames": 61,
+        "rawPitchAccuracy": 0.4738955823293173,
+        "rawChromaAccuracy": 0.4738955823293173,
+        "octaveErrorRate": 0.0,
+        "otherPitchErrorRate": 0.22088353413654618,
+        "missRate": 0.30522088353413657,
+        "voicingFalseAlarm": 0.5573770491803278,
+        "overallAccuracy": 0.46774193548387094
+      },
+      "current": {
+        "frames": 310,
+        "referenceVoicedFrames": 249,
+        "referenceUnvoicedFrames": 61,
+        "rawPitchAccuracy": 0.5502008032128514,
+        "rawChromaAccuracy": 0.5502008032128514,
+        "octaveErrorRate": 0.0,
+        "otherPitchErrorRate": 0.24899598393574296,
+        "missRate": 0.20080321285140562,
+        "voicingFalseAlarm": 0.639344262295082,
+        "overallAccuracy": 0.5129032258064516
+      },
+      "scoreBaseline": null,
+      "scoreCurrent": null,
+      "runtime": {
+        "audioSeconds": 6.2720625,
+        "firstOutputAfterInputSeconds": 0.08533333333333333,
+        "firstPitchAfterInputSeconds": 0.16,
+        "initializationMilliseconds": 6.192000117152929,
+        "mode": "Rapidly 试用 · 含水印",
+        "model": "CREPE tiny",
+        "pitchMilliseconds": {
+          "max": 1.2327502481639385,
+          "p50": 8.335337042808533e-05,
+          "p95": 0.7060831412672997
+        },
+        "processingMilliseconds": 876.7979205586016,
+        "sampleRate": 48000,
+        "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+        "totalAnalysisMilliseconds": {
+          "max": 4.018333274871111,
+          "p50": 0.6036246195435524,
+          "p95": 3.1398748978972435
+        },
+        "vocalEnergyReference": true,
+        "windowCenterAgeSeconds": {
+          "max": 0.1280000000000001,
+          "p50": 0.11733333333333373,
+          "p95": 0.1279999999999999
+        }
+      }
+    },
+    {
+      "id": "fdps_2_07",
+      "originalSplit": "development",
+      "inputSHA256": "c1b51097e9c5efc42ff3e021e7e2a9047c12c88575129eace15187f9ce6282c7",
+      "baseline": {
+        "frames": 433,
+        "referenceVoicedFrames": 300,
+        "referenceUnvoicedFrames": 133,
+        "rawPitchAccuracy": 0.7066666666666667,
+        "rawChromaAccuracy": 0.7066666666666667,
+        "octaveErrorRate": 0.0,
+        "otherPitchErrorRate": 0.08666666666666667,
+        "missRate": 0.20666666666666667,
+        "voicingFalseAlarm": 0.3609022556390977,
+        "overallAccuracy": 0.6859122401847575
+      },
+      "current": {
+        "frames": 433,
+        "referenceVoicedFrames": 300,
+        "referenceUnvoicedFrames": 133,
+        "rawPitchAccuracy": 0.6933333333333334,
+        "rawChromaAccuracy": 0.6966666666666667,
+        "octaveErrorRate": 0.0033333333333333335,
+        "otherPitchErrorRate": 0.11333333333333333,
+        "missRate": 0.19,
+        "voicingFalseAlarm": 0.42105263157894735,
+        "overallAccuracy": 0.6581986143187067
+      },
+      "scoreBaseline": null,
+      "scoreCurrent": null,
+      "runtime": {
+        "audioSeconds": 8.7360625,
+        "firstOutputAfterInputSeconds": 0.08533333333333333,
+        "firstPitchAfterInputSeconds": 0.16,
+        "initializationMilliseconds": 6.5093329176306725,
+        "mode": "Rapidly 试用 · 含水印",
+        "model": "CREPE tiny",
+        "pitchMilliseconds": {
+          "max": 1.0928753763437271,
+          "p50": 0.00012479722499847412,
+          "p95": 0.6880834698677063
+        },
+        "processingMilliseconds": 1211.6103316657245,
+        "sampleRate": 48000,
+        "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+        "totalAnalysisMilliseconds": {
+          "max": 3.4971670247614384,
+          "p50": 0.5377498455345631,
+          "p95": 3.0766665004193783
+        },
+        "vocalEnergyReference": true,
+        "windowCenterAgeSeconds": {
+          "max": 0.1280000000000001,
+          "p50": 0.11866666666666603,
+          "p95": 0.1279999999999999
+        }
+      }
+    },
+    {
+      "id": "fdps_2_08",
+      "originalSplit": "development",
+      "inputSHA256": "f9169c2f175c9a741258a8ec60261f2877ee242a7dc465cd3b83e613cb97699b",
+      "baseline": {
+        "frames": 310,
+        "referenceVoicedFrames": 250,
+        "referenceUnvoicedFrames": 60,
+        "rawPitchAccuracy": 0.736,
+        "rawChromaAccuracy": 0.76,
+        "octaveErrorRate": 0.024,
+        "otherPitchErrorRate": 0.112,
+        "missRate": 0.128,
+        "voicingFalseAlarm": 0.5833333333333334,
+        "overallAccuracy": 0.6741935483870968
+      },
+      "current": {
+        "frames": 310,
+        "referenceVoicedFrames": 250,
+        "referenceUnvoicedFrames": 60,
+        "rawPitchAccuracy": 0.756,
+        "rawChromaAccuracy": 0.784,
+        "octaveErrorRate": 0.028,
+        "otherPitchErrorRate": 0.16,
+        "missRate": 0.056,
+        "voicingFalseAlarm": 0.4666666666666667,
+        "overallAccuracy": 0.7129032258064516
+      },
+      "scoreBaseline": null,
+      "scoreCurrent": null,
+      "runtime": {
+        "audioSeconds": 6.2720625,
+        "firstOutputAfterInputSeconds": 0.08533333333333333,
+        "firstPitchAfterInputSeconds": 0.16,
+        "initializationMilliseconds": 6.27950020134449,
+        "mode": "Rapidly 试用 · 含水印",
+        "model": "CREPE tiny",
+        "pitchMilliseconds": {
+          "max": 0.9322916157543659,
+          "p50": 0.00012479722499847412,
+          "p95": 0.6802082061767578
+        },
+        "processingMilliseconds": 864.7985807619989,
+        "sampleRate": 48000,
+        "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+        "totalAnalysisMilliseconds": {
+          "max": 3.438083454966545,
+          "p50": 0.65558310598135,
+          "p95": 3.0718748457729816
+        },
+        "vocalEnergyReference": true,
+        "windowCenterAgeSeconds": {
+          "max": 0.1280000000000001,
+          "p50": 0.11733333333333373,
+          "p95": 0.1279999999999999
+        }
+      }
+    },
+    {
+      "id": "fdps_2_09",
+      "originalSplit": "development",
+      "inputSHA256": "dba255093c04b95bef733ec308618a8d6c0453348edf4afae299eaf0390d4d08",
+      "baseline": {
+        "frames": 347,
+        "referenceVoicedFrames": 264,
+        "referenceUnvoicedFrames": 83,
+        "rawPitchAccuracy": 0.6666666666666666,
+        "rawChromaAccuracy": 0.6666666666666666,
+        "octaveErrorRate": 0.0,
+        "otherPitchErrorRate": 0.13636363636363635,
+        "missRate": 0.19696969696969696,
+        "voicingFalseAlarm": 0.42168674698795183,
+        "overallAccuracy": 0.6455331412103746
+      },
+      "current": {
+        "frames": 347,
+        "referenceVoicedFrames": 264,
+        "referenceUnvoicedFrames": 83,
+        "rawPitchAccuracy": 0.6553030303030303,
+        "rawChromaAccuracy": 0.6628787878787878,
+        "octaveErrorRate": 0.007575757575757576,
+        "otherPitchErrorRate": 0.19318181818181818,
+        "missRate": 0.14393939393939395,
+        "voicingFalseAlarm": 0.14457831325301204,
+        "overallAccuracy": 0.7031700288184438
+      },
+      "scoreBaseline": null,
+      "scoreCurrent": null,
+      "runtime": {
+        "audioSeconds": 7.0080625,
+        "firstOutputAfterInputSeconds": 0.08533333333333333,
+        "firstPitchAfterInputSeconds": 0.16,
+        "initializationMilliseconds": 6.912208627909422,
+        "mode": "Rapidly 试用 · 含水印",
+        "model": "CREPE tiny",
+        "pitchMilliseconds": {
+          "max": 0.9469999931752682,
+          "p50": 0.00012479722499847412,
+          "p95": 0.6966670043766499
+        },
+        "processingMilliseconds": 961.9301687926054,
+        "sampleRate": 48000,
+        "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+        "totalAnalysisMilliseconds": {
+          "max": 3.424542024731636,
+          "p50": 0.5469582974910736,
+          "p95": 3.0542081221938133
+        },
+        "vocalEnergyReference": true,
+        "windowCenterAgeSeconds": {
+          "max": 0.1280000000000001,
+          "p50": 0.11733333333333373,
+          "p95": 0.12799999999999967
+        }
+      }
+    },
+    {
+      "id": "fdps_2_10",
+      "originalSplit": "development",
+      "inputSHA256": "7aac531203af2d370c0c9f80492daed098e8e54b0954614aa2d0ec84829d0ba2",
+      "baseline": {
+        "frames": 329,
+        "referenceVoicedFrames": 287,
+        "referenceUnvoicedFrames": 42,
+        "rawPitchAccuracy": 0.6515679442508711,
+        "rawChromaAccuracy": 0.6829268292682927,
+        "octaveErrorRate": 0.0313588850174216,
+        "otherPitchErrorRate": 0.1289198606271777,
+        "missRate": 0.18815331010452963,
+        "voicingFalseAlarm": 0.5,
+        "overallAccuracy": 0.6322188449848024
+      },
+      "current": {
+        "frames": 329,
+        "referenceVoicedFrames": 287,
+        "referenceUnvoicedFrames": 42,
+        "rawPitchAccuracy": 0.5121951219512195,
+        "rawChromaAccuracy": 0.554006968641115,
+        "octaveErrorRate": 0.041811846689895474,
+        "otherPitchErrorRate": 0.14634146341463414,
+        "missRate": 0.29965156794425085,
+        "voicingFalseAlarm": 0.3333333333333333,
+        "overallAccuracy": 0.5319148936170213
+      },
+      "scoreBaseline": null,
+      "scoreCurrent": null,
+      "runtime": {
+        "audioSeconds": 6.6560625,
+        "firstOutputAfterInputSeconds": 0.08533333333333333,
+        "firstPitchAfterInputSeconds": 0.16,
+        "initializationMilliseconds": 6.67470833286643,
+        "mode": "Rapidly 试用 · 含水印",
+        "model": "CREPE tiny",
+        "pitchMilliseconds": {
+          "max": 0.9820414707064629,
+          "p50": 8.335337042808533e-05,
+          "p95": 0.7010418921709061
+        },
+        "processingMilliseconds": 906.1689907684922,
+        "sampleRate": 48000,
+        "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+        "totalAnalysisMilliseconds": {
+          "max": 3.540916834026575,
+          "p50": 0.586874783039093,
+          "p95": 3.031000029295683
+        },
+        "vocalEnergyReference": true,
+        "windowCenterAgeSeconds": {
+          "max": 0.1280000000000001,
+          "p50": 0.11866666666666603,
+          "p95": 0.1279999999999999
+        }
+      }
+    },
+    {
+      "id": "fdps_2_11",
+      "originalSplit": "development",
+      "inputSHA256": "97159f409e517fae07c99917eac8bd34430c7d4ed2a0c46b985b9faba04b52c5",
+      "baseline": {
+        "frames": 388,
+        "referenceVoicedFrames": 276,
+        "referenceUnvoicedFrames": 112,
+        "rawPitchAccuracy": 0.717391304347826,
+        "rawChromaAccuracy": 0.7355072463768116,
+        "octaveErrorRate": 0.018115942028985508,
+        "otherPitchErrorRate": 0.09420289855072464,
+        "missRate": 0.17028985507246377,
+        "voicingFalseAlarm": 0.48214285714285715,
+        "overallAccuracy": 0.6597938144329897
+      },
+      "current": {
+        "frames": 388,
+        "referenceVoicedFrames": 276,
+        "referenceUnvoicedFrames": 112,
+        "rawPitchAccuracy": 0.6920289855072463,
+        "rawChromaAccuracy": 0.7137681159420289,
+        "octaveErrorRate": 0.021739130434782608,
+        "otherPitchErrorRate": 0.14492753623188406,
+        "missRate": 0.14130434782608695,
+        "voicingFalseAlarm": 0.2767857142857143,
+        "overallAccuracy": 0.7010309278350515
+      },
+      "scoreBaseline": null,
+      "scoreCurrent": null,
+      "runtime": {
+        "audioSeconds": 7.8400625,
+        "firstOutputAfterInputSeconds": 0.08533333333333333,
+        "firstPitchAfterInputSeconds": 0.16,
+        "initializationMilliseconds": 6.544708274304867,
+        "mode": "Rapidly 试用 · 含水印",
+        "model": "CREPE tiny",
+        "pitchMilliseconds": {
+          "max": 0.967124942690134,
+          "p50": 0.00012479722499847412,
+          "p95": 0.7039164192974567
+        },
+        "processingMilliseconds": 1086.0742055810988,
+        "sampleRate": 48000,
+        "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+        "totalAnalysisMilliseconds": {
+          "max": 3.737791907042265,
+          "p50": 0.5404585972428322,
+          "p95": 3.067624755203724
+        },
+        "vocalEnergyReference": true,
+        "windowCenterAgeSeconds": {
+          "max": 0.1280000000000001,
+          "p50": 0.11866666666666603,
+          "p95": 0.1279999999999999
+        }
+      }
+    },
+    {
+      "id": "fdps_2_12",
+      "originalSplit": "development",
+      "inputSHA256": "52dda1cbc38fbb59414eda3b3c8ff65ce163e1df51548631d93e97151c956ba3",
+      "baseline": {
+        "frames": 383,
+        "referenceVoicedFrames": 254,
+        "referenceUnvoicedFrames": 129,
+        "rawPitchAccuracy": 0.6417322834645669,
+        "rawChromaAccuracy": 0.6889763779527559,
+        "octaveErrorRate": 0.047244094488188976,
+        "otherPitchErrorRate": 0.1141732283464567,
+        "missRate": 0.1968503937007874,
+        "voicingFalseAlarm": 0.3178294573643411,
+        "overallAccuracy": 0.6553524804177546
+      },
+      "current": {
+        "frames": 383,
+        "referenceVoicedFrames": 254,
+        "referenceUnvoicedFrames": 129,
+        "rawPitchAccuracy": 0.6968503937007874,
+        "rawChromaAccuracy": 0.7322834645669292,
+        "octaveErrorRate": 0.03543307086614173,
+        "otherPitchErrorRate": 0.14566929133858267,
+        "missRate": 0.1220472440944882,
+        "voicingFalseAlarm": 0.23255813953488372,
+        "overallAccuracy": 0.720626631853786
+      },
+      "scoreBaseline": null,
+      "scoreCurrent": null,
+      "runtime": {
+        "audioSeconds": 7.7394375,
+        "firstOutputAfterInputSeconds": 0.08533333333333333,
+        "firstPitchAfterInputSeconds": 0.16,
+        "initializationMilliseconds": 6.870666518807411,
+        "mode": "Rapidly 试用 · 含水印",
+        "model": "CREPE tiny",
+        "pitchMilliseconds": {
+          "max": 0.8407500572502613,
+          "p50": 0.00012526288628578186,
+          "p95": 0.6841253489255905
+        },
+        "processingMilliseconds": 1066.2390431389213,
+        "sampleRate": 48000,
+        "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+        "totalAnalysisMilliseconds": {
+          "max": 3.7400415167212486,
+          "p50": 0.5686245858669281,
+          "p95": 3.078749869018793
+        },
+        "vocalEnergyReference": true,
+        "windowCenterAgeSeconds": {
+          "max": 0.1280000000000001,
+          "p50": 0.11733333333333373,
+          "p95": 0.1279999999999999
+        }
+      }
+    },
+    {
+      "id": "geniusturtle_4_01",
+      "originalSplit": "held_out",
+      "inputSHA256": "a834f247b25ac1c73fe9af787fac5589e4b18ff40a413428b479927ea4cd6808",
+      "baseline": {
+        "frames": 356,
+        "referenceVoicedFrames": 288,
+        "referenceUnvoicedFrames": 68,
+        "rawPitchAccuracy": 0.65625,
+        "rawChromaAccuracy": 0.6770833333333334,
+        "octaveErrorRate": 0.020833333333333332,
+        "otherPitchErrorRate": 0.1284722222222222,
+        "missRate": 0.19444444444444445,
+        "voicingFalseAlarm": 0.38235294117647056,
+        "overallAccuracy": 0.648876404494382
+      },
+      "current": {
+        "frames": 356,
+        "referenceVoicedFrames": 288,
+        "referenceUnvoicedFrames": 68,
+        "rawPitchAccuracy": 0.6701388888888888,
+        "rawChromaAccuracy": 0.6805555555555556,
+        "octaveErrorRate": 0.010416666666666666,
+        "otherPitchErrorRate": 0.1423611111111111,
+        "missRate": 0.17708333333333334,
+        "voicingFalseAlarm": 0.29411764705882354,
+        "overallAccuracy": 0.6769662921348315
+      },
+      "scoreBaseline": {
+        "notes": [
+          {
+            "start": 0.26,
+            "end": 0.78,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 61.29507572649658,
+            "performedMedianMIDI": 48.25855,
+            "matchesScore": false,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 0.84,
+            "end": 1.18,
+            "expectedMIDI": 54,
+            "estimatedMedianMIDI": 53.55884332913454,
+            "performedMedianMIDI": 53.3109,
+            "matchesScore": true,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 1.2,
+            "end": 1.56,
+            "expectedMIDI": 53,
+            "estimatedMedianMIDI": 52.62549602660292,
+            "performedMedianMIDI": 52.9304,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 1.62,
+            "end": 2.3,
+            "expectedMIDI": 54,
+            "estimatedMedianMIDI": 54.09626065336598,
+            "performedMedianMIDI": 54.0979,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 2.42,
+            "end": 2.8,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 48.36589199991566,
+            "performedMedianMIDI": 48.115449999999996,
+            "matchesScore": false,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 2.84,
+            "end": 3.42,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 48.641641915211416,
+            "performedMedianMIDI": 48.6214,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 3.8,
+            "end": 4.2,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 49.03997308043243,
+            "performedMedianMIDI": 49.0672,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 4.26,
+            "end": 4.58,
+            "expectedMIDI": 54,
+            "estimatedMedianMIDI": 53.760646695794385,
+            "performedMedianMIDI": 53.3109,
+            "matchesScore": true,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 4.6,
+            "end": 4.92,
+            "expectedMIDI": 53,
+            "estimatedMedianMIDI": 53.79119988534549,
+            "performedMedianMIDI": 52.3748,
+            "matchesScore": false,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 4.98,
+            "end": 5.46,
+            "expectedMIDI": 54,
+            "estimatedMedianMIDI": 53.89046181725555,
+            "performedMedianMIDI": 53.8978,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 5.56,
+            "end": 6.0,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 48.722856939477495,
+            "performedMedianMIDI": 48.54835,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 6.04,
+            "end": 6.64,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 48.99306955615715,
+            "performedMedianMIDI": 48.9173,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          }
+        ],
+        "correct": 9,
+        "total": 12,
+        "performanceCorrect": 7
+      },
+      "scoreCurrent": {
+        "notes": [
+          {
+            "start": 0.26,
+            "end": 0.78,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 60.738216747676994,
+            "performedMedianMIDI": 48.25855,
+            "matchesScore": false,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 0.84,
+            "end": 1.18,
+            "expectedMIDI": 54,
+            "estimatedMedianMIDI": 53.56351799263524,
+            "performedMedianMIDI": 53.3109,
+            "matchesScore": true,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 1.2,
+            "end": 1.56,
+            "expectedMIDI": 53,
+            "estimatedMedianMIDI": 52.62549602660292,
+            "performedMedianMIDI": 52.9304,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 1.62,
+            "end": 2.3,
+            "expectedMIDI": 54,
+            "estimatedMedianMIDI": 54.07368326878192,
+            "performedMedianMIDI": 54.0979,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 2.42,
+            "end": 2.8,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 48.28898987697795,
+            "performedMedianMIDI": 48.115449999999996,
+            "matchesScore": false,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 2.84,
+            "end": 3.42,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 48.641641915211416,
+            "performedMedianMIDI": 48.6214,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 3.8,
+            "end": 4.2,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 49.07289113566629,
+            "performedMedianMIDI": 49.0672,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 4.26,
+            "end": 4.58,
+            "expectedMIDI": 54,
+            "estimatedMedianMIDI": 53.760646695794385,
+            "performedMedianMIDI": 53.3109,
+            "matchesScore": true,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 4.6,
+            "end": 4.92,
+            "expectedMIDI": 53,
+            "estimatedMedianMIDI": 52.598083884414805,
+            "performedMedianMIDI": 52.3748,
+            "matchesScore": true,
+            "performanceMatchesScore": false
+          },
+          {
+            "start": 4.98,
+            "end": 5.46,
+            "expectedMIDI": 54,
+            "estimatedMedianMIDI": 53.914172265629496,
+            "performedMedianMIDI": 53.8978,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 5.56,
+            "end": 6.0,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 48.73131757988274,
+            "performedMedianMIDI": 48.54835,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          },
+          {
+            "start": 6.04,
+            "end": 6.64,
+            "expectedMIDI": 49,
+            "estimatedMedianMIDI": 48.75520802913975,
+            "performedMedianMIDI": 48.9173,
+            "matchesScore": true,
+            "performanceMatchesScore": true
+          }
+        ],
+        "correct": 10,
+        "total": 12,
+        "performanceCorrect": 7
+      },
+      "runtime": {
+        "audioSeconds": 7.2,
+        "firstOutputAfterInputSeconds": 0.08533333333333333,
+        "firstPitchAfterInputSeconds": 0.16,
+        "initializationMilliseconds": 8.071125019341707,
+        "mode": "Rapidly 试用 · 含水印",
+        "model": "CREPE tiny",
+        "pitchMilliseconds": {
+          "max": 1.2172502465546131,
+          "p50": 0.00012526288628578186,
+          "p95": 0.7137083448469639
+        },
+        "processingMilliseconds": 1031.7392908036709,
+        "sampleRate": 48000,
+        "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+        "totalAnalysisMilliseconds": {
+          "max": 6.454708520323038,
+          "p50": 0.5725002847611904,
+          "p95": 3.220541402697563
+        },
+        "vocalEnergyReference": true,
+        "windowCenterAgeSeconds": {
+          "max": 0.1280000000000001,
+          "p50": 0.11866666666666603,
+          "p95": 0.1279999999999999
+        }
+      }
+    },
+    {
+      "id": "geniusturtle_4_02",
+      "originalSplit": "held_out",
+      "inputSHA256": "5404760257d76b00f7f1c2e092a698414e055bb27cf7a7148b6944d38731d330",
+      "baseline": {
+        "frames": 326,
+        "referenceVoicedFrames": 274,
+        "referenceUnvoicedFrames": 52,
+        "rawPitchAccuracy": 0.5364963503649635,
+        "rawChromaAccuracy": 0.635036496350365,
+        "octaveErrorRate": 0.09854014598540146,
+        "otherPitchErrorRate": 0.145985401459854,
+        "missRate": 0.21897810218978103,
+        "voicingFalseAlarm": 0.5961538461538461,
+        "overallAccuracy": 0.5153374233128835
+      },
+      "current": {
+        "frames": 326,
+        "referenceVoicedFrames": 274,
+        "referenceUnvoicedFrames": 52,
+        "rawPitchAccuracy": 0.48175182481751827,
+        "rawChromaAccuracy": 0.551094890510949,
+        "octaveErrorRate": 0.06934306569343066,
+        "otherPitchErrorRate": 0.17153284671532848,
+        "missRate": 0.2773722627737226,
+        "voicingFalseAlarm": 0.019230769230769232,
+        "overallAccuracy": 0.5613496932515337
+      },
+      "scoreBaseline": null,
+      "scoreCurrent": null,
+      "runtime": {
+        "audioSeconds": 6.5920625,
+        "firstOutputAfterInputSeconds": 0.08533333333333333,
+        "firstPitchAfterInputSeconds": 0.16,
+        "initializationMilliseconds": 6.462791468948126,
+        "mode": "Rapidly 试用 · 含水印",
+        "model": "CREPE tiny",
+        "pitchMilliseconds": {
+          "max": 0.9561250917613506,
+          "p50": 0.00016670674085617065,
+          "p95": 0.6832084618508816
+        },
+        "processingMilliseconds": 916.5158388204873,
+        "sampleRate": 48000,
+        "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+        "totalAnalysisMilliseconds": {
+          "max": 3.4371251240372658,
+          "p50": 1.0852501727640629,
+          "p95": 3.1273746863007545
+        },
+        "vocalEnergyReference": true,
+        "windowCenterAgeSeconds": {
+          "max": 0.1280000000000001,
+          "p50": 0.11866666666666603,
+          "p95": 0.1279999999999999
+        }
+      }
+    },
+    {
+      "id": "geniusturtle_4_03",
+      "originalSplit": "held_out",
+      "inputSHA256": "7c73881d1154b11bdbf96b01f1d86c66335b6f8ed95821fe1566a48ec4c2b0c3",
+      "baseline": {
+        "frames": 364,
+        "referenceVoicedFrames": 309,
+        "referenceUnvoicedFrames": 55,
+        "rawPitchAccuracy": 0.7799352750809061,
+        "rawChromaAccuracy": 0.8284789644012945,
+        "octaveErrorRate": 0.04854368932038835,
+        "otherPitchErrorRate": 0.025889967637540454,
+        "missRate": 0.14563106796116504,
+        "voicingFalseAlarm": 0.5636363636363636,
+        "overallAccuracy": 0.728021978021978
+      },
+      "current": {
+        "frames": 364,
+        "referenceVoicedFrames": 309,
+        "referenceUnvoicedFrames": 55,
+        "rawPitchAccuracy": 0.6828478964401294,
+        "rawChromaAccuracy": 0.7216828478964401,
+        "octaveErrorRate": 0.038834951456310676,
+        "otherPitchErrorRate": 0.042071197411003236,
+        "missRate": 0.23624595469255663,
+        "voicingFalseAlarm": 0.45454545454545453,
+        "overallAccuracy": 0.6620879120879121
+      },
+      "scoreBaseline": null,
+      "scoreCurrent": null,
+      "runtime": {
+        "audioSeconds": 7.3600625,
+        "firstOutputAfterInputSeconds": 0.08533333333333333,
+        "firstPitchAfterInputSeconds": 0.16,
+        "initializationMilliseconds": 17.86641636863351,
+        "mode": "Rapidly 试用 · 含水印",
+        "model": "CREPE tiny",
+        "pitchMilliseconds": {
+          "max": 2.124583348631859,
+          "p50": 0.00012526288628578186,
+          "p95": 0.7215416990220547
+        },
+        "processingMilliseconds": 1124.06954029575,
+        "sampleRate": 48000,
+        "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+        "totalAnalysisMilliseconds": {
+          "max": 12.312749866396189,
+          "p50": 1.4867079444229603,
+          "p95": 3.3157914876937866
+        },
+        "vocalEnergyReference": true,
+        "windowCenterAgeSeconds": {
+          "max": 0.1280000000000001,
+          "p50": 0.11866666666666603,
+          "p95": 0.1279999999999999
+        }
+      }
+    },
+    {
+      "id": "geniusturtle_4_04",
+      "originalSplit": "held_out",
+      "inputSHA256": "92ecd45797d9ba79f2ea86366d10636ced4419d5d09f13d2aea7941d0e1c39d4",
+      "baseline": {
+        "frames": 329,
+        "referenceVoicedFrames": 296,
+        "referenceUnvoicedFrames": 33,
+        "rawPitchAccuracy": 0.8209459459459459,
+        "rawChromaAccuracy": 0.8344594594594594,
+        "octaveErrorRate": 0.013513513513513514,
+        "otherPitchErrorRate": 0.060810810810810814,
+        "missRate": 0.10472972972972973,
+        "voicingFalseAlarm": 0.42424242424242425,
+        "overallAccuracy": 0.7963525835866262
+      },
+      "current": {
+        "frames": 329,
+        "referenceVoicedFrames": 296,
+        "referenceUnvoicedFrames": 33,
+        "rawPitchAccuracy": 0.8445945945945946,
+        "rawChromaAccuracy": 0.8614864864864865,
+        "octaveErrorRate": 0.016891891891891893,
+        "otherPitchErrorRate": 0.08445945945945946,
+        "missRate": 0.05405405405405406,
+        "voicingFalseAlarm": 0.30303030303030304,
+        "overallAccuracy": 0.8297872340425532
+      },
+      "scoreBaseline": null,
+      "scoreCurrent": null,
+      "runtime": {
+        "audioSeconds": 6.6560625,
+        "firstOutputAfterInputSeconds": 0.08533333333333333,
+        "firstPitchAfterInputSeconds": 0.16,
+        "initializationMilliseconds": 6.434791721403599,
+        "mode": "Rapidly 试用 · 含水印",
+        "model": "CREPE tiny",
+        "pitchMilliseconds": {
+          "max": 0.9203329682350159,
+          "p50": 0.00012526288628578186,
+          "p95": 0.7110000587999821
+        },
+        "processingMilliseconds": 934.8081233911216,
+        "sampleRate": 48000,
+        "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+        "totalAnalysisMilliseconds": {
+          "max": 3.5700416192412376,
+          "p50": 0.6021247245371342,
+          "p95": 3.13904182985425
+        },
+        "vocalEnergyReference": true,
+        "windowCenterAgeSeconds": {
+          "max": 0.1280000000000001,
+          "p50": 0.11866666666666603,
+          "p95": 0.1279999999999999
+        }
+      }
+    },
+    {
+      "id": "geniusturtle_4_05",
+      "originalSplit": "held_out",
+      "inputSHA256": "3487db1f1cbbce2eb2126f77974e3aa3d991a30c4da58e96da5ae59dca712b80",
+      "baseline": {
+        "frames": 372,
+        "referenceVoicedFrames": 323,
+        "referenceUnvoicedFrames": 49,
+        "rawPitchAccuracy": 0.7244582043343654,
+        "rawChromaAccuracy": 0.7244582043343654,
+        "octaveErrorRate": 0.0,
+        "otherPitchErrorRate": 0.10835913312693499,
+        "missRate": 0.16718266253869968,
+        "voicingFalseAlarm": 0.4489795918367347,
+        "overallAccuracy": 0.7016129032258065
+      },
+      "current": {
+        "frames": 372,
+        "referenceVoicedFrames": 323,
+        "referenceUnvoicedFrames": 49,
+        "rawPitchAccuracy": 0.804953560371517,
+        "rawChromaAccuracy": 0.804953560371517,
+        "octaveErrorRate": 0.0,
+        "otherPitchErrorRate": 0.15789473684210525,
+        "missRate": 0.03715170278637771,
+        "voicingFalseAlarm": 0.7346938775510204,
+        "overallAccuracy": 0.7338709677419355
+      },
+      "scoreBaseline": null,
+      "scoreCurrent": null,
+      "runtime": {
+        "audioSeconds": 7.5200625,
+        "firstOutputAfterInputSeconds": 0.08533333333333333,
+        "firstPitchAfterInputSeconds": 0.16,
+        "initializationMilliseconds": 6.440625060349703,
+        "mode": "Rapidly 试用 · 含水印",
+        "model": "CREPE tiny",
+        "pitchMilliseconds": {
+          "max": 0.9432085789740086,
+          "p50": 0.00012479722499847412,
+          "p95": 0.6984584033489227
+        },
+        "processingMilliseconds": 1050.5415420047939,
+        "sampleRate": 48000,
+        "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+        "totalAnalysisMilliseconds": {
+          "max": 3.893583081662655,
+          "p50": 0.5304999649524689,
+          "p95": 3.08395829051733
+        },
+        "vocalEnergyReference": true,
+        "windowCenterAgeSeconds": {
+          "max": 0.1280000000000001,
+          "p50": 0.11733333333333373,
+          "p95": 0.1279999999999999
+        }
+      }
+    },
+    {
+      "id": "geniusturtle_4_06",
+      "originalSplit": "held_out",
+      "inputSHA256": "8903741ae6451b4b727779fe9ec2246a6fe0371a17e129333de7fdeaed1cfa26",
+      "baseline": {
+        "frames": 327,
+        "referenceVoicedFrames": 275,
+        "referenceUnvoicedFrames": 52,
+        "rawPitchAccuracy": 0.6654545454545454,
+        "rawChromaAccuracy": 0.6654545454545454,
+        "octaveErrorRate": 0.0,
+        "otherPitchErrorRate": 0.10545454545454545,
+        "missRate": 0.2290909090909091,
+        "voicingFalseAlarm": 0.5,
+        "overallAccuracy": 0.6391437308868502
+      },
+      "current": {
+        "frames": 327,
+        "referenceVoicedFrames": 275,
+        "referenceUnvoicedFrames": 52,
+        "rawPitchAccuracy": 0.7381818181818182,
+        "rawChromaAccuracy": 0.7418181818181818,
+        "octaveErrorRate": 0.0036363636363636364,
+        "otherPitchErrorRate": 0.15272727272727274,
+        "missRate": 0.10545454545454545,
+        "voicingFalseAlarm": 0.7115384615384616,
+        "overallAccuracy": 0.6666666666666666
+      },
+      "scoreBaseline": null,
+      "scoreCurrent": null,
+      "runtime": {
+        "audioSeconds": 6.6240625,
+        "firstOutputAfterInputSeconds": 0.08533333333333333,
+        "firstPitchAfterInputSeconds": 0.16,
+        "initializationMilliseconds": 6.31987489759922,
+        "mode": "Rapidly 试用 · 含水印",
+        "model": "CREPE tiny",
+        "pitchMilliseconds": {
+          "max": 1.138374675065279,
+          "p50": 0.00012479722499847412,
+          "p95": 0.7177502848207951
+        },
+        "processingMilliseconds": 944.5570805110037,
+        "sampleRate": 48000,
+        "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+        "totalAnalysisMilliseconds": {
+          "max": 4.791583400219679,
+          "p50": 0.6165415979921818,
+          "p95": 3.1625418923795223
+        },
+        "vocalEnergyReference": true,
+        "windowCenterAgeSeconds": {
+          "max": 0.1280000000000001,
+          "p50": 0.11866666666666603,
+          "p95": 0.1279999999999999
+        }
+      }
+    },
+    {
+      "id": "geniusturtle_4_07",
+      "originalSplit": "held_out",
+      "inputSHA256": "93fc36eb7742b5933ef737dc52d6a2554f54774a075c64b4fa293462b1ba5471",
+      "baseline": {
+        "frames": 350,
+        "referenceVoicedFrames": 330,
+        "referenceUnvoicedFrames": 20,
+        "rawPitchAccuracy": 0.7393939393939394,
+        "rawChromaAccuracy": 0.7484848484848485,
+        "octaveErrorRate": 0.00909090909090909,
+        "otherPitchErrorRate": 0.11818181818181818,
+        "missRate": 0.13333333333333333,
+        "voicingFalseAlarm": 0.65,
+        "overallAccuracy": 0.7171428571428572
+      },
+      "current": {
+        "frames": 350,
+        "referenceVoicedFrames": 330,
+        "referenceUnvoicedFrames": 20,
+        "rawPitchAccuracy": 0.7181818181818181,
+        "rawChromaAccuracy": 0.7333333333333333,
+        "octaveErrorRate": 0.015151515151515152,
+        "otherPitchErrorRate": 0.1606060606060606,
+        "missRate": 0.10606060606060606,
+        "voicingFalseAlarm": 0.7,
+        "overallAccuracy": 0.6942857142857143
+      },
+      "scoreBaseline": null,
+      "scoreCurrent": null,
+      "runtime": {
+        "audioSeconds": 7.0720625,
+        "firstOutputAfterInputSeconds": 0.08533333333333333,
+        "firstPitchAfterInputSeconds": 0.16,
+        "initializationMilliseconds": 6.239083595573902,
+        "mode": "Rapidly 试用 · 含水印",
+        "model": "CREPE tiny",
+        "pitchMilliseconds": {
+          "max": 0.918833538889885,
+          "p50": 0.00012526288628578186,
+          "p95": 0.7091662846505642
+        },
+        "processingMilliseconds": 1016.1677980795503,
+        "sampleRate": 48000,
+        "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+        "totalAnalysisMilliseconds": {
+          "max": 3.582749981433153,
+          "p50": 0.6809583865106106,
+          "p95": 3.2327501103281975
+        },
+        "vocalEnergyReference": true,
+        "windowCenterAgeSeconds": {
+          "max": 0.1280000000000001,
+          "p50": 0.11866666666666603,
+          "p95": 0.1279999999999999
+        }
+      }
+    },
+    {
+      "id": "geniusturtle_4_08",
+      "originalSplit": "held_out",
+      "inputSHA256": "c2062c63425f3722b728fb7783a05aa45a134358b89c89ca79a42fda9a2b81c8",
+      "baseline": {
+        "frames": 355,
+        "referenceVoicedFrames": 256,
+        "referenceUnvoicedFrames": 99,
+        "rawPitchAccuracy": 0.77734375,
+        "rawChromaAccuracy": 0.796875,
+        "octaveErrorRate": 0.01953125,
+        "otherPitchErrorRate": 0.03515625,
+        "missRate": 0.16796875,
+        "voicingFalseAlarm": 0.4444444444444444,
+        "overallAccuracy": 0.7154929577464789
+      },
+      "current": {
+        "frames": 355,
+        "referenceVoicedFrames": 256,
+        "referenceUnvoicedFrames": 99,
+        "rawPitchAccuracy": 0.8046875,
+        "rawChromaAccuracy": 0.828125,
+        "octaveErrorRate": 0.0234375,
+        "otherPitchErrorRate": 0.0859375,
+        "missRate": 0.0859375,
+        "voicingFalseAlarm": 0.3838383838383838,
+        "overallAccuracy": 0.752112676056338
+      },
+      "scoreBaseline": null,
+      "scoreCurrent": null,
+      "runtime": {
+        "audioSeconds": 7.1680625,
+        "firstOutputAfterInputSeconds": 0.08533333333333333,
+        "firstPitchAfterInputSeconds": 0.16,
+        "initializationMilliseconds": 6.443249993026257,
+        "mode": "Rapidly 试用 · 含水印",
+        "model": "CREPE tiny",
+        "pitchMilliseconds": {
+          "max": 1.0752915404736996,
+          "p50": 0.00012479722499847412,
+          "p95": 0.7095835171639919
+        },
+        "processingMilliseconds": 992.4142081290483,
+        "sampleRate": 48000,
+        "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+        "totalAnalysisMilliseconds": {
+          "max": 3.585249651223421,
+          "p50": 0.5778749473392963,
+          "p95": 3.077333327382803
+        },
+        "vocalEnergyReference": true,
+        "windowCenterAgeSeconds": {
+          "max": 0.1280000000000001,
+          "p50": 0.11733333333333373,
+          "p95": 0.1279999999999999
+        }
+      }
+    },
+    {
+      "id": "geniusturtle_4_09",
+      "originalSplit": "held_out",
+      "inputSHA256": "c40ef27d55ec9373341bc6530d3c6132df75920789e3ad2c0542bec61d49d53a",
+      "baseline": {
+        "frames": 364,
+        "referenceVoicedFrames": 313,
+        "referenceUnvoicedFrames": 51,
+        "rawPitchAccuracy": 0.7955271565495208,
+        "rawChromaAccuracy": 0.7987220447284346,
+        "octaveErrorRate": 0.003194888178913738,
+        "otherPitchErrorRate": 0.04153354632587859,
+        "missRate": 0.1597444089456869,
+        "voicingFalseAlarm": 0.5882352941176471,
+        "overallAccuracy": 0.7417582417582418
+      },
+      "current": {
+        "frames": 364,
+        "referenceVoicedFrames": 313,
+        "referenceUnvoicedFrames": 51,
+        "rawPitchAccuracy": 0.7603833865814696,
+        "rawChromaAccuracy": 0.7635782747603834,
+        "octaveErrorRate": 0.003194888178913738,
+        "otherPitchErrorRate": 0.08306709265175719,
+        "missRate": 0.15335463258785942,
+        "voicingFalseAlarm": 0.37254901960784315,
+        "overallAccuracy": 0.7417582417582418
+      },
+      "scoreBaseline": null,
+      "scoreCurrent": null,
+      "runtime": {
+        "audioSeconds": 7.3600625,
+        "firstOutputAfterInputSeconds": 0.08533333333333333,
+        "firstPitchAfterInputSeconds": 0.16,
+        "initializationMilliseconds": 6.650625262409449,
+        "mode": "Rapidly 试用 · 含水印",
+        "model": "CREPE tiny",
+        "pitchMilliseconds": {
+          "max": 1.1180415749549866,
+          "p50": 8.335337042808533e-05,
+          "p95": 0.698333140462637
+        },
+        "processingMilliseconds": 1048.0906697921455,
+        "sampleRate": 48000,
+        "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+        "totalAnalysisMilliseconds": {
+          "max": 4.592291545122862,
+          "p50": 0.5677086301147938,
+          "p95": 3.1863334588706493
+        },
+        "vocalEnergyReference": true,
+        "windowCenterAgeSeconds": {
+          "max": 0.1280000000000001,
+          "p50": 0.11866666666666603,
+          "p95": 0.1279999999999999
+        }
+      }
+    },
+    {
+      "id": "geniusturtle_4_10",
+      "originalSplit": "held_out",
+      "inputSHA256": "0da3a40eafcb9bbc873c3044b5ac45c4a417983048f3bce856db29154a41d9d3",
+      "baseline": {
+        "frames": 308,
+        "referenceVoicedFrames": 284,
+        "referenceUnvoicedFrames": 24,
+        "rawPitchAccuracy": 0.7323943661971831,
+        "rawChromaAccuracy": 0.7323943661971831,
+        "octaveErrorRate": 0.0,
+        "otherPitchErrorRate": 0.09154929577464789,
+        "missRate": 0.176056338028169,
+        "voicingFalseAlarm": 0.2916666666666667,
+        "overallAccuracy": 0.7305194805194806
+      },
+      "current": {
+        "frames": 308,
+        "referenceVoicedFrames": 284,
+        "referenceUnvoicedFrames": 24,
+        "rawPitchAccuracy": 0.6514084507042254,
+        "rawChromaAccuracy": 0.6514084507042254,
+        "octaveErrorRate": 0.0,
+        "otherPitchErrorRate": 0.1267605633802817,
+        "missRate": 0.22183098591549297,
+        "voicingFalseAlarm": 0.375,
+        "overallAccuracy": 0.6493506493506493
+      },
+      "scoreBaseline": null,
+      "scoreCurrent": null,
+      "runtime": {
+        "audioSeconds": 6.2400625,
+        "firstOutputAfterInputSeconds": 0.08533333333333333,
+        "firstPitchAfterInputSeconds": 0.16,
+        "initializationMilliseconds": 6.155166774988174,
+        "mode": "Rapidly 试用 · 含水印",
+        "model": "CREPE tiny",
+        "pitchMilliseconds": {
+          "max": 0.803499948233366,
+          "p50": 8.335337042808533e-05,
+          "p95": 0.6722500547766685
+        },
+        "processingMilliseconds": 854.0051663294435,
+        "sampleRate": 48000,
+        "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+        "totalAnalysisMilliseconds": {
+          "max": 3.5389582626521587,
+          "p50": 0.5683749914169312,
+          "p95": 3.0707083642482758
+        },
+        "vocalEnergyReference": true,
+        "windowCenterAgeSeconds": {
+          "max": 0.1280000000000001,
+          "p50": 0.11733333333333373,
+          "p95": 0.1279999999999999
+        }
+      }
+    },
+    {
+      "id": "geniusturtle_4_11",
+      "originalSplit": "held_out",
+      "inputSHA256": "8fa26ba3261f656078bb1c158b227a75c3aa47a0259105db7749622209f69319",
+      "baseline": {
+        "frames": 407,
+        "referenceVoicedFrames": 329,
+        "referenceUnvoicedFrames": 78,
+        "rawPitchAccuracy": 0.8145896656534954,
+        "rawChromaAccuracy": 0.8358662613981763,
+        "octaveErrorRate": 0.02127659574468085,
+        "otherPitchErrorRate": 0.03951367781155015,
+        "missRate": 0.12462006079027356,
+        "voicingFalseAlarm": 0.38461538461538464,
+        "overallAccuracy": 0.7764127764127764
+      },
+      "current": {
+        "frames": 407,
+        "referenceVoicedFrames": 329,
+        "referenceUnvoicedFrames": 78,
+        "rawPitchAccuracy": 0.7446808510638298,
+        "rawChromaAccuracy": 0.7689969604863222,
+        "octaveErrorRate": 0.0243161094224924,
+        "otherPitchErrorRate": 0.04559270516717325,
+        "missRate": 0.18541033434650456,
+        "voicingFalseAlarm": 0.38461538461538464,
+        "overallAccuracy": 0.7199017199017199
+      },
+      "scoreBaseline": null,
+      "scoreCurrent": null,
+      "runtime": {
+        "audioSeconds": 8.2240625,
+        "firstOutputAfterInputSeconds": 0.08533333333333333,
+        "firstPitchAfterInputSeconds": 0.16,
+        "initializationMilliseconds": 7.2749583050608635,
+        "mode": "Rapidly 试用 · 含水印",
+        "model": "CREPE tiny",
+        "pitchMilliseconds": {
+          "max": 2.0195413380861282,
+          "p50": 0.00016670674085617065,
+          "p95": 0.7458333857357502
+        },
+        "processingMilliseconds": 1220.6447548232973,
+        "sampleRate": 48000,
+        "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+        "totalAnalysisMilliseconds": {
+          "max": 7.694208063185215,
+          "p50": 0.816625077277422,
+          "p95": 3.403708338737488
+        },
+        "vocalEnergyReference": true,
+        "windowCenterAgeSeconds": {
+          "max": 0.1280000000000001,
+          "p50": 0.11733333333333373,
+          "p95": 0.1279999999999999
+        }
+      }
+    },
+    {
+      "id": "geniusturtle_4_12",
+      "originalSplit": "held_out",
+      "inputSHA256": "91000c673d9a176fb6cc9b780a388899ca1085c9c5f819570cfa15cfbc60a317",
+      "baseline": {
+        "frames": 357,
+        "referenceVoicedFrames": 280,
+        "referenceUnvoicedFrames": 77,
+        "rawPitchAccuracy": 0.7357142857142858,
+        "rawChromaAccuracy": 0.7392857142857143,
+        "octaveErrorRate": 0.0035714285714285713,
+        "otherPitchErrorRate": 0.08214285714285714,
+        "missRate": 0.17857142857142858,
+        "voicingFalseAlarm": 0.4025974025974026,
+        "overallAccuracy": 0.7058823529411765
+      },
+      "current": {
+        "frames": 357,
+        "referenceVoicedFrames": 280,
+        "referenceUnvoicedFrames": 77,
+        "rawPitchAccuracy": 0.8,
+        "rawChromaAccuracy": 0.8035714285714286,
+        "octaveErrorRate": 0.0035714285714285713,
+        "otherPitchErrorRate": 0.11071428571428571,
+        "missRate": 0.08571428571428572,
+        "voicingFalseAlarm": 0.15584415584415584,
+        "overallAccuracy": 0.8095238095238095
+      },
+      "scoreBaseline": null,
+      "scoreCurrent": null,
+      "runtime": {
+        "audioSeconds": 7.2124375,
+        "firstOutputAfterInputSeconds": 0.08533333333333333,
+        "firstPitchAfterInputSeconds": 0.16,
+        "initializationMilliseconds": 6.479708012193441,
+        "mode": "Rapidly 试用 · 含水印",
+        "model": "CREPE tiny",
+        "pitchMilliseconds": {
+          "max": 0.9394166991114616,
+          "p50": 8.335337042808533e-05,
+          "p95": 0.7087499834597111
+        },
+        "processingMilliseconds": 1037.6208340749145,
+        "sampleRate": 48000,
+        "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+        "totalAnalysisMilliseconds": {
+          "max": 6.5974583849310875,
+          "p50": 0.7666246965527534,
+          "p95": 3.2529584132134914
+        },
+        "vocalEnergyReference": true,
+        "windowCenterAgeSeconds": {
+          "max": 0.1280000000000001,
+          "p50": 0.11866666666666603,
+          "p95": 0.1279999999999999
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "date": "2026-10-26",
+  "change": "Default to existing predominant mixture estimator, retaining reliability/continuity gates; optional vocal route preserved",
+  "tests": {
+    "passed": 51,
+    "failed": 0,
+    "reports": [
+      "melody-tests.json",
+      "audio-pipeline-tests.json",
+      "audio-recovery-tests.json"
+    ]
+  },
+  "comparison": "predominant-mixture-benchmark.json",
+  "runtime": "predominant-mixture-runtime.json",
+  "sourceSHA256": {
+    "apps/macos/App.swift": "8dac8a9dc4aed9782bba1b6ee4dac174122f20d3058d799c994b07d48629fa33",
+    "modules/audio/core/MelodyAnalyzer.swift": "b0ab87ca59ea900e992a1c303277921bc576e6706f85fb06e87175ea170f48e1",
+    "modules/audio/platforms/macos/AudioEngine.swift": "cf672938d84484aec17b010b36bc4ae570903246366514825ce84ef8139e0100",
+    "tools/macos/SingingPitchFileProbe.swift": "0bb6cb02235edf59048dda8630b975f9a4faf878a798c5b565aebcefb0921f17",
+    "scripts/benchmark-predominant-mixture.py": "2feb05aa09ce2db1564a4f0b165e8cbed66bcfcff2aedfbd219e1cc2e684ce16"
+  },
+  "binarySHA256": "4e3f4cd1ccea05cf444ac8670a4e5b96e159f29b4ccca3c395eb84bc4ce16628",
+  "pid": 84935,
+  "restarted": true,
+  "verified": "Startup log confirms predominant mixture, no separator/neural model, capture started, 960 samples / stereo / 48kHz; native staff window with live trace visible.",
+  "subjectiveTrial": "User will assess music responsiveness; benchmark is not a guarantee of arbitrary-song accuracy."
+}

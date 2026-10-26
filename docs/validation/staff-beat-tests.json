@@ -1,0 +1,122 @@
+{
+  "checks" : [
+    {
+      "name" : "A beat softly reveals two main arcs and starts a small ripple without replaying repeated snapshots",
+      "passed" : true
+    },
+    {
+      "name" : "The main ripple keeps its random center while its smaller companion moves outwards",
+      "passed" : true
+    },
+    {
+      "name" : "The smaller main wave remains clearly visible with a maximum 64-point diameter",
+      "passed" : true
+    },
+    {
+      "name" : "Two main arcs carry three distinct smaller arcs with a compact outward spread",
+      "passed" : true
+    },
+    {
+      "name" : "The delayed inner arc softly finishes after the outer arc",
+      "passed" : true
+    },
+    {
+      "name" : "Expiration requests a final redraw and a settled ring layer stops invalidation",
+      "passed" : true
+    },
+    {
+      "name" : "Stale or low-confidence beat events never create rings",
+      "passed" : true
+    },
+    {
+      "name" : "A fresh pulse after a long frame is shown at its actual age",
+      "passed" : true
+    },
+    {
+      "name" : "A pathological backlog retains only four recent beat pulses",
+      "passed" : true
+    },
+    {
+      "name" : "Four simultaneous main-and-small bursts fit twenty reusable arc slots",
+      "passed" : true
+    },
+    {
+      "name" : "A long frame expires all old rings without replaying them",
+      "passed" : true
+    },
+    {
+      "name" : "New beats scatter across the staff with safe margins and separated successive centers",
+      "passed" : true
+    },
+    {
+      "name" : "A percussion-only frame with no vocal pitch still displays a ring",
+      "passed" : true
+    },
+    {
+      "name" : "Beat rings, stars, pitch movement, sway and volume scaling run together without changing musical positions",
+      "passed" : true
+    },
+    {
+      "name" : "Silence clears rings while existing keyboard stars keep fading",
+      "passed" : true
+    },
+    {
+      "name" : "Stale transport snapshots clear rings and cannot replay their beat",
+      "passed" : true
+    },
+    {
+      "name" : "Format changes discard prior rings and queued events",
+      "passed" : true
+    },
+    {
+      "name" : "A new audio generation clears the previous pulse clock",
+      "passed" : true
+    },
+    {
+      "name" : "Hiding or switching a module removes cached rings before the first redraw",
+      "passed" : true
+    },
+    {
+      "name" : "Settled silent input stops requesting animation updates",
+      "passed" : true
+    },
+    {
+      "name" : "Twenty cached tapered arcs sit above stars and below note, marker and names",
+      "passed" : true
+    },
+    {
+      "name" : "Main wave consists of three open arcs with softened tips",
+      "passed" : true
+    },
+    {
+      "name" : "Rings stay at their own centers through pitch changes and scale uniformly at 600\/800\/1600 points",
+      "passed" : true
+    },
+    {
+      "name" : "Expanding an arc preserves thin logical strokes and halo widths",
+      "passed" : true
+    },
+    {
+      "name" : "Animation retains the same twenty layer objects and cached arc path",
+      "passed" : true
+    },
+    {
+      "name" : "Expired ring layers are hidden and remain reusable",
+      "passed" : true
+    },
+    {
+      "name" : "All five global pen colors reach the tapered native arcs",
+      "passed" : true
+    },
+    {
+      "name" : "Rings are visible on both backgrounds at all sizes and preserve the solid head",
+      "passed" : true
+    },
+    {
+      "name" : "Native layers and export drawing softly fade rings at canvas edges at all sizes",
+      "passed" : true
+    }
+  ],
+  "failed" : 0,
+  "passed" : 29
+}

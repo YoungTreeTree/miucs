@@ -23,6 +23,20 @@ private final class FailingMelody: MelodyEstimating {
     }
 }
 
+private final class ReferenceMelody: MelodyEstimating {
+    var referenceCalls = 0, predictionCalls = 0, invalidOrder = false, failReference = false
+    func reset() {}
+    func receiveMixture(channels: [[Float]], sampleRate: Double) throws {
+        referenceCalls += 1
+        if failReference { throw AudioAnalysisError.invalidInput("test reference failure") }
+    }
+    func process(channels: [[Float]], sampleRate: Double) throws -> [MelodyFrame] {
+        predictionCalls += 1
+        invalidOrder = invalidOrder || referenceCalls == 0
+        return []
+    }
+}
+
 @main
 enum AudioPipelineTests {
     static func main() throws {
@@ -123,6 +137,25 @@ enum AudioPipelineTests {
         _ = try safeModel.process(input)
         check("Neural inference failure suspends notes once without interrupting audio measurements",
               modelFailures == 1 && failingModel.calls == 1 && !afterFailure.isEmpty && afterFailure.allSatisfy { $0.melody == nil })
+        let referenceMelody = ReferenceMelody(), delayedSeparator = TestVocalProcessor()
+        delayedSeparator.buffering = true
+        let referencePipeline = try AudioAnalysisPipeline(features: AudioFeatureAnalyzer(), melody: referenceMelody,
+            vocals: delayedSeparator, requiresVocalInput: true)
+        _ = try referencePipeline.process(input)
+        let warmupReferences = referenceMelody.referenceCalls
+        delayedSeparator.buffering = false
+        _ = try referencePipeline.process(input)
+        check("Original mixture references arrive during separator warm-up and before delayed pitch PCM",
+              warmupReferences == 1 && referenceMelody.referenceCalls == 2 && referenceMelody.predictionCalls == 1 && !referenceMelody.invalidOrder)
+        let badReference = ReferenceMelody(); badReference.failReference = true
+        var referenceFailures = 0
+        let referenceSafe = try AudioAnalysisPipeline(features: AudioFeatureAnalyzer(), melody: badReference,
+            vocals: TestVocalProcessor(), requiresVocalInput: true, onMelodyFailure: { _ in referenceFailures += 1 })
+        let referenceFailureFrames = try referenceSafe.process(input)
+        _ = try referenceSafe.process(input)
+        check("Reference failure suspends melody once while raw measurements keep running",
+              referenceFailures == 1 && badReference.referenceCalls == 1 && badReference.predictionCalls == 0 &&
+              !referenceFailureFrames.isEmpty && referenceFailureFrames.allSatisfy { $0.melody == nil && !$0.audio.isSilent })
         let failures = checks.filter { !($0["passed"] as! Bool) }.count
         try JSONSerialization.data(withJSONObject: ["passed": checks.count - failures, "failed": failures, "checks": checks],
             options: [.prettyPrinted, .sortedKeys]).write(to: URL(fileURLWithPath: "docs/validation/audio-pipeline-tests.json"))

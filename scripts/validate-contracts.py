@@ -27,6 +27,9 @@ for path in files:
         assert value.get("frameAge") is not None, path
         assert all(event["sequence"] <= frame["sequence"] for event in value["onsets"]), path
         assert value["onsets"] == sorted(value["onsets"], key=lambda event: event["sequence"]), path
+        beats = value.get("beats") or []
+        assert all(event["sequence"] <= frame["sequence"] for event in beats), path
+        assert beats == sorted(beats, key=lambda event: event["sequence"]), path
 
 valid = json.loads((base / "samples/01-melodic-stereo.json").read_text())
 invalid = []
@@ -40,6 +43,14 @@ mutated["frame"]["audio"]["displayBands"] = [0] * 23
 invalid.append(mutated)
 mutated = copy.deepcopy(valid)
 mutated["onsets"] = [dict(sequence=1, time=0, receivedAt=100, strength=0.2)] * 65
+invalid.append(mutated)
+beat = json.loads((base / "samples/08-beat-pulse.json").read_text())
+for field, value in (("bpm", 300), ("phase", 1), ("confidence", -1)):
+    mutated = copy.deepcopy(beat)
+    mutated["frame"]["audio"]["beat"][field] = value
+    invalid.append(mutated)
+mutated = copy.deepcopy(beat)
+mutated["beats"] *= 65
 invalid.append(mutated)
 assert all(not validator.is_valid(value) for value in invalid), "Invalid data accepted"
 print(f"PASS JSON Schema ({len(files)} fixtures/round-trips, {len(invalid)} invalid inputs rejected; local schema registry)")

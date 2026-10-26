@@ -1,0 +1,46 @@
+{
+  "animationRateIsPresentationBenchmark" : false,
+  "background" : "plain paper",
+  "beats" : 20,
+  "durationSeconds" : 10,
+  "fps" : 25,
+  "frames" : 250,
+  "framesWithBeatRings" : 250,
+  "framesWithStars" : 242,
+  "height" : 240,
+  "keyboardBursts" : 48,
+  "keyboardPresses" : 39,
+  "keyboardRows" : [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "loop" : "infinite",
+  "notationHeightRange" : 27.999999204642776,
+  "noteCenterX" : 640,
+  "notes" : [
+    "A4",
+    "B4",
+    "C5",
+    "D4",
+    "D5",
+    "E4",
+    "F♯4",
+    "G4"
+  ],
+  "onsets" : 20,
+  "peakStars" : 40,
+  "scaleRange" : [
+    0.8001351539366327,
+    1.4991906467401204
+  ],
+  "source" : "generated PCM and invented physical key events; production audio analyzers, keyboard channel, star simulation and retained native layers; no capture or event injection",
+  "swayDegrees" : [
+    -19.958460031519543,
+    19.59756179528484
+  ],
+  "warmupSeconds" : 10,
+  "width" : 1200
+}

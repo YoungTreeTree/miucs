@@ -9,6 +9,22 @@
       "passed" : true
     },
     {
+      "name" : "Beats survive intervening snapshots, drain independently and are not replayed to new readers",
+      "passed" : true
+    },
+    {
+      "name" : "Duplicate, old, future and unreliable beats cannot enqueue pulses",
+      "passed" : true
+    },
+    {
+      "name" : "Beat queue is bounded and ages by the detected pulse timestamp",
+      "passed" : true
+    },
+    {
+      "name" : "Silence, transport loss, format change and reconnection clear queued beat pulses",
+      "passed" : true
+    },
+    {
       "name" : "Onset backlog is ordered and capped at 64 newest events",
       "passed" : true
     },
@@ -66,5 +82,5 @@
     }
   ],
   "failed" : 0,
-  "passed" : 16
+  "passed" : 20
 }

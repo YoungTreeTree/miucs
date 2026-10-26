@@ -39,6 +39,10 @@ final class AudioAnalysisPipeline {
             inputSamples = 0; melodyTimeOffset = 0
             sampleRate = block.sampleRate; channelCount = block.channels.count
         }
+        if !melodyFailed {
+            do { try melody.receiveMixture(channels: block.channels, sampleRate: block.sampleRate) }
+            catch { try suspendMelody(after: error) }
+        }
         let melodyBlock: AudioPCMBlock?
         if let vocals {
             do {
@@ -62,13 +66,17 @@ final class AudioAnalysisPipeline {
             } catch {
                 // A singing model failure must not silently start tracking the
                 // accompaniment or stop level/onset/keyboard animations.
-                guard requiresVocalInput else { throw error }
-                melodyFailed = true; latestMelody = nil; melody.reset()
-                onMelodyFailure(error)
+                try suspendMelody(after: error)
             }
         }
         if vocals != nil, let last = latestMelody,
            Double(inputSamples) / block.sampleRate - last.time > 0.5 { latestMelody = nil }
         return try features.process(channels: block.channels, sampleRate: block.sampleRate).map { ($0, latestMelody) }
+    }
+
+    private func suspendMelody(after error: Error) throws {
+        guard requiresVocalInput else { throw error }
+        melodyFailed = true; latestMelody = nil; melody.reset()
+        onMelodyFailure(error)
     }
 }

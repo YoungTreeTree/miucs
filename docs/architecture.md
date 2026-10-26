@@ -2,7 +2,11 @@
 
 Miucs 的输入侧包含并行的音频特征生产与键盘事件生产，可视化在同一帧消费两路数据。平台适配负责系统采集、数值后端、原生绘制；应用外壳把它们组合起来。当前运行平台是 macOS，Windows 只有协作入口与验收说明。
 
+默认音高路径将原始混音直接送入已有的 `MelodyAnalyzer`：频谱峰插值、有界局部白化、谐波显著度、音调性/支持度可靠性判断与相邻候选连续性。没有分离、神经模型或新增等待窗口。菜单来源存于 `MiucsPitchSource.v2`，首次启动默认混音，后续用户选择会保存；旧 v1 人声偏好不覆盖本次模式切换。
+
 音高分析可注入通用 `VocalPCMProcessor`，macOS 的 `RapidlyVocalProcessor` 实现可选实时人声分离；其专有 SDK 不进入通用核心。原始音频始终独立计算音量和起音，分离仅作用于旋律 PCM。`MelodyEstimating` 可注入歌声音高模型；`CoreMLSingingPitch` 仅负责原生推理，重采样、门控及时间线属于通用核心。歌声模式故障时暂停报音，不回退到伴奏。预热、格式重建和原始时间戳语义见 [Rapidly 接入](rapidly-vocals.md)。
+
+`receiveMixture` 在分离器预热期间也接收原始 PCM，按同一 16kHz 重采样与 64ms 窗口保存能量。人声音高器按原始样本序号取对应参考，不取当前交付时刻的混音电平。参考最多保存 100 帧（2 秒）；缺失、过期、格式变化和重置均不复用旧参考。原始混音音高器的参考入口为空操作，继续使用原有规则。
 
 ```mermaid
 flowchart LR
@@ -34,8 +38,8 @@ flowchart LR
 | `modules/visualizations/api/platforms/macos/` | 原生扩展协议、公共笔色到 AppKit 的转换 |
 | `modules/visualizations/pencil-flight/core/` | 特征映射、运动、管道、粒子、纯颜色数据和示例场景 |
 | `modules/visualizations/pencil-flight/platforms/macos/` | AppKit 绘图与旧版配色兼容 |
-| `modules/visualizations/staff-note/core/` | 固定高音谱位、音符运动、起音绕符头倾摆、有界旋律轨迹与独立键盘布局/星爆状态 |
-| `modules/visualizations/staff-note/platforms/macos/` | 物理键码映射，透明五线谱、音符、轨迹与可复用星形图层池，接收公共笔色 |
+| `modules/visualizations/staff-note/core/` | 固定高音谱位、音符运动、起音绕符头倾摆、有界旋律轨迹、独立键盘布局/星爆与拍点圆环状态 |
+| `modules/visualizations/staff-note/platforms/macos/` | 物理键码映射，透明五线谱、音符、轨迹与可复用星形及圆环图层池，接收公共笔色 |
 | `apps/macos/` | 入口、菜单、透明窗口、显示刷新、位置偏好、模块组合注册 |
 | `tools/macos/` | 数值诊断、文件分析、离线示例导出和性能测量 |
 | `tests/` | 契约、通用音频、场景规则与各平台集成验证 |
@@ -50,13 +54,15 @@ flowchart LR
 
 `AudioAnalysisPipeline` 在通用目录编排两个分析器，保留原有窗口、步长、Float32 缓冲、FFT 输出与归一化流程，通过注入 `SpectrumTransform` 执行变换。macOS 使用原有 `vDSP_DFT_Execute`；通用目录没有 Accelerate 调用。Windows FFT 后端明确未实现。格式变化时清理上一格式的旋律缓存，等待新的完整旋律窗口。
 
+`AudioFeatureAnalyzer` 内的 `BeatTracker` 复用混音频谱变化与低频能量，输出独立节拍状态，不依赖人声分离/音高模型。
+
 采集队列串行运行基础特征与旋律分析，直接写入 `FeatureChannel`。生命周期错误才切回主线程；每个特征帧不再创建主线程任务或发布 Combine 数据。可视化只拿到只读 `AudioFeatureSource`，没有启动或停止采集的接口。
 
 恢复看门狗通过最近 PCM 的接收时间先判断健康，新数据持续到达时跳过设备探测。必要的 Core Audio 输出设备查询在后台执行，返回后重新检查采集代次、运行和取消状态；主线程只处理恢复决策。
 
 ## 实时通道与时序
 
-通道用短锁保护内存值，不执行回调或 UI 工作，不逐帧序列化。连续状态只有一个最新快照；起音保留最多 64 个，超过 250ms 或容量时丢弃最旧项；频谱变化用单调最大值队列保存最近 250ms 的未读区间峰值。订阅者有独立游标，互不排空彼此的事件。
+通道用短锁保护内存值，不执行回调或 UI 工作，不逐帧序列化。连续状态只有一个最新快照；起音和节拍各保留最多 64 个，超过 250ms 或容量时丢弃最旧项；频谱变化用单调最大值队列保存最近 250ms 的未读区间峰值。订阅者有独立游标，互不排空彼此的事件。
 
 消费者每次屏幕刷新读一次。帧通过 `sessionID + sequence` 去重；同一帧不会反复重置动作。短事件即使下一帧已恢复平静，也能在后续刷新触发。多起音在飞鸟会话中合为一次振翅；其他模块可自行逐个处理。切换或恢复显示时新建订阅，从当前序号开始，不补播先前动作。
 
@@ -72,9 +78,11 @@ flowchart LR
 
 `PencilFlightSimulation` 是通用飞鸟会话，`SoundFlightWorld` 管理场景规则。原生 `MacPencilFlightSession` 组合通用会话、`PencilFlightView` 和调色盘；绘制对象不再订阅音频、持有计时器或管理窗口。
 
-`StaffNoteSimulation` 消费相同通道，`StaffPitch` 按自然音级映射真实谱位，`StaffPitchTracker` 按新音频时间戳过滤短暂异常并分级确认大跳。`StaffNoteScene` 分开管理确认后的准确谱位、平滑位置、绕符头中心的倾摆角度与最多 512 点/8 秒的轨迹，轨迹另做 25ms 轻度平滑。音量不进入谱位计算。`MacStaffNoteSession` 组合这一会话与 `StaffNoteView`，旋转仅作用于符干和符尾；没有依赖飞鸟核心或改动音频算法、JSON 契约。详细规则见 [五线谱音符](staff-note.md)。
+`StaffNoteSimulation` 消费相同通道，`StaffPitch` 按自然音级映射真实谱位，`StaffPitchTracker` 按新音频时间戳过滤短暂异常并分级确认大跳。`StaffNoteScene` 分开管理确认后的准确谱位、平滑位置、绕符头中心的倾摆角度与最多 512 点/8 秒的轨迹，轨迹另做 25ms 轻度平滑。已停止末端连接的至少 80ms 缺口，在真实新点上附加独立的 `StaffTraceJoin` 展示时间；渲染器用同一条三次曲线的两个子段逐渐接拢，约 190～300ms 后成为完整曲线，复用既有轨迹图层和屏幕刷新。音量不进入谱位计算。`MacStaffNoteSession` 组合这一会话与 `StaffNoteView`，旋转仅作用于符干和符尾；没有依赖飞鸟核心；节拍使用通道中新增的可选 `audio.beat` / `beats` 字段。详细规则见 [五线谱音符](staff-note.md)。
 
 `StaffKeyboardStars` 与音频场景分开计时，最多保存 16 次星爆、112 颗星。`MacStaffKeyboardLayout` 将虚拟键码映射到不依赖平台的 ANSI 主区布局；左右修饰键的按下状态由采集适配层解码。普通键长按使用屏幕刷新推进，忽略系统重复事件；权限/代次变化取消旧长按，完整帧间隔负责淘汰粒子，长帧不追赶积压。`StaffNoteView` 缓存一条五角星路径和 112 个原生图层槽，只更新位置、旋转、大小和透明度，层次位于轨迹之上、音乐标记之下。
+
+`StaffBeatRings` 独立消费拍点事件，每拍在随机落点生成两层轻弧主波，延迟 100～210ms 依次放出三道小弧线；主波中心固定，小弧线按预先保存的方向向外移动，整组在 890ms 内消失。最多保留四拍、复用二十个波纹槽，每槽三组双描边路径形成由浅至深的弧线端点，路径全部预缓存。落点与音符状态无关，只在新事件时采样，相邻落点横向至少相隔 120 点；描边宽度抵消半径缩放，上下边缘使用缓存渐变遮罩；不改变谱位、倾摆或缩放。长帧按实际时间淘汰，超过 150ms 的事件不补播。
 
 全局颜色由 `VisualizationAppearanceStore` 保存为一个预设 ID，菜单提供五种笔色。`VisualizationController` 把纯数据的 `VisualizationAppearance` 交给当前会话，并在切换后的激活前传给新会话。两种原生适配只负责将公共 RGB 转成实际笔触；颜色更新不新建会话、不重订阅特征，也不清理音高轨迹。旧 `PencilColor` 是公共 `VisualizationColor` 的兼容别名，旧配色数据用于首次迁移；正常应用入口使用统一菜单。详见[笔色说明](appearance.md)。
 

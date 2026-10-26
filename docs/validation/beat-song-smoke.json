@@ -1,0 +1,258 @@
+{
+  "source": "Existing MIR-1K Tong Hua amateur karaoke mixed-PCM clips, each independently reset; no new recordings",
+  "scope": "Trigger smoke test only; these clips have pitch labels but no annotated beat grid, so counts are not accuracy or recall",
+  "trackerSHA256": "a0aba90c33e8539d39e8d4359b248dce6fd8cad3d3cfbae36e8d08e785be52f5",
+  "clips": 31,
+  "clipsWithPulses": 8,
+  "pulses": 51,
+  "results": [
+    {
+      "clip": "Ani_2_01",
+      "duration": 6.250666666666667,
+      "lockedFrames": 0,
+      "pulses": 0,
+      "firstPulse": null,
+      "medianBPM": null
+    },
+    {
+      "clip": "Ani_2_02",
+      "duration": 9.216,
+      "lockedFrames": 0,
+      "pulses": 0,
+      "firstPulse": null,
+      "medianBPM": null
+    },
+    {
+      "clip": "Ani_2_03",
+      "duration": 7.04,
+      "lockedFrames": 0,
+      "pulses": 0,
+      "firstPulse": null,
+      "medianBPM": null
+    },
+    {
+      "clip": "Ani_2_04",
+      "duration": 6.336,
+      "lockedFrames": 0,
+      "pulses": 0,
+      "firstPulse": null,
+      "medianBPM": null
+    },
+    {
+      "clip": "Ani_2_05",
+      "duration": 11.328,
+      "lockedFrames": 0,
+      "pulses": 0,
+      "firstPulse": null,
+      "medianBPM": null
+    },
+    {
+      "clip": "Ani_2_06",
+      "duration": 10.816,
+      "lockedFrames": 205,
+      "pulses": 10,
+      "firstPulse": 4.494585675785894,
+      "medianBPM": 139.32010820981935
+    },
+    {
+      "clip": "Ani_2_07",
+      "duration": 7.488,
+      "lockedFrames": 0,
+      "pulses": 0,
+      "firstPulse": null,
+      "medianBPM": null
+    },
+    {
+      "clip": "fdps_2_01",
+      "duration": 7.552,
+      "lockedFrames": 130,
+      "pulses": 9,
+      "firstPulse": 2.930886249104407,
+      "medianBPM": 146.54234049722473
+    },
+    {
+      "clip": "fdps_2_02",
+      "duration": 7.168,
+      "lockedFrames": 0,
+      "pulses": 0,
+      "firstPulse": null,
+      "medianBPM": null
+    },
+    {
+      "clip": "fdps_2_03",
+      "duration": 7.232,
+      "lockedFrames": 0,
+      "pulses": 0,
+      "firstPulse": null,
+      "medianBPM": null
+    },
+    {
+      "clip": "fdps_2_04",
+      "duration": 6.954666666666666,
+      "lockedFrames": 0,
+      "pulses": 0,
+      "firstPulse": null,
+      "medianBPM": null
+    },
+    {
+      "clip": "fdps_2_05",
+      "duration": 7.338666666666667,
+      "lockedFrames": 0,
+      "pulses": 0,
+      "firstPulse": null,
+      "medianBPM": null
+    },
+    {
+      "clip": "fdps_2_06",
+      "duration": 6.250666666666667,
+      "lockedFrames": 134,
+      "pulses": 8,
+      "firstPulse": 2.7518786894961864,
+      "medianBPM": 139.19390417838576
+    },
+    {
+      "clip": "fdps_2_07",
+      "duration": 8.704,
+      "lockedFrames": 12,
+      "pulses": 1,
+      "firstPulse": 2.927830723409989,
+      "medianBPM": 147.60242369252526
+    },
+    {
+      "clip": "fdps_2_08",
+      "duration": 6.250666666666667,
+      "lockedFrames": 0,
+      "pulses": 0,
+      "firstPulse": null,
+      "medianBPM": null
+    },
+    {
+      "clip": "fdps_2_09",
+      "duration": 6.976,
+      "lockedFrames": 0,
+      "pulses": 0,
+      "firstPulse": null,
+      "medianBPM": null
+    },
+    {
+      "clip": "fdps_2_10",
+      "duration": 6.634666666666667,
+      "lockedFrames": 0,
+      "pulses": 0,
+      "firstPulse": null,
+      "medianBPM": null
+    },
+    {
+      "clip": "fdps_2_11",
+      "duration": 7.808,
+      "lockedFrames": 215,
+      "pulses": 5,
+      "firstPulse": 3.683282544971073,
+      "medianBPM": 68.12724737590793
+    },
+    {
+      "clip": "fdps_2_12",
+      "duration": 7.701333333333333,
+      "lockedFrames": 0,
+      "pulses": 0,
+      "firstPulse": null,
+      "medianBPM": null
+    },
+    {
+      "clip": "geniusturtle_4_01",
+      "duration": 7.168,
+      "lockedFrames": 0,
+      "pulses": 0,
+      "firstPulse": null,
+      "medianBPM": null
+    },
+    {
+      "clip": "geniusturtle_4_02",
+      "duration": 6.570666666666667,
+      "lockedFrames": 0,
+      "pulses": 0,
+      "firstPulse": null,
+      "medianBPM": null
+    },
+    {
+      "clip": "geniusturtle_4_03",
+      "duration": 7.338666666666667,
+      "lockedFrames": 0,
+      "pulses": 0,
+      "firstPulse": null,
+      "medianBPM": null
+    },
+    {
+      "clip": "geniusturtle_4_04",
+      "duration": 6.634666666666667,
+      "lockedFrames": 0,
+      "pulses": 0,
+      "firstPulse": null,
+      "medianBPM": null
+    },
+    {
+      "clip": "geniusturtle_4_05",
+      "duration": 7.488,
+      "lockedFrames": 0,
+      "pulses": 0,
+      "firstPulse": null,
+      "medianBPM": null
+    },
+    {
+      "clip": "geniusturtle_4_06",
+      "duration": 6.592,
+      "lockedFrames": 0,
+      "pulses": 0,
+      "firstPulse": null,
+      "medianBPM": null
+    },
+    {
+      "clip": "geniusturtle_4_07",
+      "duration": 7.04,
+      "lockedFrames": 0,
+      "pulses": 0,
+      "firstPulse": null,
+      "medianBPM": null
+    },
+    {
+      "clip": "geniusturtle_4_08",
+      "duration": 7.1466666666666665,
+      "lockedFrames": 0,
+      "pulses": 0,
+      "firstPulse": null,
+      "medianBPM": null
+    },
+    {
+      "clip": "geniusturtle_4_09",
+      "duration": 7.338666666666667,
+      "lockedFrames": 133,
+      "pulses": 7,
+      "firstPulse": 4.603951395805287,
+      "medianBPM": 136.15188751920817
+    },
+    {
+      "clip": "geniusturtle_4_10",
+      "duration": 6.208,
+      "lockedFrames": 128,
+      "pulses": 3,
+      "firstPulse": 4.2836282196759505,
+      "medianBPM": 68.06087622133752
+    },
+    {
+      "clip": "geniusturtle_4_11",
+      "duration": 8.192,
+      "lockedFrames": 161,
+      "pulses": 8,
+      "firstPulse": 5.101287895938635,
+      "medianBPM": 136.4806013431829
+    },
+    {
+      "clip": "geniusturtle_4_12",
+      "duration": 7.189333333333333,
+      "lockedFrames": 0,
+      "pulses": 0,
+      "firstPulse": null,
+      "medianBPM": null
+    }
+  ]
+}

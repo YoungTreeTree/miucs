@@ -77,7 +77,7 @@
       "passed" : true
     },
     {
-      "name" : "Vocal source switches replace the capture once and respect a stopped engine",
+      "name" : "Mixture is default; source switches replace capture once and respect a stopped engine",
       "passed" : true
     },
     {

@@ -14,7 +14,8 @@ final class MacStaffNoteSession: MacVisualizationSession {
     }
     func activate(viewport: VisualizationViewport) {
         simulation.activate(viewport: viewport)
-        drawing.updatePreview(simulation.scene, stars: simulation.keyboardStars.stars); drawing.needsDisplay = true
+        drawing.updatePreview(simulation.scene, stars: simulation.keyboardStars.stars, rings: simulation.beatRings.rings)
+        drawing.needsDisplay = true
     }
     func applyAppearance(_ appearance: VisualizationAppearance) {
         drawing.applyAppearance(appearance); hintColor = appearance.ink.nsColor
@@ -24,7 +25,8 @@ final class MacStaffNoteSession: MacVisualizationSession {
     func update(input: FeatureInput, deltaTime: Double) {
         simulation.update(input: input, deltaTime: deltaTime)
         if simulation.needsDisplay {
-            drawing.updatePreview(simulation.scene, stars: simulation.keyboardStars.stars); drawing.needsDisplay = true
+            drawing.updatePreview(simulation.scene, stars: simulation.keyboardStars.stars, rings: simulation.beatRings.rings)
+            drawing.needsDisplay = true
         }
     }
     func deactivate() { simulation.deactivate() }

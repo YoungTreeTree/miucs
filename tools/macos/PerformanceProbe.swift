@@ -28,17 +28,25 @@ enum PerformanceProbe {
                 "maxMs": values.last! * 1000,
                 "meanMs": values.reduce(0, +) / Double(values.count) * 1000]
     }
+    static func melody(_ time: Double, note: Double, tick: Int, withGaps: Bool) -> MelodyFrame {
+        let voiced = !withGaps || tick % 10 >= 4
+        return MelodyFrame(time: time, pitchHz: voiced ? 440 * pow(2, (note - 69) / 12) : nil,
+                           confidence: voiced ? 1 : 0, isMelodic: voiced, estimator: withGaps ? .crepe : nil)
+    }
     static func main() throws {
         NSApplication.shared.setActivationPolicy(.prohibited)
-        if CommandLine.arguments.count == 3, CommandLine.arguments[1] == "--staff-keyboard" {
-            try keyboardPerformance(to: URL(fileURLWithPath: CommandLine.arguments[2])); return
+        if CommandLine.arguments.count == 3, ["--staff-keyboard", "--staff-beats", "--staff-joins"].contains(CommandLine.arguments[1]) {
+            try keyboardPerformance(to: URL(fileURLWithPath: CommandLine.arguments[2]), withBeats: CommandLine.arguments[1] != "--staff-keyboard",
+                                    withGaps: CommandLine.arguments[1] == "--staff-joins"); return
         }
-        if (3...5).contains(CommandLine.arguments.count) && ["--cadence", "--staff-cadence", "--staff-keyboard-cadence"].contains(CommandLine.arguments[1]) {
+        if (3...5).contains(CommandLine.arguments.count) && ["--cadence", "--staff-cadence", "--staff-keyboard-cadence", "--staff-beats-cadence", "--staff-joins-cadence"].contains(CommandLine.arguments[1]) {
             let id = CommandLine.arguments[1] == "--cadence" ? BuiltInVisualizations.defaultID : StaffNoteSimulation.module.id
             let width = CommandLine.arguments.count > 3 ? Double(CommandLine.arguments[3]) ?? .nan : 1000
             let duration = CommandLine.arguments.count > 4 ? Double(CommandLine.arguments[4]) ?? .nan : 6
             try cadence(to: URL(fileURLWithPath: CommandLine.arguments[2]), moduleID: id,
-                        width: width, duration: duration, withKeyboard: CommandLine.arguments[1] == "--staff-keyboard-cadence"); return
+                        width: width, duration: duration, withKeyboard: ["--staff-keyboard-cadence", "--staff-beats-cadence", "--staff-joins-cadence"].contains(CommandLine.arguments[1]),
+                        withBeats: ["--staff-beats-cadence", "--staff-joins-cadence"].contains(CommandLine.arguments[1]),
+                        withGaps: CommandLine.arguments[1] == "--staff-joins-cadence"); return
         }
         guard CommandLine.arguments.count == 2 else { return }
         let directory = URL(fileURLWithPath: CommandLine.arguments[1])
@@ -105,7 +113,7 @@ enum PerformanceProbe {
             .write(to: directory.appendingPathComponent("performance.json"))
     }
 
-    static func keyboardPerformance(to destination: URL) throws {
+    static func keyboardPerformance(to destination: URL, withBeats: Bool = false, withGaps: Bool = false) throws {
         var results = [[String: Any]](), withinBudget = true
         for width in [600.0, 800, 1600] {
             for pattern in [SyntheticKeyboardInput.Pattern.typing20, .capacity] {
@@ -114,17 +122,20 @@ enum PerformanceProbe {
                 session.drawing.setFrameSize(NSSize(width: width, height: width / 5))
                 session.activate(viewport: VisualizationViewport(width: width, height: width / 5, scale: width / 800))
                 var updates = [Double](), submissions = [Double](), totals = [Double]()
-                var cpuUpdates = [Double](), cpuSubmissions = [Double](), cpuTotals = [Double](), peak = 0
+                var cpuUpdates = [Double](), cpuSubmissions = [Double](), cpuTotals = [Double](), peak = 0, peakRings = 0, peakJoins = 0
                 for tick in 0..<1140 {
                     let time = Double(tick) / 60
                     keyboard.update(at: time)
                     var a = audio(time, onset: tick % 12 == 0)
                     a.envelope = 0.07 * pow(10, 0.5 * sin(time * .pi))
                     let midi = [60.0, 62, 64, 67, 69, 72][(tick / 30) % 6]
-                    let frame = AudioFeatureFrame(sessionID: generation, sequence: UInt64(tick + 1), receivedAt: time,
-                        audio: a, melody: StaffNotePreview.melody(time, midi: midi))
+                    let frame = AudioFeatureFrame(sessionID: generation, sequence: UInt64(tick + 1) * 4, receivedAt: time,
+                        audio: a, melody: melody(time, note: midi, tick: tick, withGaps: withGaps))
+                    let beatSequences: [UInt64] = withBeats && tick % (pattern == .capacity ? 30 : 20) == 0
+                        ? (pattern == .capacity ? Array((frame.sequence - 3)...frame.sequence) : [frame.sequence]) : []
                     let input = FeatureInput(sessionID: generation, state: .running, frame: frame, frameAge: 0,
-                        onsets: a.isOnset ? [AudioOnsetEvent(sequence: frame.sequence, time: time, receivedAt: time, strength: 0.9)] : [], spectralFluxPeak: 0.9)
+                        onsets: a.isOnset ? [AudioOnsetEvent(sequence: frame.sequence, time: time, receivedAt: time, strength: 0.9)] : [], spectralFluxPeak: 0.9,
+                        beats: beatSequences.map { AudioBeatEvent(sequence: $0, time: time, receivedAt: time, strength: 1, bpm: 180, confidence: 1) })
                     let times: (Double, Double, Double, Double) = autoreleasepool {
                         let start = ProcessInfo.processInfo.systemUptime
                         let cpuStart = clock_gettime_nsec_np(CLOCK_THREAD_CPUTIME_ID)
@@ -140,12 +151,17 @@ enum PerformanceProbe {
                         updates.append(times.0); submissions.append(times.1); totals.append(times.0 + times.1)
                         cpuUpdates.append(times.2); cpuSubmissions.append(times.3); cpuTotals.append(times.2 + times.3)
                         peak = max(peak, session.simulation.keyboardStars.stars.count)
+                        peakRings = max(peakRings, session.simulation.beatRings.rings.count)
+                        peakJoins = max(peakJoins, session.simulation.scene.trace.filter {
+                            $0.join.map { $0.progress(at: session.simulation.scene.elapsed) < 1 } ?? false
+                        }.count)
                     }
                 }
                 let combined = metrics(totals), cpu = metrics(cpuTotals), passed = cpu["p95Ms"]! < 2
-                withinBudget = withinBudget && passed && (pattern != .capacity || peak == 112)
+                withinBudget = withinBudget && passed && (pattern != .capacity || peak == 112) &&
+                    (!withBeats || peakRings == (pattern == .capacity ? StaffBeatRings.limit : 11)) && (!withGaps || peakJoins >= 2)
                 results.append(["widthPoints": width, "pattern": pattern.rawValue, "frames": totals.count,
-                    "peakStars": peak, "animationUpdate": metrics(updates), "layerSubmission": metrics(submissions),
+                    "peakStars": peak, "peakRings": peakRings, "peakActiveJoins": peakJoins, "animationUpdate": metrics(updates), "layerSubmission": metrics(submissions),
                     "combined": combined, "threadCPUUpdate": metrics(cpuUpdates), "threadCPUSubmission": metrics(cpuSubmissions),
                     "threadCPUCombined": cpu, "p95Under2ms": passed, "wallP95Under2ms": combined["p95Ms"]! < 2])
                 session.dispose()
@@ -154,6 +170,9 @@ enum PerformanceProbe {
         }
         let report: [String: Any] = ["method": "600 measured synthetic frames after 9s warmup per size/pattern; production keyboard channel, native staff session and retained layer transactions; CLOCK_THREAD_CPUTIME_ID records main-thread CPU, systemUptime separately includes scheduling/commit waits; excludes WindowServer/GPU execution and presentation",
             "typingPressesPerSecond": 20, "burstLimit": 16, "starLimit": 112, "p95BudgetMs": 2,
+            "withBeats": withBeats, "ringLimit": StaffBeatRings.limit,
+            "beatStress": "180 BPM during typing; four simultaneous artificial pulses every 500ms in capacity case to saturate all twenty main/small arc slots",
+            "withPitchGaps": withGaps, "pitchGapStress": "In gap mode, four unvoiced frames in every ten create overlapping joins while new notes continue",
             "passed": withinBudget, "scenarios": results]
         try FileManager.default.createDirectory(at: destination.deletingLastPathComponent(), withIntermediateDirectories: true)
         try JSONSerialization.data(withJSONObject: report, options: [.prettyPrinted, .sortedKeys]).write(to: destination)
@@ -161,7 +180,7 @@ enum PerformanceProbe {
     }
 
     static func cadence(to destination: URL, moduleID: String, width: Double = 1000, duration: Double = 6,
-                        withKeyboard: Bool = false) throws {
+                        withKeyboard: Bool = false, withBeats: Bool = false, withGaps: Bool = false) throws {
         guard width.isFinite, width > 0, duration.isFinite, (3...60).contains(duration) else {
             throw AudioAnalysisError.invalidInput("Cadence expects a positive width and a measurement duration of 3...60 seconds")
         }
@@ -172,7 +191,7 @@ enum PerformanceProbe {
         let preferences = UserDefaults(suiteName: suite)!
         defer { preferences.removePersistentDomain(forName: suite) }
         let keyboard = withKeyboard ? SyntheticKeyboardInput(.typing20) : nil
-        let engine = AudioEngine(factory: { _, frame, _ in ProbeCapture(onFrame: frame, onTick: { keyboard?.update(at: $0) }) }, monitorsSystem: false)
+        let engine = AudioEngine(factory: { _, frame, _ in ProbeCapture(onFrame: frame, onTick: { keyboard?.update(at: $0) }, withBeats: withBeats, withGaps: withGaps) }, monitorsSystem: false)
         let panel = VisualizerPanel(source: engine.channel, registry: BuiltInVisualizations.registry(preferences: preferences), selectedID: moduleID,
             preferences: preferences, persistsFrame: false, keyboardSource: keyboard?.channel)
         panel.setDrawingWidth(width)
@@ -180,10 +199,13 @@ enum PerformanceProbe {
             if let view = panel.visualizationHost.activeView as? PencilFlightView { view.onRender = handler }
             if let view = panel.visualizationHost.activeView as? StaffNoteView { view.onRender = handler }
         }
-        var timestamps = [Double](), costs = [Double]()
+        var timestamps = [Double](), costs = [Double](), ringFrames = 0, joiningFrames = 0
         let warm = ProcessInfo.processInfo.systemUptime + 1
         setProbe { cost, timestamp in
             if timestamp >= warm { timestamps.append(timestamp); costs.append(cost) }
+            if let view = panel.visualizationHost.activeView as? StaffNoteView, !view.rings.isEmpty { ringFrames += 1 }
+            if let view = panel.visualizationHost.activeView as? StaffNoteView,
+               view.scene.trace.contains(where: { $0.join.map { $0.progress(at: view.scene.elapsed) < 1 } ?? false }) { joiningFrames += 1 }
         }
         panel.orderFrontRegardless()
         Task { await engine.start() }
@@ -212,12 +234,14 @@ enum PerformanceProbe {
         let report: [String: Any] = ["method": "real native transparent window; synthetic capture transport; 1s warmup; no recording",
             "moduleID": moduleID, "widthPoints": panel.frame.width, "frames": timestamps.count,
             "syntheticKeyboardPresses": keyboard?.presses ?? 0, "keyboardPressesPerSecond": withKeyboard ? 20 : 0,
+            "withBeats": withBeats, "framesWithRings": ringFrames,
+            "withPitchGaps": withGaps, "framesWithActiveJoins": joiningFrames,
             "measurementSeconds": duration,
             "fps": Double(intervals.count) / intervals.reduce(0, +), "interval": metrics(intervals),
             "draw": metrics(costs), "intervalsOver25ms": intervals.filter { $0 > 0.025 }.count,
             "drawsOver16_67ms": costs.filter { $0 > 1.0 / 60 }.count, "longFrames": longFrames,
             "hiddenStopsRendering": hiddenStopped, "resumedFramesInOneSecond": resumedFrames]
-        guard hiddenStopped && (30...75).contains(resumedFrames) else {
+        guard hiddenStopped && (30...75).contains(resumedFrames) && (!withBeats || ringFrames > 0) && (!withGaps || joiningFrames > 0) else {
             throw AudioAnalysisError.invalidInput("Hide/show: hiddenStopped=\(hiddenStopped), resumedFrames=\(resumedFrames)")
         }
         try FileManager.default.createDirectory(at: destination.deletingLastPathComponent(), withIntermediateDirectories: true)
@@ -232,8 +256,10 @@ private final class ProbeCapture: AudioCaptureSession {
     private let onTick: (Double) -> Void
     private var timer: Timer?
     private var tick = 0
-    init(onFrame: @escaping @Sendable (AudioFeatures, MelodyFrame?) -> Void, onTick: @escaping (Double) -> Void = { _ in }) {
-        self.onFrame = onFrame; self.onTick = onTick
+    private let withBeats: Bool
+    private let withGaps: Bool
+    init(onFrame: @escaping @Sendable (AudioFeatures, MelodyFrame?) -> Void, onTick: @escaping (Double) -> Void = { _ in }, withBeats: Bool = false, withGaps: Bool = false) {
+        self.onFrame = onFrame; self.onTick = onTick; self.withBeats = withBeats; self.withGaps = withGaps
     }
     func start() async throws {
         let timer = Timer(timeInterval: 1.0 / 47, repeats: true) { [weak self] _ in
@@ -242,8 +268,13 @@ private final class ProbeCapture: AudioCaptureSession {
                 let time = Double(self.tick) / 47
                 self.onTick(time)
                 let note = [60.0, 67, 72, 76][(self.tick / 24) % 4]
-                self.onFrame(PerformanceProbe.audio(time, onset: self.tick % 12 == 0),
-                    MelodyFrame(time: time, pitchHz: 440 * pow(2, (note - 69) / 12), confidence: 1, isMelodic: true))
+                var audio = PerformanceProbe.audio(time, onset: self.tick % 12 == 0)
+                if self.withBeats {
+                    let beat = Int(floor(time * 2)) > Int(floor(Double(max(0, self.tick - 1)) / 47 * 2))
+                    audio.beat = BeatFrame(time: time, bpm: 120, phase: (time * 2).truncatingRemainder(dividingBy: 1), confidence: 1,
+                                           strength: 0.9, beatTime: beat ? floor(time * 2) / 2 : nil)
+                }
+                self.onFrame(audio, PerformanceProbe.melody(time, note: note, tick: self.tick, withGaps: self.withGaps))
                 self.tick += 1
             }
         }

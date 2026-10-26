@@ -3,7 +3,7 @@
 这是平台与语言无关的数据定义。当前 Swift 对应类型在 `modules/audio/core/`；Windows 可以用其他语言实现。JSON 用于验证、离线交换和协作样本，运行时通过内存对象传递，不逐帧编码 JSON。
 
 - [frame.schema.json](frame.schema.json)：连续特征帧，包含测量和可选主旋律。
-- [input.schema.json](input.schema.json)：可视化一次刷新的输入，包含连接状态、最新帧、未读起音和频谱变化峰值。
+- [input.schema.json](input.schema.json)：可视化一次刷新的输入，包含连接状态、最新帧、未读起音/节拍和频谱变化峰值。
 - [samples/](samples/)：固定 UUID、纯合成数值，覆盖旋律、短事件、静音、单声道和重连。没有真实录音或个人内容。
 
 ## 时间、缺失值与版本
@@ -13,7 +13,7 @@
 | `version` | 当前为 `1`；破坏字段、单位或时间语义时升主版本，并保留旧样本供迁移验证 |
 | `sessionID` | 每次采集重建的新 UUID，包括重新连接和停止后的新连接；旧代次回调不能写入新代次 |
 | `sequence` | 每个代次内从 1 递增的接收帧序号；跨代次不能比较 |
-| `audio.time`、`melody.time`、事件 `time` | PCM 分析窗口中心相对当前格式时间线的秒数；重连或输入格式改变可归零 |
+| `audio.time`、`melody.time`、起音事件 `time` | PCM 分析窗口中心相对当前格式时间线的秒数；重连或输入格式改变可归零 |
 | `receivedAt` | 主机单调时钟秒数，macOS 为 `systemUptime`；不是 Unix 时间，也不能与 PCM 时间相减 |
 | `frameAge` | 读取时 `max(0, 单调时钟 - receivedAt)`；无帧时缺失；飞鸟对超过 400ms 的帧按失联处理 |
 
@@ -36,6 +36,7 @@
 | `centroidHz`、`bandwidthHz` | 振幅加权平均频率 / 标准差，Hz | 无有效谱时缺失 |
 | `flatness` | 功率谱几何均值/算术均值，0…1 | 无有效谱时缺失 |
 | `spectralFlux`、`onsetThreshold`、`isOnset` | 0…1 频谱变化、动态阈值、该窗口起音标记 | 第一窗口不推断起音；阈值可能大于 1 |
+| `beat.bpm`、`phase`、`confidence`、`strength`、`beatTime` | BPM 50…200、拍内相位 0≤phase<1、置信度/力度 0…1、新拍点 PCM 时间（秒） | `beat` 为可选扩展；未锁定时 BPM/相位缺失，无新拍点时 beatTime 缺失 |
 | `balance`、`sideEnergyRatio`、`correlation` | -1…1、0…1、-1…1 | 单声道缺失；无有效相关性时缺失 |
 | `displayBands` | 24 个 0…1 的显示值 | 静音为零；不能当作能量比例 |
 | `melody.pitchHz`、`confidence`、`isMelodic` | Hz、0…1 启发式置信度、有效标记 | 旋律不可确认时音高缺失；首次不足一窗时整个 `melody` 缺失 |
@@ -45,6 +46,8 @@ MIDI 半音数由 `69 + 12 log2(pitchHz/440)` 派生，不重复存入 JSON。�
 ## 消费规则
 
 连续状态始终只保留最新帧。`onsets` 按序保留每个订阅者未读的事件，最多 64 个，超过 250ms 的事件不补播；溢出丢弃最早事件。`strength` 为触发帧原始 `spectralFlux`，视觉力度由模块决定。
+
+可选 `beats` 为独立拍点事件队列，同样每订阅者独立游标、最多 64 个/250ms，旧文件缺失该字段表示无事件。事件 `time` 是检测到的 PCM 拍点，`receivedAt = frame.receivedAt - (audio.time - beatTime)`，用于回溯本帧内的拍点年龄；不将它当作端到端采集延迟。力度是近期起音强度，不表示小节强拍。静音、失联、格式/代次改变清空待触发节拍。
 
 `spectralFluxPeak` 是订阅者未读区间、最近 250ms 内非静音帧的最大变化量，不受最新帧变小影响；读取后归零。当前实现用按时间过期的单调最大值队列压缩样本。新订阅者从当前序号开始，只收到最新快照，后续事件正常到达。切换模块、隐藏后恢复均不补播历史事件。对其他订阅者没有清空副作用。
 

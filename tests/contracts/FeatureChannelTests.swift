@@ -65,7 +65,9 @@ enum FeatureChannelTests {
                 let back = try JSONDecoder().decode(FeatureInput.self, from: data)
                 guard back.sessionID == batch.sessionID, back.state == batch.state,
                       back.frame?.audio.time == batch.frame?.audio.time,
-                      back.onsets.count == batch.onsets.count else { return false }
+                      back.onsets.count == batch.onsets.count,
+                      back.beats?.count == batch.beats?.count,
+                      back.frame?.audio.beat?.bpm == batch.frame?.audio.beat?.bpm else { return false }
             }
             return files.count >= 5
         }
@@ -74,6 +76,50 @@ enum FeatureChannelTests {
             for i in 0..<1000 { channel.publish(audio: sample(Double(i)), melody: nil, sessionID: id) }
             let input = reader.read()
             return input.frame?.sequence == 1000 && input.frame?.audio.time == 999 && input.onsets.isEmpty
+        }
+        func beatSample(_ time: Double, pulse: Double? = nil, confidence: Double = 0.9) -> AudioFeatures {
+            var a = sample(time)
+            a.beat = BeatFrame(time: time, bpm: 120, phase: 0, confidence: confidence, strength: 0.8, beatTime: pulse ?? time)
+            return a
+        }
+        check("Beats survive intervening snapshots, drain independently and are not replayed to new readers") {
+            let (channel, _, id) = setup(), a = channel.subscribe(), b = channel.subscribe()
+            channel.publish(audio: beatSample(1), melody: nil, sessionID: id)
+            channel.publish(audio: sample(1.02), melody: nil, sessionID: id)
+            return a.read().beats?.count == 1 && b.read().beats?.count == 1 && a.read().beats?.isEmpty == true &&
+                channel.subscribe().read().beats?.isEmpty == true
+        }
+        check("Duplicate, old, future and unreliable beats cannot enqueue pulses") {
+            let (channel, _, id) = setup(), reader = channel.subscribe()
+            for a in [beatSample(1), beatSample(1.02, pulse: 1), beatSample(1.2, pulse: 1.05),
+                      beatSample(1.3, pulse: 2), beatSample(1.4, confidence: 0.4)] {
+                channel.publish(audio: a, melody: nil, sessionID: id)
+            }
+            return reader.read().beats?.map(\.time) == [1]
+        }
+        check("Beat queue is bounded and ages by the detected pulse timestamp") {
+            let (channel, clock, id) = setup(), reader = channel.subscribe()
+            for n in 1...100 { channel.publish(audio: beatSample(Double(n)), melody: nil, sessionID: id) }
+            let bounded = reader.read().beats?.map(\.sequence) == Array(UInt64(37)...100)
+            channel.publish(audio: beatSample(101, pulse: 100.94), melody: nil, sessionID: id)
+            clock.value += 0.20
+            return bounded && reader.read().beats?.isEmpty == true
+        }
+        check("Silence, transport loss, format change and reconnection clear queued beat pulses") {
+            let (channel, _, id) = setup(), reader = channel.subscribe()
+            channel.publish(audio: beatSample(1), melody: nil, sessionID: id)
+            var silent = sample(1.02); silent.isSilent = true
+            channel.publish(audio: silent, melody: nil, sessionID: id)
+            var ok = reader.read().beats?.isEmpty == true
+            channel.publish(audio: beatSample(2), melody: nil, sessionID: id); channel.setState(.recovering)
+            ok = ok && reader.read().beats?.isEmpty == true
+            channel.setState(.running); channel.publish(audio: beatSample(3), melody: nil, sessionID: id)
+            var format = sample(0); format.channelCount = 1
+            channel.publish(audio: format, melody: nil, sessionID: id)
+            ok = ok && reader.read().beats?.isEmpty == true
+            channel.publish(audio: beatSample(1), melody: nil, sessionID: id)
+            channel.reset(sessionID: UUID(), state: .connecting)
+            return ok && reader.read().beats?.isEmpty == true
         }
         check("Onset backlog is ordered and capped at 64 newest events") {
             let (channel, clock, id) = setup(), reader = channel.subscribe()

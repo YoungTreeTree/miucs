@@ -55,8 +55,52 @@
     {
       "name" : "Reset starts a fresh timeline with no previously confirmed onset",
       "passed" : true
+    },
+    {
+      "name" : "An independently audible vocal can enter with lower periodicity, still requiring two frames",
+      "passed" : true
+    },
+    {
+      "name" : "Confident but weak separator residue releases immediately",
+      "passed" : true
+    },
+    {
+      "name" : "Missing, silent and nonfinite mix references fail closed",
+      "passed" : true
+    },
+    {
+      "name" : "Relative energy decisions are unchanged by common playback gain",
+      "passed" : true
+    },
+    {
+      "name" : "Delayed vocals use the matching 64ms mix window at 16\/44.1\/48\/96kHz",
+      "passed" : true
+    },
+    {
+      "name" : "Playback gain changes preserve relative-gated frame decisions",
+      "passed" : true
+    },
+    {
+      "name" : "Missing reference skips inference instead of inventing relative energy",
+      "passed" : true
+    },
+    {
+      "name" : "Stalled separation retains at most two seconds of references and rejects expired windows",
+      "passed" : true
+    },
+    {
+      "name" : "Reset restarts both reference and vocal sample clocks together",
+      "passed" : true
+    },
+    {
+      "name" : "Reset cannot reuse an old mixture reference",
+      "passed" : true
+    },
+    {
+      "name" : "Format changes reset both reference and vocal framing before new samples",
+      "passed" : true
     }
   ],
   "failed" : 0,
-  "passed" : 14
+  "passed" : 25
 }

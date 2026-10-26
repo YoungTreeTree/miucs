@@ -15,6 +15,10 @@ enum StaffNoteTests {
     static func melody(_ time: Double, _ midi: Double) -> MelodyFrame {
         MelodyFrame(time: time, pitchHz: 440 * pow(2, (midi - 69) / 12), confidence: 1, isMelodic: true)
     }
+    static func singing(_ time: Double, _ midi: Double?) -> MelodyFrame {
+        MelodyFrame(time: time, pitchHz: midi.map { 440 * pow(2, ($0 - 69) / 12) },
+                    confidence: midi == nil ? 0 : 0.35, isMelodic: midi != nil, estimator: .crepe)
+    }
     static func feed(_ scene: inout StaffNoteScene, _ midi: Double, after seconds: Double = 1024.0 / 48_000) {
         scene.advance(seconds: seconds)
         scene.receive(audio: audio(scene.elapsed))
@@ -54,6 +58,17 @@ enum StaffNoteTests {
             [40.0, 42, 85, 96].allSatisfy { StaffPitch.resolve(melody(0, $0), previous: nil) == nil })
         check("Hysteresis prevents semitone boundary chatter", StaffPitch.resolve(melody(0, 60.6), previous: StaffPitch(midi: 60))?.midi == 60 &&
             StaffPitch.resolve(melody(0, 60.7), previous: StaffPitch(midi: 60))?.midi == 61)
+        check("Gated CREPE confidence uses its own scale rather than the spectral cutoff", [0.30, 0.40, 0.47].allSatisfy {
+            var frame = singing(0, 60); frame.confidence = $0
+            return StaffPitch.resolve(frame, previous: nil)?.midi == 60
+        })
+        var unvoiced = singing(0, 60); unvoiced.isMelodic = false
+        var invalidConfidence = singing(0, 60); invalidConfidence.confidence = .nan
+        check("Trusting the CREPE gate still rejects unvoiced, nonfinite and out-of-range observations",
+            StaffPitch.resolve(unvoiced, previous: nil) == nil &&
+            StaffPitch.resolve(invalidConfidence, previous: nil) == nil &&
+            StaffPitch.resolve(singing(0, nil), previous: nil) == nil &&
+            StaffPitch.resolve(singing(0, 96), previous: nil) == nil)
         var idle = StaffNoteScene()
         check("First missing melody waits faintly on B4", idle.pitch == nil && idle.baseY == 74 && idle.opacity == 0.22 && idle.labelOpacity == 0)
         var immediate = true, smooth = true, remaining = 0.0
@@ -128,10 +143,33 @@ enum StaffNoteTests {
         check("Missing pitch expires its live tail even while accompaniment continues",
             !longGap.hasContinuousTraceTail && longGap.trace.count == 1 && !longGap.isPitchReliable)
         feed(&longGap, 69)
-        check("Pitch after a stale gap starts a fresh trace segment", longGap.trace.last?.segment != oldSegment)
+        check("Pitch after a model-only gap reconnects the same audible session", longGap.trace.last?.segment == oldSegment)
         let beforeSilence = longGap.trace.last!.segment
         longGap.receive(audio: audio(longGap.elapsed, silent: true)); feed(&longGap, 71)
         check("Real silence still breaks the trace immediately", longGap.trace.last?.segment != beforeSilence)
+
+        var softJoin = StaffNoteScene()
+        softJoin.receive(audio: audio(0)); softJoin.receive(melody: singing(0, 71))
+        for tick in 1...30 {
+            let time = Double(tick) * 0.02
+            softJoin.advance(seconds: 0.02); softJoin.receive(audio: audio(time))
+            softJoin.receive(melody: singing(time, nil))
+        }
+        softJoin.advance(seconds: 0.02); softJoin.receive(audio: audio(0.62))
+        softJoin.receive(melody: singing(0.62, 72), age: 0.12)
+        let join = softJoin.trace.last!.join!, joinedHistory = softJoin.trace
+        check("A returning delayed pitch starts a fresh visual join while the new note is immediately accepted",
+              softJoin.pitch?.midi == 72 && join.progress(at: softJoin.elapsed) == 0 &&
+              abs(join.startedAt - softJoin.elapsed) < 1e-9)
+        softJoin.advance(seconds: 0.1); softJoin.receive(audio: audio(softJoin.elapsed))
+        let halfway = join.progress(at: softJoin.elapsed)
+        softJoin.receive(melody: singing(0.62, 72), age: 0.12)
+        check("Join growth advances between analysis frames and duplicate snapshots cannot restart it",
+              halfway > 0 && halfway < 1 && softJoin.trace == joinedHistory &&
+              softJoin.trace.last?.join?.progress(at: softJoin.elapsed) == halfway)
+        softJoin.advance(seconds: 1)
+        check("A long frame settles a pending visual join without adding or moving any pitch samples",
+              join.progress(at: softJoin.elapsed) == 1 && softJoin.trace == joinedHistory)
 
         var filteredPhrase = StaffNoteScene(), staysConnected = true
         feed(&filteredPhrase, 69, after: 0)
@@ -146,9 +184,9 @@ enum StaffNoteTests {
             }
             staysConnected = staysConnected && filteredPhrase.trace.count == count && (gap < 12 ? filteredPhrase.hasContinuousTraceTail : !filteredPhrase.hasContinuousTraceTail)
             feed(&filteredPhrase, 69)
-            staysConnected = staysConnected && (gap < 12 ? filteredPhrase.trace.last?.segment == segment : filteredPhrase.trace.last?.segment != segment)
+            staysConnected = staysConnected && filteredPhrase.trace.last?.segment == segment
         }
-        check("Brief filtering gaps stay connected; stale input never draws a held-note tail", staysConnected)
+        check("Filtering gaps keep one session contour while stale pitch never draws a held-note tail", staysConnected)
         for _ in 0..<410 {
             filteredPhrase.advance(seconds: 0.02)
             filteredPhrase.receive(audio: audio(filteredPhrase.elapsed)); filteredPhrase.receive(melody: nil)
@@ -402,8 +440,101 @@ enum StaffNoteTests {
         check("A vocal rest does not create history or reposition the last note", vocalPause.trace == beforePause && vocalPause.labelOpacity < 0.02)
         var returnNote = melody(0.24, 72); returnNote.estimator = .crepe
         vocalPause.receive(melody: returnNote)
-        check("The next sung phrase starts at its real pitch with no bridge across the rest",
-              vocalPause.pitch?.midi == 72 && vocalPause.trace.last?.segment != beforePause.last?.segment)
+        check("Singing resumes at its real pitch and reconnects the visual line across a vocal rest",
+              vocalPause.pitch?.midi == 72 && vocalPause.trace.last?.segment == beforePause.last?.segment &&
+              abs(vocalPause.trace.last!.y - 70) < 0.01 && vocalPause.trace.count == 2)
+        var shortGapsConnect = true, gapsHaveNoTail = true
+        for age in [0.0, 0.12, 0.20] {
+            for hops in [2, 4, 6] {
+                var scene = StaffNoteScene()
+                scene.elapse(seconds: age); scene.receive(audio: audio(age))
+                scene.receive(melody: singing(0, 60), age: age)
+                let initial = scene.trace
+                for hop in 1..<hops {
+                    scene.advance(seconds: 0.02); scene.receive(audio: audio(scene.elapsed))
+                    scene.receive(melody: singing(Double(hop) * 0.02, nil), age: age)
+                    gapsHaveNoTail = gapsHaveNoTail && scene.trace == initial && !scene.hasContinuousTraceTail && !scene.canSway
+                }
+                scene.advance(seconds: 0.02); scene.receive(audio: audio(scene.elapsed))
+                scene.receive(melody: singing(Double(hops) * 0.02, 62), age: age)
+                shortGapsConnect = shortGapsConnect && scene.trace.count == 2 && scene.targetY == 94 &&
+                    scene.trace.first?.segment == scene.trace.last?.segment && scene.hasContinuousTraceTail
+            }
+        }
+        check("40-120ms neural dropouts reconnect real endpoints even with 120-200ms model latency", shortGapsConnect)
+        check("Pending neural gaps never append held notes, extend a live tail or allow new sway", gapsHaveNoTail)
+
+        var continuousGaps = true
+        for (gap, next) in [(0.14, 60.0), (0.06, 72.0), (0.8, 62.0), (2.0, 67.0)] {
+            var scene = StaffNoteScene()
+            scene.receive(audio: audio(0)); scene.receive(melody: singing(0, 60))
+            let before = scene.trace
+            let hops = Int((gap / 0.02).rounded())
+            for hop in 1..<hops {
+                scene.advance(seconds: 0.02); scene.receive(audio: audio(Double(hop) * 0.02))
+                scene.receive(melody: singing(Double(hop) * 0.02, nil))
+                continuousGaps = continuousGaps && scene.trace == before && !scene.hasContinuousTraceTail && !scene.isPitchReliable
+            }
+            scene.advance(seconds: 0.02); scene.receive(audio: audio(gap)); scene.receive(melody: singing(gap, next))
+            continuousGaps = continuousGaps && scene.trace.count == 2 && scene.pitch?.midi == Int(next) &&
+                scene.trace.first?.segment == scene.trace.last?.segment
+        }
+        check("Vocal gaps up to two seconds and large note changes preserve a continuous visual contour without invented samples", continuousGaps)
+
+        var confirmedGap = StaffNoteScene()
+        confirmedGap.receive(audio: audio(0)); confirmedGap.receive(melody: singing(0, 60))
+        confirmedGap.advance(seconds: 0.02); confirmedGap.receive(audio: audio(0.02))
+        confirmedGap.receive(melody: singing(0.02, nil))
+        for hop in 2...3 {
+            confirmedGap.advance(seconds: 0.02); confirmedGap.receive(audio: audio(confirmedGap.elapsed))
+            confirmedGap.receive(melody: singing(Double(hop) * 0.02, 64))
+        }
+        check("A short dropout cannot bypass jump confirmation or revive its tail during confirmation",
+            confirmedGap.trace.count == 1 && confirmedGap.pitch?.midi == 60 && !confirmedGap.hasContinuousTraceTail)
+        confirmedGap.advance(seconds: 0.02); confirmedGap.receive(audio: audio(0.08))
+        confirmedGap.receive(melody: singing(0.08, 64))
+        check("A confirmed nearby jump reconnects within the same bounded gap",
+            confirmedGap.trace.count == 2 && confirmedGap.pitch?.midi == 64 &&
+            confirmedGap.trace.first?.segment == confirmedGap.trace.last?.segment)
+
+        var gapSilence = StaffNoteScene()
+        gapSilence.receive(audio: audio(0)); gapSilence.receive(melody: singing(0, 60))
+        gapSilence.receive(melody: singing(0.02, nil))
+        gapSilence.receive(audio: audio(0.03, silent: true)); gapSilence.receive(audio: audio(0.04))
+        gapSilence.receive(melody: singing(0.04, 60))
+        check("Raw-audio silence cancels a pending neural bridge immediately",
+            gapSilence.trace.count == 2 && gapSilence.trace.first?.segment != gapSilence.trace.last?.segment)
+        let beforeOldObservation = gapSilence.trace
+        gapSilence.receive(melody: singing(0.02, nil)); gapSilence.receive(melody: singing(0.04, 60))
+        check("Duplicate or older unvoiced observations cannot reopen a gap or replay a note",
+            gapSilence.trace == beforeOldObservation && gapSilence.isPitchReliable)
+
+        var expiredGap = StaffNoteScene()
+        expiredGap.receive(audio: audio(0)); expiredGap.receive(melody: singing(0, 60))
+        expiredGap.receive(melody: singing(0.02, nil))
+        for _ in 1...25 {
+            expiredGap.advance(seconds: 0.02); expiredGap.receive(audio: audio(expiredGap.elapsed))
+        }
+        expiredGap.receive(melody: singing(0.06, 60))
+        check("Stalled pitch with live audio reconnects history without treating the old pitch as reliable",
+            expiredGap.trace.count == 2 && expiredGap.trace.first?.segment == expiredGap.trace.last?.segment)
+        var staleAudio = StaffNoteScene()
+        staleAudio.receive(audio: audio(0)); staleAudio.receive(melody: singing(0, 60))
+        staleAudio.advance(seconds: 0.5)
+        staleAudio.receive(audio: audio(0.5)); staleAudio.receive(melody: singing(0.5, 60))
+        check("An actual audio stall still breaks the visual session",
+            staleAudio.trace.count == 2 && staleAudio.trace.first?.segment != staleAudio.trace.last?.segment)
+        var expiredHistory = StaffNoteScene()
+        expiredHistory.receive(audio: audio(0)); expiredHistory.receive(melody: singing(0, 60))
+        for hop in 1...410 {
+            let t = Double(hop) * 0.02
+            expiredHistory.advance(seconds: 0.02); expiredHistory.receive(audio: audio(t))
+            expiredHistory.receive(melody: singing(t, nil))
+        }
+        check("Continuous music with no pitch still expires all history after eight seconds",
+            expiredHistory.trace.isEmpty && !expiredHistory.hasContinuousTraceTail && !expiredHistory.isPitchReliable)
+        expiredHistory.receive(melody: singing(8.22, 62))
+        check("A return after history expiry draws only the new real point", expiredHistory.trace.count == 1 && expiredHistory.trace[0].pitch.midi == 62)
         var neuralJump = StaffNoteScene()
         feed(&neuralJump, 60, after: 0)
         for i in 1...3 {

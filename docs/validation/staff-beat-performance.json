@@ -1,0 +1,327 @@
+{
+  "beatStress" : "180 BPM during typing; four simultaneous artificial pulses every 500ms in capacity case to saturate all sixteen main\/small ring slots",
+  "burstLimit" : 16,
+  "method" : "600 measured synthetic frames after 9s warmup per size\/pattern; production keyboard channel, native staff session and retained layer transactions; CLOCK_THREAD_CPUTIME_ID records main-thread CPU, systemUptime separately includes scheduling\/commit waits; excludes WindowServer\/GPU execution and presentation",
+  "p95BudgetMs" : 2,
+  "passed" : true,
+  "pitchGapStress" : "In gap mode, four unvoiced frames in every ten create overlapping joins while new notes continue",
+  "ringLimit" : 16,
+  "scenarios" : [
+    {
+      "animationUpdate" : {
+        "maxMs" : 0.64020836725831032,
+        "meanMs" : 0.024711669733126961,
+        "medianMs" : 0.01583341509103775,
+        "p95Ms" : 0.058250036090612411,
+        "p99Ms" : 0.10816659778356552
+      },
+      "combined" : {
+        "maxMs" : 16.294958535581827,
+        "meanMs" : 0.76453778815145301,
+        "medianMs" : 0.2277083694934845,
+        "p95Ms" : 4.5405002310872078,
+        "p99Ms" : 8.9207086712121964
+      },
+      "frames" : 600,
+      "layerSubmission" : {
+        "maxMs" : 16.266625374555588,
+        "meanMs" : 0.73982611841832602,
+        "medianMs" : 0.20512519404292107,
+        "p95Ms" : 4.5176250860095024,
+        "p99Ms" : 8.8732503354549408
+      },
+      "p95Under2ms" : true,
+      "pattern" : "typing20",
+      "peakActiveJoins" : 2,
+      "peakRings" : 8,
+      "peakStars" : 87,
+      "threadCPUCombined" : {
+        "maxMs" : 0.518042,
+        "meanMs" : 0.19646750500000004,
+        "medianMs" : 0.18112500000000001,
+        "p95Ms" : 0.33312500000000006,
+        "p99Ms" : 0.43049999999999999
+      },
+      "threadCPUSubmission" : {
+        "maxMs" : 0.448125,
+        "meanMs" : 0.17541874000000024,
+        "medianMs" : 0.15929200000000002,
+        "p95Ms" : 0.29375000000000001,
+        "p99Ms" : 0.370666
+      },
+      "threadCPUUpdate" : {
+        "maxMs" : 0.106625,
+        "meanMs" : 0.021048765000000011,
+        "medianMs" : 0.015125,
+        "p95Ms" : 0.047334000000000001,
+        "p99Ms" : 0.074666999999999997
+      },
+      "wallP95Under2ms" : false,
+      "widthPoints" : 600
+    },
+    {
+      "animationUpdate" : {
+        "maxMs" : 0.39074989035725594,
+        "meanMs" : 0.029533337025592722,
+        "medianMs" : 0.022708438336849213,
+        "p95Ms" : 0.056708231568336487,
+        "p99Ms" : 0.1399582251906395
+      },
+      "combined" : {
+        "maxMs" : 14.018958434462547,
+        "meanMs" : 0.42226646250734728,
+        "medianMs" : 0.17174985259771347,
+        "p95Ms" : 0.93449978157877922,
+        "p99Ms" : 6.0875415802001953
+      },
+      "frames" : 600,
+      "layerSubmission" : {
+        "maxMs" : 13.988708145916462,
+        "meanMs" : 0.39273312548175454,
+        "medianMs" : 0.14366675168275833,
+        "p95Ms" : 0.81333331763744354,
+        "p99Ms" : 6.0645416378974915
+      },
+      "p95Under2ms" : true,
+      "pattern" : "capacity",
+      "peakActiveJoins" : 2,
+      "peakRings" : 16,
+      "peakStars" : 112,
+      "threadCPUCombined" : {
+        "maxMs" : 0.38774999999999998,
+        "meanMs" : 0.14938834500000001,
+        "medianMs" : 0.137625,
+        "p95Ms" : 0.244084,
+        "p99Ms" : 0.31270799999999999
+      },
+      "threadCPUSubmission" : {
+        "maxMs" : 0.33037499999999997,
+        "meanMs" : 0.12338334499999995,
+        "medianMs" : 0.111708,
+        "p95Ms" : 0.201542,
+        "p99Ms" : 0.27575
+      },
+      "threadCPUUpdate" : {
+        "maxMs" : 0.099250000000000005,
+        "meanMs" : 0.026005000000000014,
+        "medianMs" : 0.022041999999999999,
+        "p95Ms" : 0.046290999999999999,
+        "p99Ms" : 0.061333000000000006
+      },
+      "wallP95Under2ms" : true,
+      "widthPoints" : 600
+    },
+    {
+      "animationUpdate" : {
+        "maxMs" : 0.10470813140273094,
+        "meanMs" : 0.0098472166185577716,
+        "medianMs" : 0.0081248581409454346,
+        "p95Ms" : 0.021083280444145203,
+        "p99Ms" : 0.044333282858133316
+      },
+      "combined" : {
+        "maxMs" : 13.318249955773354,
+        "meanMs" : 0.27931186991433304,
+        "medianMs" : 0.12208335101604462,
+        "p95Ms" : 0.26108324527740479,
+        "p99Ms" : 5.371458362787962
+      },
+      "frames" : 600,
+      "layerSubmission" : {
+        "maxMs" : 13.309291563928127,
+        "meanMs" : 0.26946465329577524,
+        "medianMs" : 0.11366652324795723,
+        "p95Ms" : 0.24808337911963463,
+        "p99Ms" : 5.3639998659491539
+      },
+      "p95Under2ms" : true,
+      "pattern" : "typing20",
+      "peakActiveJoins" : 2,
+      "peakRings" : 8,
+      "peakStars" : 87,
+      "threadCPUCombined" : {
+        "maxMs" : 0.29795799999999995,
+        "meanMs" : 0.11488634833333333,
+        "medianMs" : 0.10408299999999999,
+        "p95Ms" : 0.17533399999999999,
+        "p99Ms" : 0.24687500000000001
+      },
+      "threadCPUSubmission" : {
+        "maxMs" : 0.27775,
+        "meanMs" : 0.10556667333333339,
+        "medianMs" : 0.095709000000000002,
+        "p95Ms" : 0.15987499999999999,
+        "p99Ms" : 0.22237499999999999
+      },
+      "threadCPUUpdate" : {
+        "maxMs" : 0.093332999999999999,
+        "meanMs" : 0.0093196750000000012,
+        "medianMs" : 0.0078329999999999997,
+        "p95Ms" : 0.020166,
+        "p99Ms" : 0.041291000000000001
+      },
+      "wallP95Under2ms" : true,
+      "widthPoints" : 800
+    },
+    {
+      "animationUpdate" : {
+        "maxMs" : 0.16333302482962608,
+        "meanMs" : 0.025693046239515144,
+        "medianMs" : 0.020166859030723572,
+        "p95Ms" : 0.054124742746353149,
+        "p99Ms" : 0.082583166658878326
+      },
+      "combined" : {
+        "maxMs" : 17.492250073701143,
+        "meanMs" : 0.55963347355524706,
+        "medianMs" : 0.15166634693741798,
+        "p95Ms" : 3.1266668811440468,
+        "p99Ms" : 10.296875145286322
+      },
+      "frames" : 600,
+      "layerSubmission" : {
+        "maxMs" : 17.465208657085896,
+        "meanMs" : 0.53394042731573188,
+        "medianMs" : 0.12791622430086136,
+        "p95Ms" : 3.1061670742928982,
+        "p99Ms" : 10.255083441734314
+      },
+      "p95Under2ms" : true,
+      "pattern" : "capacity",
+      "peakActiveJoins" : 2,
+      "peakRings" : 16,
+      "peakStars" : 112,
+      "threadCPUCombined" : {
+        "maxMs" : 0.41341700000000003,
+        "meanMs" : 0.13767053166666665,
+        "medianMs" : 0.121875,
+        "p95Ms" : 0.24783299999999997,
+        "p99Ms" : 0.313666
+      },
+      "threadCPUSubmission" : {
+        "maxMs" : 0.36066700000000002,
+        "meanMs" : 0.11370931000000002,
+        "medianMs" : 0.099957999999999991,
+        "p95Ms" : 0.20183300000000001,
+        "p99Ms" : 0.263959
+      },
+      "threadCPUUpdate" : {
+        "maxMs" : 0.086874999999999994,
+        "meanMs" : 0.023961221666666681,
+        "medianMs" : 0.019667,
+        "p95Ms" : 0.047541,
+        "p99Ms" : 0.064750000000000002
+      },
+      "wallP95Under2ms" : false,
+      "widthPoints" : 800
+    },
+    {
+      "animationUpdate" : {
+        "maxMs" : 0.157166738063097,
+        "meanMs" : 0.014562439173460007,
+        "medianMs" : 0.0096252188086509705,
+        "p95Ms" : 0.036874786019325256,
+        "p99Ms" : 0.072875060141086578
+      },
+      "combined" : {
+        "maxMs" : 11.954333167523146,
+        "meanMs" : 0.47704854669670266,
+        "medianMs" : 0.15562493354082108,
+        "p95Ms" : 3.2681669108569622,
+        "p99Ms" : 6.0302084311842918
+      },
+      "frames" : 600,
+      "layerSubmission" : {
+        "maxMs" : 11.931541841477156,
+        "meanMs" : 0.46248610752324265,
+        "medianMs" : 0.14045834541320801,
+        "p95Ms" : 3.2335417345166206,
+        "p99Ms" : 5.9826248325407505
+      },
+      "p95Under2ms" : true,
+      "pattern" : "typing20",
+      "peakActiveJoins" : 2,
+      "peakRings" : 8,
+      "peakStars" : 87,
+      "threadCPUCombined" : {
+        "maxMs" : 0.358458,
+        "meanMs" : 0.13476957500000006,
+        "medianMs" : 0.121375,
+        "p95Ms" : 0.22541599999999998,
+        "p99Ms" : 0.29191699999999998
+      },
+      "threadCPUSubmission" : {
+        "maxMs" : 0.34458299999999997,
+        "meanMs" : 0.12196429499999992,
+        "medianMs" : 0.109416,
+        "p95Ms" : 0.19629200000000002,
+        "p99Ms" : 0.26308300000000001
+      },
+      "threadCPUUpdate" : {
+        "maxMs" : 0.11270899999999999,
+        "meanMs" : 0.012805279999999995,
+        "medianMs" : 0.0092919999999999999,
+        "p95Ms" : 0.029124999999999998,
+        "p99Ms" : 0.049042000000000002
+      },
+      "wallP95Under2ms" : false,
+      "widthPoints" : 1600
+    },
+    {
+      "animationUpdate" : {
+        "maxMs" : 1.4281249605119228,
+        "meanMs" : 0.030688044304649036,
+        "medianMs" : 0.018541701138019562,
+        "p95Ms" : 0.06374996155500412,
+        "p99Ms" : 0.12729177251458168
+      },
+      "combined" : {
+        "maxMs" : 45.322416815906763,
+        "meanMs" : 0.7537065943082174,
+        "medianMs" : 0.13879174366593361,
+        "p95Ms" : 4.2292503640055656,
+        "p99Ms" : 10.425916872918606
+      },
+      "frames" : 600,
+      "layerSubmission" : {
+        "maxMs" : 45.285708270967007,
+        "meanMs" : 0.72301855000356841,
+        "medianMs" : 0.11670822277665138,
+        "p95Ms" : 4.1251666843891144,
+        "p99Ms" : 10.375958401709795
+      },
+      "p95Under2ms" : true,
+      "pattern" : "capacity",
+      "peakActiveJoins" : 2,
+      "peakRings" : 16,
+      "peakStars" : 112,
+      "threadCPUCombined" : {
+        "maxMs" : 0.551875,
+        "meanMs" : 0.13327472333333332,
+        "medianMs" : 0.1115,
+        "p95Ms" : 0.26145800000000002,
+        "p99Ms" : 0.33474999999999999
+      },
+      "threadCPUSubmission" : {
+        "maxMs" : 0.42920799999999998,
+        "meanMs" : 0.10914083833333327,
+        "medianMs" : 0.091415999999999997,
+        "p95Ms" : 0.220916,
+        "p99Ms" : 0.28487500000000004
+      },
+      "threadCPUUpdate" : {
+        "maxMs" : 0.199125,
+        "meanMs" : 0.024133884999999994,
+        "medianMs" : 0.018166999999999999,
+        "p95Ms" : 0.053582999999999999,
+        "p99Ms" : 0.069165999999999991
+      },
+      "wallP95Under2ms" : false,
+      "widthPoints" : 1600
+    }
+  ],
+  "starLimit" : 112,
+  "typingPressesPerSecond" : 20,
+  "withBeats" : true,
+  "withPitchGaps" : true
+}

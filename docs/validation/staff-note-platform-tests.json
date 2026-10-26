@@ -113,11 +113,27 @@
       "passed" : true
     },
     {
-      "name" : "Resuming pitch after a stale gap starts a new native subpath",
+      "name" : "A model-only gap joins progressively and settles into one continuous native subpath",
       "passed" : true
     },
     {
-      "name" : "The native trace also separates actual silence",
+      "name" : "The native trace still separates actual silence",
+      "passed" : true
+    },
+    {
+      "name" : "A neural dropout draws only existing history, with no held-note horizontal extension",
+      "passed" : true
+    },
+    {
+      "name" : "An 80ms neural gap starts joining from its real endpoints while the live path reaches the note",
+      "passed" : true
+    },
+    {
+      "name" : "Overlapping neural gap joins settle back into one native path",
+      "passed" : true
+    },
+    {
+      "name" : "Native reconnection grows curved tips before closing the gap, with a smooth final curve",
       "passed" : true
     },
     {
@@ -150,5 +166,5 @@
     }
   ],
   "failed" : 0,
-  "passed" : 37
+  "passed" : 41
 }

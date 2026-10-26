@@ -1,0 +1,137 @@
+{
+  "method": "Three representative clips rerun serially after builds/tests finished; same 512-sample feed; production feature computation included; no capture or UI; desktop app remains active. Not a hard realtime guarantee.",
+  "runs": [
+    {
+      "id": "fdps_2_01",
+      "runtime": {
+        "audioSeconds": 7.584,
+        "firstOutputAfterInputSeconds": 0.08533333333333333,
+        "firstPitchAfterInputSeconds": 0.16,
+        "initializationMilliseconds": 21.470291540026665,
+        "mixture": {
+          "firstOutputAfterInputSeconds": 0.08533333333333333,
+          "processingMilliseconds": 38.25487568974495,
+          "totalAnalysisMilliseconds": {
+            "max": 0.4775836132466793,
+            "p50": 0.006291549652814865,
+            "p95": 0.13804202899336815
+          },
+          "windowCenterAgeSeconds": {
+            "max": 0.0426666666666673,
+            "p50": 0.04266666666666663,
+            "p95": 0.0426666666666673
+          }
+        },
+        "mode": "Rapidly \u8bd5\u7528 \u00b7 \u542b\u6c34\u5370",
+        "model": "CREPE tiny",
+        "pitchMilliseconds": {
+          "max": 5.6316666305065155,
+          "p50": 0.0002086162567138672,
+          "p95": 0.7625417783856392
+        },
+        "processingMilliseconds": 1187.5239671207964,
+        "sampleRate": 48000,
+        "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+        "totalAnalysisMilliseconds": {
+          "max": 12.702333740890026,
+          "p50": 1.8222914077341557,
+          "p95": 3.5947919823229313
+        },
+        "vocalEnergyReference": true,
+        "windowCenterAgeSeconds": {
+          "max": 0.1280000000000001,
+          "p50": 0.11733333333333373,
+          "p95": 0.1279999999999999
+        }
+      }
+    },
+    {
+      "id": "Ani_2_01",
+      "runtime": {
+        "audioSeconds": 6.272,
+        "firstOutputAfterInputSeconds": 0.08533333333333333,
+        "firstPitchAfterInputSeconds": 0.16,
+        "initializationMilliseconds": 6.290458142757416,
+        "mixture": {
+          "firstOutputAfterInputSeconds": 0.08533333333333333,
+          "processingMilliseconds": 26.6001271083951,
+          "totalAnalysisMilliseconds": {
+            "max": 0.12291688472032547,
+            "p50": 0.0024582259356975555,
+            "p95": 0.106083694845438
+          },
+          "windowCenterAgeSeconds": {
+            "max": 0.0426666666666673,
+            "p50": 0.04266666666666663,
+            "p95": 0.0426666666666673
+          }
+        },
+        "mode": "Rapidly \u8bd5\u7528 \u00b7 \u542b\u6c34\u5370",
+        "model": "CREPE tiny",
+        "pitchMilliseconds": {
+          "max": 0.7540835067629814,
+          "p50": 0.00012479722499847412,
+          "p95": 0.6286664865911007
+        },
+        "processingMilliseconds": 833.2249191589653,
+        "sampleRate": 48000,
+        "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+        "totalAnalysisMilliseconds": {
+          "max": 3.4522083587944508,
+          "p50": 0.554999802261591,
+          "p95": 2.927458379417658
+        },
+        "vocalEnergyReference": true,
+        "windowCenterAgeSeconds": {
+          "max": 0.1280000000000001,
+          "p50": 0.11733333333333373,
+          "p95": 0.1279999999999999
+        }
+      }
+    },
+    {
+      "id": "geniusturtle_4_01",
+      "runtime": {
+        "audioSeconds": 7.2,
+        "firstOutputAfterInputSeconds": 0.08533333333333333,
+        "firstPitchAfterInputSeconds": 0.16,
+        "initializationMilliseconds": 6.325208116322756,
+        "mixture": {
+          "firstOutputAfterInputSeconds": 0.08533333333333333,
+          "processingMilliseconds": 28.178964741528034,
+          "totalAnalysisMilliseconds": {
+            "max": 0.15029171481728554,
+            "p50": 0.0020419247448444366,
+            "p95": 0.10504154488444328
+          },
+          "windowCenterAgeSeconds": {
+            "max": 0.0426666666666673,
+            "p50": 0.04266666666666663,
+            "p95": 0.0426666666666673
+          }
+        },
+        "mode": "Rapidly \u8bd5\u7528 \u00b7 \u542b\u6c34\u5370",
+        "model": "CREPE tiny",
+        "pitchMilliseconds": {
+          "max": 0.7790415547788143,
+          "p50": 0.00012526288628578186,
+          "p95": 0.6605419330298901
+        },
+        "processingMilliseconds": 963.7212068773806,
+        "sampleRate": 48000,
+        "scope": "512-sample causal feed; raw features + optional separation + native neural pitch; excludes file I/O, baseline computation, capture, UI and initialization. Finite separator tail flushed only for scoring.",
+        "totalAnalysisMilliseconds": {
+          "max": 3.7705418653786182,
+          "p50": 0.5771252326667309,
+          "p95": 2.986000385135412
+        },
+        "vocalEnergyReference": true,
+        "windowCenterAgeSeconds": {
+          "max": 0.1280000000000001,
+          "p50": 0.11866666666666603,
+          "p95": 0.1279999999999999
+        }
+      }
+    }
+  ]
+}

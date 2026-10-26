@@ -65,7 +65,7 @@ final class AudioEngine: NSObject, ObservableObject {
     private var suspended: Bool { systemSleeping || screensSleeping }
 
     init(factory: AudioCaptureFactory? = nil, timing: AudioRecoveryTiming = AudioRecoveryTiming(),
-         vocalSeparationEnabled: Bool = true,
+         vocalSeparationEnabled: Bool = false,
          monitorsSystem: Bool = true,
          now: @escaping @Sendable () -> Double = { ProcessInfo.processInfo.systemUptime },
          audioExpected: @escaping @MainActor () async -> Bool = {
@@ -413,16 +413,20 @@ private final class StreamOutput: NSObject, SCStreamOutput, @unchecked Sendable 
         var pitchEstimator: any MelodyEstimating = try MelodyAnalyzer()
         if useVocals {
             do {
-                let singing = try SingingPitchAnalyzer(predictor: CoreMLSingingPitch(modelURL: CoreMLSingingPitch.bundledURL()))
+                let singing = try SingingPitchAnalyzer(predictor: CoreMLSingingPitch(modelURL: CoreMLSingingPitch.bundledURL()),
+                                                      usesMixtureReference: true)
                 let candidate = try RapidlyVocalProcessor(configuration: RapidlyConfiguration.bundled())
                 vocals = candidate; pitchEstimator = singing
                 onVocalStatus("\(candidate.statusDescription) · CREPE 歌声音高")
-                AudioEngine.trace("vocal analysis: \(candidate.statusDescription), CREPE tiny with voicing gate, maximum separation latency=\(candidate.maximumLatencySeconds)s")
+                AudioEngine.trace("vocal analysis: \(candidate.statusDescription), CREPE tiny with aligned vocal energy gate, maximum separation latency=\(candidate.maximumLatencySeconds)s")
             } catch {
                 onVocalStatus("音高暂停 · \(error)")
                 AudioEngine.trace("vocal analysis unavailable: \(error)")
             }
-        } else { onVocalStatus("原始混音") }
+        } else {
+            onVocalStatus("混音主旋律 · 已连接")
+            AudioEngine.trace("melody analysis: predominant mixture, harmonic salience + reliability + contour continuity; no vocal separation or neural model")
+        }
         analysis = try AudioAnalysisPipeline(features: AudioFeatureAnalyzer(), melody: pitchEstimator, vocals: vocals,
             requiresVocalInput: useVocals,
             onVocalFailure: { error in

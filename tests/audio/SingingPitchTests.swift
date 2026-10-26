@@ -81,6 +81,74 @@ enum SingingPitchTests {
         analyzer.reset()
         let reset = try analyzer.process(channels: [input], sampleRate: 48_000)
         check("Reset starts a fresh timeline with no previously confirmed onset", reset[0].time == 0.032 && !reset[0].isMelodic)
+
+        var relative = SingingVoicingGate(usesMixtureReference: true)
+        let modest = SingingPitchEstimate(pitchHz: 440, periodicity: 0.45)
+        let relativeFirst = relative.receive(estimate: modest, rms: 0.05, time: 0, mixtureRMS: 0.1)
+        let relativeSecond = relative.receive(estimate: modest, rms: 0.05, time: 0.02, mixtureRMS: 0.1)
+        check("An independently audible vocal can enter with lower periodicity, still requiring two frames", !relativeFirst && relativeSecond)
+        check("Confident but weak separator residue releases immediately",
+              !relative.receive(estimate: high, rms: 0.01, time: 0.04, mixtureRMS: 0.1))
+        check("Missing, silent and nonfinite mix references fail closed",
+              !relative.acceptsEnergy(rms: 0.1, mixtureRMS: nil) &&
+              !relative.acceptsEnergy(rms: 0.1, mixtureRMS: 0) &&
+              !relative.acceptsEnergy(rms: 0.1, mixtureRMS: .nan))
+        check("Relative energy decisions are unchanged by common playback gain",
+              [0.1, 0.5, 1.0].allSatisfy { gain in
+                  relative.acceptsEnergy(rms: gain * 0.05, mixtureRMS: gain * 0.1) &&
+                  !relative.acceptsEnergy(rms: gain * 0.01, mixtureRMS: gain * 0.1)
+              })
+
+        var aligned = true, gainInvariant = true
+        for rate in [16_000.0, 44_100, 48_000, 96_000] {
+            let signal = tone(rate, duration: 0.6)
+            let mixture = signal.enumerated().map { $0.offset < Int(rate * 0.25) ? $0.element : $0.element * 8 }
+            let vocal = signal.map { $0 * 0.5 }
+            func run(delayed: Bool, gain: Float = 1) throws -> [MelodyFrame] {
+                let a = SingingPitchAnalyzer(predictor: PitchFixture(), usesMixtureReference: true)
+                if delayed { try a.receiveMixture(channels: [mixture.map { $0 * gain }], sampleRate: rate) }
+                var output = [MelodyFrame]()
+                for start in stride(from: 0, to: signal.count, by: 511) {
+                    let end = min(start + 511, signal.count)
+                    if !delayed { try a.receiveMixture(channels: [mixture[start..<end].map { $0 * gain }], sampleRate: rate) }
+                    output += try a.process(channels: [vocal[start..<end].map { $0 * gain }], sampleRate: rate)
+                }
+                return output
+            }
+            let live = try run(delayed: false), delayed = try run(delayed: true), quiet = try run(delayed: true, gain: 0.1)
+            let liveData = try encoder.encode(live), delayedData = try encoder.encode(delayed), quietData = try encoder.encode(quiet)
+            aligned = aligned && liveData == delayedData && live.contains { $0.time < 0.2 && $0.isMelodic } &&
+                live.filter { $0.time > 0.35 }.allSatisfy { !$0.isMelodic }
+            gainInvariant = gainInvariant && liveData == quietData
+        }
+        check("Delayed vocals use the matching 64ms mix window at 16/44.1/48/96kHz", aligned)
+        check("Playback gain changes preserve relative-gated frame decisions", gainInvariant)
+
+        let requiredFixture = PitchFixture()
+        let referenced = SingingPitchAnalyzer(predictor: requiredFixture, usesMixtureReference: true)
+        let absent = try referenced.process(channels: [input], sampleRate: 48_000)
+        check("Missing reference skips inference instead of inventing relative energy",
+              requiredFixture.predictions == 0 && absent.allSatisfy { !$0.isMelodic })
+        referenced.reset()
+        try referenced.receiveMixture(channels: [tone(48_000, duration: 3)], sampleRate: 48_000)
+        let expired = try referenced.process(channels: [input], sampleRate: 48_000)
+        check("Stalled separation retains at most two seconds of references and rejects expired windows",
+              referenced.bufferedReferenceFrames <= SingingPitchAnalyzer.maximumReferenceFrames &&
+              expired.allSatisfy { !$0.isMelodic } && requiredFixture.predictions == 0)
+        referenced.reset()
+        try referenced.receiveMixture(channels: [input], sampleRate: 48_000)
+        let recoveredReference = try referenced.process(channels: [input], sampleRate: 48_000)
+        check("Reset restarts both reference and vocal sample clocks together",
+              recoveredReference[0].time == 0.032 && !recoveredReference[0].isMelodic && recoveredReference[1].isMelodic)
+        referenced.reset()
+        let noReplay = try referenced.process(channels: [input], sampleRate: 48_000)
+        check("Reset cannot reuse an old mixture reference", noReplay.allSatisfy { !$0.isMelodic })
+        try referenced.receiveMixture(channels: [input], sampleRate: 48_000)
+        let newRate = tone(44_100)
+        try referenced.receiveMixture(channels: [newRate], sampleRate: 44_100)
+        let newFormat = try referenced.process(channels: [newRate], sampleRate: 44_100)
+        check("Format changes reset both reference and vocal framing before new samples",
+              newFormat[0].time == 0.032 && !newFormat[0].isMelodic && newFormat[1].isMelodic)
         let failed = checks.filter { !($0["passed"] as! Bool) }.count
         try JSONSerialization.data(withJSONObject: ["passed": checks.count-failed, "failed": failed, "checks": checks],
             options: [.prettyPrinted, .sortedKeys]).write(to: URL(fileURLWithPath: "docs/validation/singing-pitch-tests.json"))

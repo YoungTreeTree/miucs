@@ -27,6 +27,8 @@ struct AudioFeatures: Codable, Sendable {
     var sideEnergyRatio: Double?
     var correlation: Double?
     var displayBands: [Float]
+    /// Optional extension; absent in older recordings and synthetic inputs.
+    var beat: BeatFrame? = nil
 }
 
 enum AudioAnalysisError: Error, CustomStringConvertible {

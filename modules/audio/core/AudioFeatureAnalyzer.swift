@@ -28,6 +28,7 @@ final class AudioFeatureAnalyzer {
     private var fluxHistory = [Double]()
     private var lastOnset = -Double.infinity
     private var wasAboveOnset = false
+    private var beatTracker = BeatTracker()
 
     init(transform: any SpectrumTransform) throws {
         guard transform.size == Self.windowSize else { throw AudioAnalysisError.fftUnavailable }
@@ -50,6 +51,7 @@ final class AudioFeatureAnalyzer {
         fluxHistory = []
         lastOnset = -.infinity
         wasAboveOnset = false
+        beatTracker.reset()
     }
 
     func process(channels: [[Float]], sampleRate rate: Double) throws -> [AudioFeatures] {
@@ -217,7 +219,8 @@ final class AudioFeatureAnalyzer {
             centroidHz: centroid, bandwidthHz: bandwidth, flatness: flatness,
             spectralFlux: flux, onsetThreshold: threshold, isOnset: isOnset,
             balance: balance, sideEnergyRatio: sideRatio, correlation: correlation,
-            displayBands: displayBands(spectralPower, binHz: binHz)
+            displayBands: displayBands(spectralPower, binHz: binHz),
+            beat: beatTracker.process(time: time, flux: flux, lowEnergy: low, silent: silent)
         )
     }
 

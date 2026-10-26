@@ -33,8 +33,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     let appearanceStore = VisualizationAppearanceStore()
     private var statusItem: NSStatusItem?
     private var panel: VisualizerPanel?
+    // v2 starts the predominant-mixture workflow; later explicit source choices persist.
     private let engine = AudioEngine(vocalSeparationEnabled:
-        UserDefaults.standard.object(forKey: "MiucsVocalSeparation.v1") as? Bool ?? RapidlyVocalProcessor.isAvailable)
+        UserDefaults.standard.string(forKey: "MiucsPitchSource.v2") == "vocals")
     private let keyboardEngine = KeyboardEngine()
     private var keyboardItem: NSMenuItem?
     private var keyboardSubscription: AnyCancellable?
@@ -137,7 +138,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         let colors = VisualizationColorMenu(store: appearanceStore)
         colorMenu = colors; menu.addItem(colors.item)
         let vocals = NSMenu(title: "音高来源")
-        for (tag, title) in [(1, "Rapidly 人声分离"), (0, "原始混音")] {
+        for (tag, title) in [(0, "混音主旋律"), (1, "人声旋律（Rapidly）")] {
             let option = NSMenuItem(title: title, action: #selector(selectVocalSource(_:)), keyEquivalent: "")
             option.target = self; option.tag = tag; vocals.addItem(option)
         }
@@ -231,7 +232,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
 
     @objc private func selectVocalSource(_ sender: NSMenuItem) {
         let enabled = sender.tag == 1
-        UserDefaults.standard.set(enabled, forKey: "MiucsVocalSeparation.v1")
+        UserDefaults.standard.set(enabled ? "vocals" : "mixture", forKey: "MiucsPitchSource.v2")
         Task {
             await engine.setVocalSeparationEnabled(enabled)
             updateVocalMenu()

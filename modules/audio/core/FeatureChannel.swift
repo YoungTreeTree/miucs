@@ -29,6 +29,8 @@ struct FeatureInput: Codable, Sendable {
     let frameAge: Double?
     let onsets: [AudioOnsetEvent]
     let spectralFluxPeak: Double
+    /// Missing in v1 recordings made before beat tracking was added.
+    var beats: [AudioBeatEvent]? = nil
 }
 
 protocol AudioFeatureSource: Sendable {
@@ -66,6 +68,8 @@ final class FeatureChannel: AudioFeatureSource, @unchecked Sendable {
     private var sequence: UInt64 = 0
     private var latestFrame: AudioFeatureFrame?
     private var onsets = [AudioOnsetEvent]()
+    private var beats = [AudioBeatEvent]()
+    private var lastBeatTime: Double?
     private var flux = [FluxSample]()
     private var firstFrameAt: Double?
     private var lastFrameAt: Double?
@@ -79,11 +83,13 @@ final class FeatureChannel: AudioFeatureSource, @unchecked Sendable {
         self.sessionID = sessionID; self.state = state; sequence = 0
         latestFrame = nil; onsets.removeAll(keepingCapacity: true); flux.removeAll(keepingCapacity: true)
         firstFrameAt = nil; lastFrameAt = nil
+        beats.removeAll(keepingCapacity: true); lastBeatTime = nil
     }
 
     func setState(_ state: AudioSourceState) {
         lock.lock(); defer { lock.unlock() }
         self.state = state
+        if state != .running { beats.removeAll(keepingCapacity: true) }
     }
 
     @discardableResult
@@ -91,6 +97,10 @@ final class FeatureChannel: AudioFeatureSource, @unchecked Sendable {
         let time = now()
         lock.lock(); defer { lock.unlock() }
         guard sessionID == self.sessionID, state == .running else { return false }
+        if let previous = latestFrame?.audio,
+           previous.sampleRate != audio.sampleRate || previous.channelCount != audio.channelCount || audio.time < previous.time {
+            beats.removeAll(keepingCapacity: true); lastBeatTime = nil
+        }
         sequence += 1
         let frame = AudioFeatureFrame(sessionID: sessionID, sequence: sequence,
                                       receivedAt: time, audio: audio, melody: melody)
@@ -98,7 +108,20 @@ final class FeatureChannel: AudioFeatureSource, @unchecked Sendable {
         firstFrameAt = firstFrameAt ?? time; lastFrameAt = time
         let cutoff = time - Self.eventLifetime
         onsets.removeAll { $0.receivedAt < cutoff }; flux.removeAll { $0.receivedAt < cutoff }
+        beats.removeAll { $0.receivedAt < cutoff }
+        if audio.isSilent { beats.removeAll(keepingCapacity: true) }
         if !audio.isSilent {
+            if let beat = audio.beat, let pulse = beat.beatTime, let bpm = beat.bpm,
+               pulse.isFinite, pulse >= 0, pulse <= audio.time, audio.time - pulse <= 0.10,
+               lastBeatTime.map({ pulse > $0 }) ?? true,
+               bpm.isFinite, (BeatTracker.minimumBPM...BeatTracker.maximumBPM).contains(bpm),
+               beat.confidence.isFinite, (BeatTracker.minimumConfidence...1).contains(beat.confidence),
+               beat.strength.isFinite, (0...1).contains(beat.strength) {
+                beats.append(AudioBeatEvent(sequence: sequence, time: pulse,
+                    receivedAt: time - (audio.time - pulse), strength: beat.strength, bpm: bpm, confidence: beat.confidence))
+                lastBeatTime = pulse
+                if beats.count > Self.eventCapacity { beats.removeFirst(beats.count - Self.eventCapacity) }
+            }
             if audio.isOnset {
                 onsets.append(AudioOnsetEvent(sequence: sequence, time: audio.time,
                     receivedAt: time, strength: audio.spectralFlux))
@@ -130,12 +153,13 @@ final class FeatureChannel: AudioFeatureSource, @unchecked Sendable {
         let cutoff = time - Self.eventLifetime
         lock.lock(); defer { lock.unlock() }
         onsets.removeAll { $0.receivedAt < cutoff }; flux.removeAll { $0.receivedAt < cutoff }
+        beats.removeAll { $0.receivedAt < cutoff }
         let after = sessionID == self.sessionID ? cursor : 0
         let events = onsets.filter { $0.sequence > after && $0.receivedAt >= cutoff }
         let peak = flux.lazy.filter { $0.sequence > after && $0.receivedAt >= cutoff }.map(\.value).max() ?? 0
         return FeatureInput(sessionID: self.sessionID, state: state, frame: latestFrame,
                             frameAge: latestFrame.map { max(0, time - $0.receivedAt) },
-                            onsets: events, spectralFluxPeak: peak)
+                            onsets: events, spectralFluxPeak: peak, beats: beats.filter { $0.sequence > after })
     }
 
     var snapshot: AudioFeatureFrame? {

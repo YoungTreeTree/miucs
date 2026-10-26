@@ -26,6 +26,7 @@ enum StaffNoteDemo {
         let keyboard = SyntheticKeyboardInput(.demo), keys = MacStaffKeyboardLayout.keys
         let reader = keyboard.channel.subscribe()
         var stars = StaffKeyboardStars(keys: keys)
+        var beatRings = StaffBeatRings(seed: 0x42454154), audioSequence: UInt64 = 0, beatCount = 0, ringFrames = 0
         var peakStars = 0, starFrames = 0
         var rendered = 0, onsetCount = 0
         var names = Set<String>()
@@ -34,6 +35,7 @@ enum StaffNoteDemo {
         var minY = Double.infinity, maxY = -Double.infinity
         var extrema = [String: StaffNoteScene]()
         var extremaStars = [String: [StaffStar]]()
+        var extremaRings = [String: [StaffBeatRing]]()
         var lastMelodyTime: Double?
         for tick in 0..<(warmup + count * 4) {
             var left = [Float](), right = [Float]()
@@ -51,7 +53,14 @@ enum StaffNoteDemo {
                 left.append(Float(voice)); right.append(Float(voice * 0.96))
             }
             let block = AudioPCMBlock(channels: [left, right], sampleRate: rate, isInterleaved: false)
+            var beats = [AudioBeatEvent]()
             for frame in try analysis.process(block) {
+                audioSequence += 1
+                if let beat = frame.audio.beat, let time = beat.beatTime, let bpm = beat.bpm {
+                    beats.append(AudioBeatEvent(sequence: audioSequence, time: time, receivedAt: time,
+                        strength: beat.strength, bpm: bpm, confidence: beat.confidence))
+                    if tick >= warmup { beatCount += 1 }
+                }
                 scene.receive(audio: frame.audio)
                 if let melody = frame.melody {
                     if melody.time != lastMelodyTime {
@@ -65,6 +74,7 @@ enum StaffNoteDemo {
                 }
             }
             scene.advance(seconds: 0.01)
+            beatRings.advance(seconds: 0.01, events: beats, now: Double(tick + 1) / 100, through: audioSequence)
             if tick >= warmup {
                 keyboard.update(at: Double(tick - warmup) / 100)
                 stars.advance(seconds: 0.01, keyboard: reader.read())
@@ -72,28 +82,29 @@ enum StaffNoteDemo {
             guard tick >= warmup, (tick - warmup) % 4 == 0 else { continue }
             peakStars = max(peakStars, stars.stars.count)
             if stars.hasLiveStars { starFrames += 1 }
+            if !beatRings.rings.isEmpty { ringFrames += 1 }
             if let name = scene.pitch?.name { names.insert(name) }
-            if scene.scale < minScale { minScale = scene.scale; extrema["small"] = scene; extremaStars["small"] = stars.stars }
-            if scene.scale > maxScale { maxScale = scene.scale; extrema["large"] = scene; extremaStars["large"] = stars.stars }
-            if scene.swayAngle < minAngle { minAngle = scene.swayAngle; extrema["left"] = scene; extremaStars["left"] = stars.stars }
-            if scene.swayAngle > maxAngle { maxAngle = scene.swayAngle; extrema["right"] = scene; extremaStars["right"] = stars.stars }
+            if scene.scale < minScale { minScale = scene.scale; extrema["small"] = scene; extremaStars["small"] = stars.stars; extremaRings["small"] = beatRings.rings }
+            if scene.scale > maxScale { maxScale = scene.scale; extrema["large"] = scene; extremaStars["large"] = stars.stars; extremaRings["large"] = beatRings.rings }
+            if scene.swayAngle < minAngle { minAngle = scene.swayAngle; extrema["left"] = scene; extremaStars["left"] = stars.stars; extremaRings["left"] = beatRings.rings }
+            if scene.swayAngle > maxAngle { maxAngle = scene.swayAngle; extrema["right"] = scene; extremaStars["right"] = stars.stars; extremaRings["right"] = beatRings.rings }
             minY = min(minY, scene.noteY); maxY = max(maxY, scene.noteY)
             guard scene.noteCenterX == StaffNoteScene.noteX else {
                 throw AudioAnalysisError.invalidInput("The staff demo's note pivot moved sideways")
             }
             try autoreleasepool {
-                CGImageDestinationAddImage(destination, try draw(scene, stars: stars.stars, with: view), properties)
+                CGImageDestinationAddImage(destination, try draw(scene, stars: stars.stars, rings: beatRings.rings, with: view), properties)
             }
             rendered += 1
         }
         guard rendered == count, names.count >= 6, onsetCount >= 12, maxY - minY > 24,
               maxScale - minScale > 0.25, minAngle < -10 * .pi / 180, maxAngle > 10 * .pi / 180,
-              keyboard.rows.count == 5, peakStars > 20, starFrames > 200,
+              keyboard.rows.count == 5, peakStars > 20, starFrames > 200, beatCount >= 15, ringFrames > 150,
               CGImageDestinationFinalize(destination) else {
             throw AudioAnalysisError.invalidInput("Incomplete staff demo or insufficient visible motion")
         }
         for name in extrema.keys.sorted() {
-            let image = try draw(extrema[name]!, stars: extremaStars[name]!, with: view)
+            let image = try draw(extrema[name]!, stars: extremaStars[name]!, rings: extremaRings[name]!, with: view)
             let path = output.deletingLastPathComponent().appendingPathComponent("\(output.deletingPathExtension().lastPathComponent)-\(name).png")
             try RenderDemo.writePNG(image, to: path)
         }
@@ -106,6 +117,7 @@ enum StaffNoteDemo {
             "notationHeightRange": maxY - minY, "warmupSeconds": Double(warmup) / 100,
             "keyboardPresses": keyboard.presses, "keyboardBursts": stars.totalBursts,
             "keyboardRows": keyboard.rows.sorted(), "framesWithStars": starFrames, "peakStars": peakStars,
+            "beats": beatCount, "framesWithBeatRings": ringFrames,
             "animationRateIsPresentationBenchmark": false
         ]
         try JSONSerialization.data(withJSONObject: report, options: [.prettyPrinted, .sortedKeys])
@@ -113,7 +125,7 @@ enum StaffNoteDemo {
         print("Rendered \(rendered) staff frames, \(names.count) notes, scale \(minScale)...\(maxScale), sway \(minAngle * 180 / .pi)...\(maxAngle * 180 / .pi) degrees")
     }
 
-    private static func draw(_ scene: StaffNoteScene, stars: [StaffStar], with view: StaffNoteView) throws -> CGImage {
+    private static func draw(_ scene: StaffNoteScene, stars: [StaffStar], rings: [StaffBeatRing], with view: StaffNoteView) throws -> CGImage {
         guard let bitmap = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: width, pixelsHigh: height,
             bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB,
             bytesPerRow: 0, bitsPerPixel: 0), let context = NSGraphicsContext(bitmapImageRep: bitmap) else {
@@ -125,7 +137,7 @@ enum StaffNoteDemo {
         cg.translateBy(x: 0, y: Double(height)); cg.scaleBy(x: 1, y: -1)
         DemoDesktop.color(0.975, 0.971, 0.957).setFill()
         NSRect(x: 0, y: 0, width: width, height: height).fill()
-        view.updatePreview(scene, stars: stars); view.updateLayer()
+        view.updatePreview(scene, stars: stars, rings: rings); view.updateLayer()
         guard let layer = view.layer else { throw AudioAnalysisError.invalidInput("Missing native staff layers") }
         layer.render(in: cg)
         guard let image = bitmap.cgImage else { throw AudioAnalysisError.invalidInput("Missing staff demo image") }

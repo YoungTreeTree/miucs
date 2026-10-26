@@ -1,0 +1,31 @@
+{
+  "date": "2026-10-26",
+  "scope": "Compact circular main ripple with three outward small ripples",
+  "mainRadiusRangePoints": [
+    8,
+    36
+  ],
+  "satelliteRadiusRangePoints": [
+    2.5,
+    12
+  ],
+  "maximumGroupDiameterPoints": 108,
+  "groupLifetimeMs": 670,
+  "pulseLimit": 4,
+  "ringLimit": 16,
+  "tests": {
+    "passed": 28,
+    "failed": 0
+  },
+  "performance": "staff-beat-performance.json",
+  "nativeCadence": "staff-beat-cadence-800.json",
+  "controlCadence": "staff-beat-cadence-control-800.json",
+  "demo": "staff-beat-demo.json",
+  "measurementLimits": "Both cadence runs had long frames while other desktop work was active. CPU-only costs exclude scheduling, WindowServer and GPU work.",
+  "binarySHA256": "94f0594844239bc3b0a91c138dd56ed75ac332d4b60c8aebaed65c3e0d816a84",
+  "restarted": true,
+  "sourceSHA256": {
+    "modules/visualizations/staff-note/core/StaffBeatRings.swift": "92a46d3728194683c74bebe49f45658e6107bdcdd6001cdd6cbd0b4cdfa00ece",
+    "modules/visualizations/staff-note/platforms/macos/StaffNoteView.swift": "4f360cdebc1879f3881c199c8dc33364d4eddffa4698c93e5167fb8fa25ba915"
+  }
+}

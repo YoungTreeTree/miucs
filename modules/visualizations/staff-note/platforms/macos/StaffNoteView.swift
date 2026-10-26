@@ -7,6 +7,7 @@ import QuartzCore
 final class StaffNoteView: NSView {
     private(set) var scene: StaffNoteScene
     private(set) var stars = [StaffStar]()
+    private(set) var rings = [StaffBeatRing]()
     var onRender: ((_ seconds: Double, _ timestamp: Double) -> Void)?
     private(set) var inkStyle = VisualizationAppearance.graphite
     private var ink = VisualizationAppearance.graphite.ink.cgColor
@@ -14,6 +15,11 @@ final class StaffNoteView: NSView {
     private static let trailFade = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(),
         colors: [CGColor(gray: 1, alpha: 0), CGColor(gray: 1, alpha: 1)] as CFArray,
         locations: [0, 1])!
+    private static let beatFadeColors = [CGColor(gray: 1, alpha: 0), CGColor(gray: 1, alpha: 1),
+                                        CGColor(gray: 1, alpha: 1), CGColor(gray: 1, alpha: 0)]
+    private static let beatFade = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(),
+        colors: beatFadeColors as CFArray, locations: [0, 0.05, 0.95, 1])!
+    private static let beatHaloWidth = 0.85
     private static let staff: CGPath = {
         let path = CGMutablePath()
         for (i, y) in [58.0, 66, 74, 82, 90].enumerated() {
@@ -46,6 +52,33 @@ final class StaffNoteView: NSView {
     }()
     private static let upStem = stemPath(down: false)
     private static let downStem = stemPath(down: true)
+    // Three cached opacity bands soften arc tips without rebuilding paths each frame.
+    private static let beatTapers = [0.48, 0.78, 1.0]
+    private static let beatMainArcs = beatPaths([(0.05, 1.30), (1.88, 3.57), (4.15, 5.72)])
+    private static let beatSatelliteArcs = beatPaths([(-0.65, 1.55)])
+    private static func beatPaths(_ arcs: [(Double, Double)]) -> [CGPath] {
+        (0..<3).map { band in
+            let path = CGMutablePath()
+            let ranges: [[(Double, Double)]] = [[(0, 0.07), (0.93, 1)], [(0.07, 0.22), (0.78, 0.93)], [(0.22, 0.78)]]
+            for (start, end) in arcs {
+                for (lo, hi) in ranges[band] {
+                    for step in 0...24 {
+                        let angle = start + (end - start) * (lo + (hi - lo) * Double(step) / 24)
+                        let radius = 10 * (1 + 0.016 * sin(angle * 3))
+                        let point = CGPoint(x: cos(angle) * radius, y: sin(angle) * radius)
+                        if step == 0 { path.move(to: point) } else { path.addLine(to: point) }
+                    }
+                }
+            }
+            return path.copy()!
+        }
+    }
+    private static func beatPaths(for ring: StaffBeatRing) -> [CGPath] {
+        ring.arc == .main ? beatMainArcs : beatSatelliteArcs
+    }
+    private static func beatTransform(_ ring: StaffBeatRing) -> CGAffineTransform {
+        CGAffineTransform(scaleX: ring.radius / 10, y: ring.radius / 10 * 0.9).rotated(by: ring.rotation)
+    }
     private static let star: CGPath = {
         let path = CGMutablePath()
         for i in 0..<10 {
@@ -89,12 +122,12 @@ final class StaffNoteView: NSView {
         prepareLabels()
         // Prepare fixed geometry before the first animated frame.
         _ = Self.noteHead; _ = Self.upStem; _ = Self.downStem
-        _ = Self.hatch; _ = Self.sharp; _ = Self.star
+        _ = Self.hatch; _ = Self.sharp; _ = Self.star; _ = Self.beatMainArcs; _ = Self.beatSatelliteArcs; _ = Self.beatFade
     }
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     override func hitTest(_ point: NSPoint) -> NSView? { nil }
-    func updatePreview(_ scene: StaffNoteScene, stars: [StaffStar] = []) {
-        self.scene = scene; self.stars = stars
+    func updatePreview(_ scene: StaffNoteScene, stars: [StaffStar] = [], rings: [StaffBeatRing] = []) {
+        self.scene = scene; self.stars = stars; self.rings = rings
     }
     func applyAppearance(_ appearance: VisualizationAppearance) {
         guard inkStyle != appearance else { return }
@@ -113,7 +146,7 @@ final class StaffNoteView: NSView {
             let drawing = RetainedDrawing()
             layer.addSublayer(drawing.root); retainedDrawing = drawing
         }
-        retainedDrawing!.update(scene: scene, stars: stars, size: bounds.size, ink: ink, labels: attributedLabels,
+        retainedDrawing!.update(scene: scene, stars: stars, rings: rings, size: bounds.size, ink: ink, labels: attributedLabels,
                                 backingScale: window?.backingScaleFactor ?? NSScreen.main?.backingScaleFactor ?? 2)
     }
 
@@ -128,6 +161,7 @@ final class StaffNoteView: NSView {
         pencil(Self.clef, width: 1.35, opacity: 0.8, in: cg)
         drawTrail(in: cg)
         drawStars(in: cg)
+        drawBeatRings(in: cg)
         // This pale, unscaled marker always indicates the exact notation position.
         if scene.pitch != nil {
             cg.saveGState(); cg.setAlpha(0.28 + 0.2 * scene.labelOpacity)
@@ -168,6 +202,7 @@ final class StaffNoteView: NSView {
     private static func tracePath(_ scene: StaffNoteScene, originX: Double = 0) -> CGPath {
         let path = CGMutablePath()
         var segment: Int?
+        var previous: CGPoint?
         let liveTail = scene.hasContinuousTraceTail ? scene.trace.last : nil
         let headOffset = liveTail.map { scene.noteY - $0.y } ?? 0
         for point in scene.trace {
@@ -180,14 +215,38 @@ final class StaffNoteView: NSView {
             }
             let p = CGPoint(x: x - originX, y: y)
             if segment != point.segment { path.move(to: p) }
-            else { path.addLine(to: p) }
+            else if let join = point.join, let previous {
+                appendTraceJoin(from: previous, to: p, progress: join.progress(at: scene.elapsed), in: path)
+            } else { path.addLine(to: p) }
             segment = point.segment
+            previous = p
         }
         // The audible phrase stays connected through filtering, without inventing pitch samples.
         if liveTail != nil {
             path.addLine(to: CGPoint(x: StaffNoteScene.noteX - originX, y: scene.noteY))
         }
         return path
+    }
+    /// Reveal a missing interval from both real endpoints; the same curve remains once joined.
+    private static func appendTraceJoin(from start: CGPoint, to end: CGPoint, progress: Double, in path: CGMutablePath) {
+        let handle = (end.x - start.x) * 0.45
+        let c1 = CGPoint(x: start.x + handle, y: start.y), c2 = CGPoint(x: end.x - handle, y: end.y)
+        if progress >= 1 {
+            path.addCurve(to: end, control1: c1, control2: c2); return
+        }
+        guard progress > 0 else { path.move(to: end); return }
+        func mix(_ a: CGPoint, _ b: CGPoint, _ t: Double) -> CGPoint {
+            CGPoint(x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t)
+        }
+        // De Casteljau subdivision keeps both tips on the final curve, without changing history.
+        let t = progress / 2, s = 1 - t
+        let left1 = mix(start, c1, t), left2 = mix(left1, mix(c1, c2, t), t)
+        let leftEnd = mix(left2, mix(mix(c1, c2, t), mix(c2, end, t), t), t)
+        path.addCurve(to: leftEnd, control1: left1, control2: left2)
+        let right2 = mix(c2, end, s), right1 = mix(mix(c1, c2, s), right2, s)
+        let rightStart = mix(mix(mix(start, c1, s), mix(c1, c2, s), s), right1, s)
+        path.move(to: rightStart)
+        path.addCurve(to: end, control1: right1, control2: right2)
     }
     private static func stemPath(down: Bool) -> CGPath {
         let stem = CGMutablePath()
@@ -221,9 +280,30 @@ final class StaffNoteView: NSView {
             pencil(Self.sharp, width: 1, opacity: 0.9, in: cg)
         }
     }
-    private func pencil(_ path: CGPath, width: Double, opacity: Double, in cg: CGContext) {
+    private func drawBeatRings(in cg: CGContext) {
+        guard !rings.isEmpty else { return }
         cg.saveGState(); defer { cg.restoreGState() }
-        cg.addPath(path); cg.setStrokeColor(halo.copy(alpha: opacity * 0.8)!); cg.setLineWidth(width + 1.25); cg.strokePath()
+        cg.clip(to: CGRect(x: 0, y: 0, width: 800, height: 160))
+        cg.beginTransparencyLayer(auxiliaryInfo: nil)
+        for ring in rings.prefix(StaffBeatRings.limit) {
+            cg.saveGState()
+            cg.translateBy(x: ring.x, y: ring.y)
+            let scale = ring.radius / 10
+            cg.concatenate(Self.beatTransform(ring))
+            cg.setLineCap(.round); cg.setLineJoin(.round)
+            for (band, path) in Self.beatPaths(for: ring).enumerated() {
+                pencil(path, width: ring.lineWidth / scale, opacity: ring.opacity * Self.beatTapers[band],
+                       haloWidth: Self.beatHaloWidth / scale, in: cg)
+            }
+            cg.restoreGState()
+        }
+        cg.setBlendMode(.destinationIn)
+        cg.drawLinearGradient(Self.beatFade, start: .zero, end: CGPoint(x: 0, y: 160), options: [])
+        cg.endTransparencyLayer()
+    }
+    private func pencil(_ path: CGPath, width: Double, opacity: Double, haloWidth: Double = 1.25, in cg: CGContext) {
+        cg.saveGState(); defer { cg.restoreGState() }
+        cg.addPath(path); cg.setStrokeColor(halo.copy(alpha: opacity * 0.8)!); cg.setLineWidth(width + haloWidth); cg.strokePath()
         cg.addPath(path); cg.setStrokeColor(ink.copy(alpha: opacity)!); cg.setLineWidth(width); cg.strokePath()
     }
     private func prepareLabels() {
@@ -265,6 +345,7 @@ final class StaffNoteView: NSView {
         private var currentLabel: String?
         private var starPool = [(layer: CALayer, stroke: PencilPair)]()
         private var visibleStars = 0
+        private var ringPool = [(layer: CALayer, strokes: [PencilPair])]()
 
         init() {
             root.bounds = CGRect(x: 0, y: 0, width: 800, height: 160)
@@ -292,6 +373,23 @@ final class StaffNoteView: NSView {
                 layer.isGeometryFlipped = false; layer.isHidden = true
                 stars.addSublayer(layer)
                 starPool.append((layer, pencil(StaffNoteView.star, width: 0.85, opacity: 1, in: layer)))
+            }
+            let rings = CALayer()
+            rings.name = "beat-rings"; rings.bounds = root.bounds
+            rings.position = CGPoint(x: 400, y: 80); rings.isGeometryFlipped = false
+            rings.masksToBounds = true
+            let ringFade = CAGradientLayer()
+            ringFade.frame = rings.bounds; ringFade.colors = StaffNoteView.beatFadeColors
+            ringFade.locations = [0, 0.05, 0.95, 1]
+            ringFade.startPoint = CGPoint(x: 0.5, y: 0); ringFade.endPoint = CGPoint(x: 0.5, y: 1)
+            rings.mask = ringFade
+            root.addSublayer(rings)
+            for _ in 0..<StaffBeatRings.limit {
+                let layer = CALayer()
+                layer.bounds = CGRect(x: -16, y: -16, width: 32, height: 32)
+                layer.isGeometryFlipped = false; layer.isHidden = true
+                rings.addSublayer(layer)
+                ringPool.append((layer, StaffNoteView.beatMainArcs.map { pencil($0, width: 0.65, opacity: 1, in: layer) }))
             }
             marker.bounds = CGRect(x: -8, y: -6, width: 16, height: 12)
             marker.name = "pitch-marker"
@@ -322,7 +420,7 @@ final class StaffNoteView: NSView {
 
         func invalidateAppearance() { currentInk = nil; currentLabel = nil }
 
-        func update(scene: StaffNoteScene, stars: [StaffStar], size: CGSize, ink: CGColor,
+        func update(scene: StaffNoteScene, stars: [StaffStar], rings: [StaffBeatRing], size: CGSize, ink: CGColor,
                     labels: [String: NSAttributedString], backingScale: CGFloat) {
             root.setAffineTransform(CGAffineTransform(scaleX: size.width / 800, y: size.height / 160))
             if currentInk != ink {
@@ -343,6 +441,19 @@ final class StaffNoteView: NSView {
                 for i in count..<visibleStars { starPool[i].layer.isHidden = true }
             }
             visibleStars = count
+            for (i, item) in ringPool.enumerated() {
+                item.layer.isHidden = i >= rings.count
+                guard i < rings.count else { continue }
+                let ring = rings[i], scale = ring.radius / 10
+                item.layer.position = CGPoint(x: ring.x, y: ring.y)
+                item.layer.setAffineTransform(StaffNoteView.beatTransform(ring))
+                let paths = StaffNoteView.beatPaths(for: ring)
+                for (band, stroke) in item.strokes.enumerated() {
+                    stroke.setPath(paths[band])
+                    stroke.setLineWidth(ring.lineWidth / scale, haloWidth: StaffNoteView.beatHaloWidth / scale)
+                    stroke.setOpacity(ring.opacity * StaffNoteView.beatTapers[band])
+                }
+            }
             history.setPath(StaffNoteView.tracePath(scene, originX: 80))
             marker.position = CGPoint(x: StaffNoteScene.noteX, y: scene.targetY)
             marker.isHidden = scene.pitch == nil
@@ -395,6 +506,9 @@ final class StaffNoteView: NSView {
             }
             func setPath(_ path: CGPath?) { halo.path = path; ink.path = path }
             func setOpacity(_ opacity: Double) { halo.opacity = Float(opacity * 0.8); ink.opacity = Float(opacity) }
+            func setLineWidth(_ width: Double, haloWidth: Double) {
+                ink.lineWidth = width; halo.lineWidth = width + haloWidth
+            }
         }
     }
 }

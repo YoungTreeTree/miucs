@@ -1,0 +1,730 @@
+{
+  "draw" : {
+    "maxMs" : 389.14337521418929,
+    "meanMs" : 1.0344000327435163,
+    "medianMs" : 0.22612512111663818,
+    "p95Ms" : 0.8652079850435257,
+    "p99Ms" : 4.0315417572855949
+  },
+  "drawsOver16_67ms" : 3,
+  "fps" : 46.980551486021362,
+  "frames" : 706,
+  "framesWithActiveJoins" : 610,
+  "framesWithRings" : 683,
+  "hiddenStopsRendering" : true,
+  "interval" : {
+    "maxMs" : 588.84929167106748,
+    "meanMs" : 21.285403605735471,
+    "medianMs" : 16.744791995733976,
+    "p95Ms" : 35.123374778777361,
+    "p99Ms" : 77.669417019933462
+  },
+  "intervalsOver25ms" : 116,
+  "keyboardPressesPerSecond" : 20,
+  "longFrames" : [
+    {
+      "atSeconds" : 0.082326291594654322,
+      "currentDrawMs" : 4.0315417572855949,
+      "intervalMs" : 29.663249850273132,
+      "previousDrawMs" : 8.9077083393931389
+    },
+    {
+      "atSeconds" : 0.15809829160571098,
+      "currentDrawMs" : 0.71933353319764137,
+      "intervalMs" : 40.406833402812481,
+      "previousDrawMs" : 0.18520839512348175
+    },
+    {
+      "atSeconds" : 0.2015624581836164,
+      "currentDrawMs" : 0.16733352094888687,
+      "intervalMs" : 43.464166577905416,
+      "previousDrawMs" : 0.71933353319764137
+    },
+    {
+      "atSeconds" : 0.30547829158604145,
+      "currentDrawMs" : 0.25749998167157173,
+      "intervalMs" : 42.620374821126461,
+      "previousDrawMs" : 0.15154154971241951
+    },
+    {
+      "atSeconds" : 0.36114862514659762,
+      "currentDrawMs" : 0.24608336389064789,
+      "intervalMs" : 40.809125173836946,
+      "previousDrawMs" : 0.21933345124125481
+    },
+    {
+      "atSeconds" : 0.73699312517419457,
+      "currentDrawMs" : 0.17887493595480919,
+      "intervalMs" : 36.525208503007889,
+      "previousDrawMs" : 0.21520815789699554
+    },
+    {
+      "atSeconds" : 0.81266866670921445,
+      "currentDrawMs" : 0.19683316349983215,
+      "intervalMs" : 25.884666945785284,
+      "previousDrawMs" : 0.31279167160391808
+    },
+    {
+      "atSeconds" : 0.86361229186877608,
+      "currentDrawMs" : 0.21512480452656746,
+      "intervalMs" : 28.797667007893324,
+      "previousDrawMs" : 0.17675012350082397
+    },
+    {
+      "atSeconds" : 1.121067916508764,
+      "currentDrawMs" : 0.25454163551330566,
+      "intervalMs" : 30.859624966979027,
+      "previousDrawMs" : 0.24174991995096207
+    },
+    {
+      "atSeconds" : 1.2930557085201144,
+      "currentDrawMs" : 0.27020834386348724,
+      "intervalMs" : 25.392500218003988,
+      "previousDrawMs" : 0.24287495762109756
+    },
+    {
+      "atSeconds" : 1.5643469998613,
+      "currentDrawMs" : 4.0951669216156006,
+      "intervalMs" : 73.542166501283646,
+      "previousDrawMs" : 59.806666802614927
+    },
+    {
+      "atSeconds" : 1.7109711249358952,
+      "currentDrawMs" : 0.20883325487375259,
+      "intervalMs" : 27.582958340644836,
+      "previousDrawMs" : 0.22024987265467644
+    },
+    {
+      "atSeconds" : 2.0520284580998123,
+      "currentDrawMs" : 0.31962525099515915,
+      "intervalMs" : 35.123374778777361,
+      "previousDrawMs" : 0.16195839270949364
+    },
+    {
+      "atSeconds" : 2.0801404998637736,
+      "currentDrawMs" : 0.21983357146382332,
+      "intervalMs" : 27.172041591256857,
+      "previousDrawMs" : 0.16612512990832329
+    },
+    {
+      "atSeconds" : 2.3624465414322913,
+      "currentDrawMs" : 0.16904203221201897,
+      "intervalMs" : 28.368083294481039,
+      "previousDrawMs" : 0.3604586236178875
+    },
+    {
+      "atSeconds" : 2.5295559582300484,
+      "currentDrawMs" : 0.18866686150431633,
+      "intervalMs" : 29.452375136315823,
+      "previousDrawMs" : 0.64450036734342575
+    },
+    {
+      "atSeconds" : 2.6961935418657959,
+      "currentDrawMs" : 0.15512481331825256,
+      "intervalMs" : 27.788917068392038,
+      "previousDrawMs" : 0.30312500894069672
+    },
+    {
+      "atSeconds" : 2.746697333175689,
+      "currentDrawMs" : 0.1688753254711628,
+      "intervalMs" : 25.657208170741796,
+      "previousDrawMs" : 0.19183335825800896
+    },
+    {
+      "atSeconds" : 3.028333583381027,
+      "currentDrawMs" : 0.15616649761795998,
+      "intervalMs" : 27.204833459109068,
+      "previousDrawMs" : 0.22962503135204315
+    },
+    {
+      "atSeconds" : 3.409057583194226,
+      "currentDrawMs" : 0.15170825645327568,
+      "intervalMs" : 25.549208279699087,
+      "previousDrawMs" : 0.21512527018785477
+    },
+    {
+      "atSeconds" : 3.6416789581999183,
+      "currentDrawMs" : 0.14516664668917656,
+      "intervalMs" : 25.04695812240243,
+      "previousDrawMs" : 0.16587506979703903
+    },
+    {
+      "atSeconds" : 4.3116195001639426,
+      "currentDrawMs" : 0.14499993994832039,
+      "intervalMs" : 27.540708426386118,
+      "previousDrawMs" : 0.35754172131419182
+    },
+    {
+      "atSeconds" : 4.3434893749654293,
+      "currentDrawMs" : 0.15929155051708221,
+      "intervalMs" : 26.421958114951849,
+      "previousDrawMs" : 0.29633333906531334
+    },
+    {
+      "atSeconds" : 4.6262941667810082,
+      "currentDrawMs" : 0.29258336871862411,
+      "intervalMs" : 26.200791820883751,
+      "previousDrawMs" : 0.14637503772974014
+    },
+    {
+      "atSeconds" : 4.6619038749486208,
+      "currentDrawMs" : 0.16512488946318626,
+      "intervalMs" : 27.609166689217091,
+      "previousDrawMs" : 0.2593332901597023
+    },
+    {
+      "atSeconds" : 4.8106183335185051,
+      "currentDrawMs" : 0.34187501296401024,
+      "intervalMs" : 25.700750295072794,
+      "previousDrawMs" : 0.16599986702203751
+    },
+    {
+      "atSeconds" : 4.897083958145231,
+      "currentDrawMs" : 0.18237531185150146,
+      "intervalMs" : 25.312582962214947,
+      "previousDrawMs" : 0.27679139748215675
+    },
+    {
+      "atSeconds" : 5.2710452498868108,
+      "currentDrawMs" : 0.17987517639994621,
+      "intervalMs" : 34.672458190470934,
+      "previousDrawMs" : 0.28954166918992996
+    },
+    {
+      "atSeconds" : 5.3020204585045576,
+      "currentDrawMs" : 1.8920833244919777,
+      "intervalMs" : 30.093291774392128,
+      "previousDrawMs" : 0.21958304569125175
+    },
+    {
+      "atSeconds" : 5.4489536248147488,
+      "currentDrawMs" : 0.23312494158744812,
+      "intervalMs" : 42.759666685014963,
+      "previousDrawMs" : 0.25483360514044762
+    },
+    {
+      "atSeconds" : 5.5129692917689681,
+      "currentDrawMs" : 0.24533318355679512,
+      "intervalMs" : 28.582458384335041,
+      "previousDrawMs" : 0.56433305144309998
+    },
+    {
+      "atSeconds" : 5.6644719168543816,
+      "currentDrawMs" : 0.21116668358445168,
+      "intervalMs" : 30.825417023152113,
+      "previousDrawMs" : 0.39916671812534332
+    },
+    {
+      "atSeconds" : 5.7514134584926069,
+      "currentDrawMs" : 0.48599997535347939,
+      "intervalMs" : 27.109458576887846,
+      "previousDrawMs" : 0.29350025579333305
+    },
+    {
+      "atSeconds" : 5.9013981251046062,
+      "currentDrawMs" : 0.40449993684887886,
+      "intervalMs" : 29.116416815668344,
+      "previousDrawMs" : 0.36395853385329247
+    },
+    {
+      "atSeconds" : 6.0279598333872855,
+      "currentDrawMs" : 0.25200005620718002,
+      "intervalMs" : 26.791875250637531,
+      "previousDrawMs" : 0.53329207003116608
+    },
+    {
+      "atSeconds" : 6.0969265415333211,
+      "currentDrawMs" : 0.26095844805240631,
+      "intervalMs" : 26.954750064760447,
+      "previousDrawMs" : 0.26816688477993011
+    },
+    {
+      "atSeconds" : 6.2129966667853296,
+      "currentDrawMs" : 0.18387474119663239,
+      "intervalMs" : 28.864958323538303,
+      "previousDrawMs" : 1.4992500655353069
+    },
+    {
+      "atSeconds" : 6.2587248333729804,
+      "currentDrawMs" : 0.36704167723655701,
+      "intervalMs" : 41.139583569020033,
+      "previousDrawMs" : 0.28204172849655151
+    },
+    {
+      "atSeconds" : 6.3256159583106637,
+      "currentDrawMs" : 2.7336250059306622,
+      "intervalMs" : 61.572166625410318,
+      "previousDrawMs" : 1.3986248522996902
+    },
+    {
+      "atSeconds" : 6.3523872499354184,
+      "currentDrawMs" : 3.5660834982991219,
+      "intervalMs" : 26.771291624754667,
+      "previousDrawMs" : 2.7336250059306622
+    },
+    {
+      "atSeconds" : 6.4136195834726095,
+      "currentDrawMs" : 0.17591658979654312,
+      "intervalMs" : 29.951333533972502,
+      "previousDrawMs" : 0.25724992156028748
+    },
+    {
+      "atSeconds" : 6.7339905416592956,
+      "currentDrawMs" : 0.27000019326806068,
+      "intervalMs" : 33.739124890416861,
+      "previousDrawMs" : 0.19404152408242226
+    },
+    {
+      "atSeconds" : 6.8683976666070521,
+      "currentDrawMs" : 0.30854158103466034,
+      "intervalMs" : 30.670666601508856,
+      "previousDrawMs" : 0.19441684707999229
+    },
+    {
+      "atSeconds" : 6.9325775001198053,
+      "currentDrawMs" : 0.49629155546426773,
+      "intervalMs" : 29.9922083504498,
+      "previousDrawMs" : 0.28529157862067223
+    },
+    {
+      "atSeconds" : 6.9998072083108127,
+      "currentDrawMs" : 0.25941664353013039,
+      "intervalMs" : 67.229708191007376,
+      "previousDrawMs" : 0.49629155546426773
+    },
+    {
+      "atSeconds" : 7.0569329583086073,
+      "currentDrawMs" : 0.5392082966864109,
+      "intervalMs" : 57.125749997794628,
+      "previousDrawMs" : 0.25941664353013039
+    },
+    {
+      "atSeconds" : 7.2853185832500458,
+      "currentDrawMs" : 0.23812521249055862,
+      "intervalMs" : 34.822375047951937,
+      "previousDrawMs" : 0.32950006425380707
+    },
+    {
+      "atSeconds" : 7.3188377497717738,
+      "currentDrawMs" : 0.21920865401625633,
+      "intervalMs" : 32.568833325058222,
+      "previousDrawMs" : 0.16450043767690659
+    },
+    {
+      "atSeconds" : 7.4098998331464827,
+      "currentDrawMs" : 0.27183350175619125,
+      "intervalMs" : 26.31258312612772,
+      "previousDrawMs" : 0.1821666955947876
+    },
+    {
+      "atSeconds" : 7.5704423747956753,
+      "currentDrawMs" : 0.58433366939425468,
+      "intervalMs" : 36.19304159656167,
+      "previousDrawMs" : 0.21587498486042023
+    },
+    {
+      "atSeconds" : 7.6001455001533031,
+      "currentDrawMs" : 0.60074962675571442,
+      "intervalMs" : 29.703125357627869,
+      "previousDrawMs" : 0.58433366939425468
+    },
+    {
+      "atSeconds" : 7.657814166508615,
+      "currentDrawMs" : 0.47358358278870583,
+      "intervalMs" : 57.668666355311871,
+      "previousDrawMs" : 0.60074962675571442
+    },
+    {
+      "atSeconds" : 7.7805050001479685,
+      "currentDrawMs" : 0.24516647681593895,
+      "intervalMs" : 30.213333666324615,
+      "previousDrawMs" : 0.21720863878726959
+    },
+    {
+      "atSeconds" : 7.9032859583385289,
+      "currentDrawMs" : 0.33716671168804169,
+      "intervalMs" : 34.589374903589487,
+      "previousDrawMs" : 0.2543330192565918
+    },
+    {
+      "atSeconds" : 8.1446142918430269,
+      "currentDrawMs" : 0.16983319073915482,
+      "intervalMs" : 27.559375390410423,
+      "previousDrawMs" : 0.26225019246339798
+    },
+    {
+      "atSeconds" : 8.3100327081046999,
+      "currentDrawMs" : 0.19175000488758087,
+      "intervalMs" : 26.437333319336176,
+      "previousDrawMs" : 0.17750030383467674
+    },
+    {
+      "atSeconds" : 8.364564583171159,
+      "currentDrawMs" : 0.19458355382084846,
+      "intervalMs" : 25.246916338801384,
+      "previousDrawMs" : 0.1649162732064724
+    },
+    {
+      "atSeconds" : 8.5604942501522601,
+      "currentDrawMs" : 0.17262483015656471,
+      "intervalMs" : 26.888875290751457,
+      "previousDrawMs" : 0.19929185509681702
+    },
+    {
+      "atSeconds" : 8.6961341248825192,
+      "currentDrawMs" : 0.16045849770307541,
+      "intervalMs" : 29.260999988764524,
+      "previousDrawMs" : 0.16779173165559769
+    },
+    {
+      "atSeconds" : 8.7421492915600538,
+      "currentDrawMs" : 0.15687523409724236,
+      "intervalMs" : 25.174208451062441,
+      "previousDrawMs" : 0.27670850977301598
+    },
+    {
+      "atSeconds" : 9.256123083177954,
+      "currentDrawMs" : 0.68458355963230133,
+      "intervalMs" : 39.068624842911959,
+      "previousDrawMs" : 0.16395840793848038
+    },
+    {
+      "atSeconds" : 9.4431493747979403,
+      "currentDrawMs" : 0.4648333415389061,
+      "intervalMs" : 56.781124789267778,
+      "previousDrawMs" : 0.2132081426680088
+    },
+    {
+      "atSeconds" : 9.4906350001692772,
+      "currentDrawMs" : 0.65745832398533821,
+      "intervalMs" : 47.485625371336937,
+      "previousDrawMs" : 0.4648333415389061
+    },
+    {
+      "atSeconds" : 9.5609138747677207,
+      "currentDrawMs" : 0.22366689518094063,
+      "intervalMs" : 26.161666493862867,
+      "previousDrawMs" : 0.28166687116026878
+    },
+    {
+      "atSeconds" : 9.6254061250947416,
+      "currentDrawMs" : 0.18358323723077774,
+      "intervalMs" : 25.044250302016735,
+      "previousDrawMs" : 0.3293333575129509
+    },
+    {
+      "atSeconds" : 9.7231982084922493,
+      "currentDrawMs" : 0.21495809778571129,
+      "intervalMs" : 72.659708559513092,
+      "previousDrawMs" : 0.15866663306951523
+    },
+    {
+      "atSeconds" : 9.8788882084190845,
+      "currentDrawMs" : 0.19816635176539421,
+      "intervalMs" : 28.374083340167999,
+      "previousDrawMs" : 0.29454147443175316
+    },
+    {
+      "atSeconds" : 9.9629611251875758,
+      "currentDrawMs" : 0.77166641131043434,
+      "intervalMs" : 28.324916958808899,
+      "previousDrawMs" : 0.27016690000891685
+    },
+    {
+      "atSeconds" : 10.020505125168711,
+      "currentDrawMs" : 0.25012483820319176,
+      "intervalMs" : 57.54399998113513,
+      "previousDrawMs" : 0.77166641131043434
+    },
+    {
+      "atSeconds" : 10.077614541631192,
+      "currentDrawMs" : 1.4632497914135456,
+      "intervalMs" : 57.109416462481022,
+      "previousDrawMs" : 0.25012483820319176
+    },
+    {
+      "atSeconds" : 10.198077749926597,
+      "currentDrawMs" : 0.56220823898911476,
+      "intervalMs" : 27.467750012874603,
+      "previousDrawMs" : 0.53525017574429512
+    },
+    {
+      "atSeconds" : 10.302512833382934,
+      "currentDrawMs" : 0.23195846006274223,
+      "intervalMs" : 30.668999999761581,
+      "previousDrawMs" : 0.32904138788580894
+    },
+    {
+      "atSeconds" : 10.38018620852381,
+      "currentDrawMs" : 0.24449964985251427,
+      "intervalMs" : 29.380833730101585,
+      "previousDrawMs" : 0.34041702747344971
+    },
+    {
+      "atSeconds" : 10.64876962499693,
+      "currentDrawMs" : 1.917458139359951,
+      "intervalMs" : 73.654416482895613,
+      "previousDrawMs" : 0.34279143437743187
+    },
+    {
+      "atSeconds" : 10.689420499838889,
+      "currentDrawMs" : 1.8615000881254673,
+      "intervalMs" : 40.650874841958284,
+      "previousDrawMs" : 1.917458139359951
+    },
+    {
+      "atSeconds" : 10.809825375210494,
+      "currentDrawMs" : 2.5671245530247688,
+      "intervalMs" : 95.951250288635492,
+      "previousDrawMs" : 0.40366686880588531
+    },
+    {
+      "atSeconds" : 10.841733916662633,
+      "currentDrawMs" : 0.20429166033864021,
+      "intervalMs" : 27.906250208616257,
+      "previousDrawMs" : 0.19712513312697411
+    },
+    {
+      "atSeconds" : 10.909197291824967,
+      "currentDrawMs" : 0.22429134696722031,
+      "intervalMs" : 25.445791892707348,
+      "previousDrawMs" : 0.29679154977202415
+    },
+    {
+      "atSeconds" : 10.966051458381116,
+      "currentDrawMs" : 0.29270816594362259,
+      "intervalMs" : 30.576416756957769,
+      "previousDrawMs" : 0.15849992632865906
+    },
+    {
+      "atSeconds" : 11.036102041602135,
+      "currentDrawMs" : 0.45249983668327332,
+      "intervalMs" : 27.275208383798599,
+      "previousDrawMs" : 2.3756669834256172
+    },
+    {
+      "atSeconds" : 11.257883916608989,
+      "currentDrawMs" : 389.14337521418929,
+      "intervalMs" : 130.0387498922646,
+      "previousDrawMs" : 0.27895811945199966
+    },
+    {
+      "atSeconds" : 11.702675750013441,
+      "currentDrawMs" : 0.16520824283361435,
+      "intervalMs" : 444.79183340445161,
+      "previousDrawMs" : 389.14337521418929
+    },
+    {
+      "atSeconds" : 11.832466958090663,
+      "currentDrawMs" : 0.12066680938005447,
+      "intervalMs" : 112.41854121908545,
+      "previousDrawMs" : 2.0668748766183853
+    },
+    {
+      "atSeconds" : 12.42131624976173,
+      "currentDrawMs" : 0.080166850239038467,
+      "intervalMs" : 588.84929167106748,
+      "previousDrawMs" : 0.12066680938005447
+    },
+    {
+      "atSeconds" : 12.865829458460212,
+      "currentDrawMs" : 0.72283297777175903,
+      "intervalMs" : 444.51320869848132,
+      "previousDrawMs" : 0.080166850239038467
+    },
+    {
+      "atSeconds" : 12.939196541439742,
+      "currentDrawMs" : 0.092958565801382065,
+      "intervalMs" : 73.367082979530096,
+      "previousDrawMs" : 0.72283297777175903
+    },
+    {
+      "atSeconds" : 12.981409708503634,
+      "currentDrawMs" : 0.11808332055807114,
+      "intervalMs" : 42.213167063891888,
+      "previousDrawMs" : 0.092958565801382065
+    },
+    {
+      "atSeconds" : 13.015713833272457,
+      "currentDrawMs" : 0.11808332055807114,
+      "intervalMs" : 34.304124768823385,
+      "previousDrawMs" : 0.11808332055807114
+    },
+    {
+      "atSeconds" : 13.081409375183284,
+      "currentDrawMs" : 0.14362484216690063,
+      "intervalMs" : 34.342583734542131,
+      "previousDrawMs" : 0.17479201778769493
+    },
+    {
+      "atSeconds" : 13.19690554169938,
+      "currentDrawMs" : 0.17641671001911163,
+      "intervalMs" : 25.378458201885223,
+      "previousDrawMs" : 0.12191664427518845
+    },
+    {
+      "atSeconds" : 13.262531625106931,
+      "currentDrawMs" : 0.16941642388701439,
+      "intervalMs" : 28.485999908298254,
+      "previousDrawMs" : 0.18570804968476295
+    },
+    {
+      "atSeconds" : 13.432044750079513,
+      "currentDrawMs" : 0.23587513715028763,
+      "intervalMs" : 29.914166778326035,
+      "previousDrawMs" : 0.24762516841292381
+    },
+    {
+      "atSeconds" : 13.499584416858852,
+      "currentDrawMs" : 0.17249956727027893,
+      "intervalMs" : 32.252333592623472,
+      "previousDrawMs" : 0.26466650888323784
+    },
+    {
+      "atSeconds" : 13.548236791510135,
+      "currentDrawMs" : 21.830083336681128,
+      "intervalMs" : 30.776708386838436,
+      "previousDrawMs" : 0.24100020527839661
+    },
+    {
+      "atSeconds" : 13.577083208132535,
+      "currentDrawMs" : 13.467125128954649,
+      "intervalMs" : 28.846416622400284,
+      "previousDrawMs" : 21.830083336681128
+    },
+    {
+      "atSeconds" : 13.654752625152469,
+      "currentDrawMs" : 0.91229146346449852,
+      "intervalMs" : 77.669417019933462,
+      "previousDrawMs" : 13.467125128954649
+    },
+    {
+      "atSeconds" : 13.689181708265096,
+      "currentDrawMs" : 4.5067919418215752,
+      "intervalMs" : 34.429083112627268,
+      "previousDrawMs" : 0.91229146346449852
+    },
+    {
+      "atSeconds" : 14.131113708484918,
+      "currentDrawMs" : 10.431958362460136,
+      "intervalMs" : 441.93200021982193,
+      "previousDrawMs" : 4.5067919418215752
+    },
+    {
+      "atSeconds" : 14.170829166658223,
+      "currentDrawMs" : 0.27925008907914162,
+      "intervalMs" : 39.715458173304796,
+      "previousDrawMs" : 10.431958362460136
+    },
+    {
+      "atSeconds" : 14.252550208475441,
+      "currentDrawMs" : 0.14033308252692223,
+      "intervalMs" : 81.721041817218065,
+      "previousDrawMs" : 0.27925008907914162
+    },
+    {
+      "atSeconds" : 14.281001875177026,
+      "currentDrawMs" : 0.12433296069502831,
+      "intervalMs" : 28.451666701585054,
+      "previousDrawMs" : 0.14033308252692223
+    },
+    {
+      "atSeconds" : 14.333090499974787,
+      "currentDrawMs" : 0.10374980047345161,
+      "intervalMs" : 52.08862479776144,
+      "previousDrawMs" : 0.12433296069502831
+    },
+    {
+      "atSeconds" : 14.361321333330125,
+      "currentDrawMs" : 0.16929162666201591,
+      "intervalMs" : 27.525499928742647,
+      "previousDrawMs" : 0.39041647687554359
+    },
+    {
+      "atSeconds" : 14.395696625113487,
+      "currentDrawMs" : 0.13970816507935524,
+      "intervalMs" : 25.790041778236628,
+      "previousDrawMs" : 0.086749903857707977
+    },
+    {
+      "atSeconds" : 14.43063791655004,
+      "currentDrawMs" : 2.8188335709273815,
+      "intervalMs" : 34.941291436553001,
+      "previousDrawMs" : 0.13970816507935524
+    },
+    {
+      "atSeconds" : 14.471592708490789,
+      "currentDrawMs" : 0.15737488865852356,
+      "intervalMs" : 40.954791940748692,
+      "previousDrawMs" : 2.8188335709273815
+    },
+    {
+      "atSeconds" : 14.525235708337277,
+      "currentDrawMs" : 0.16054185107350349,
+      "intervalMs" : 30.301583465188742,
+      "previousDrawMs" : 0.75741671025753021
+    },
+    {
+      "atSeconds" : 14.558456874918193,
+      "currentDrawMs" : 0.37254160270094872,
+      "intervalMs" : 31.90558310598135,
+      "previousDrawMs" : 0.34787505865097046
+    },
+    {
+      "atSeconds" : 14.590937458444387,
+      "currentDrawMs" : 1.4425832778215408,
+      "intervalMs" : 32.480583526194096,
+      "previousDrawMs" : 0.37254160270094872
+    },
+    {
+      "atSeconds" : 14.622592833358794,
+      "currentDrawMs" : 0.13162475079298019,
+      "intervalMs" : 31.65537491440773,
+      "previousDrawMs" : 1.4425832778215408
+    },
+    {
+      "atSeconds" : 14.668349166866392,
+      "currentDrawMs" : 0.17654150724411011,
+      "intervalMs" : 44.856875203549862,
+      "previousDrawMs" : 0.15520816668868065
+    },
+    {
+      "atSeconds" : 14.738293208181858,
+      "currentDrawMs" : 0.19320845603942871,
+      "intervalMs" : 32.257374841719866,
+      "previousDrawMs" : 0.21504145115613937
+    },
+    {
+      "atSeconds" : 14.76463458314538,
+      "currentDrawMs" : 0.28095860034227371,
+      "intervalMs" : 25.508208200335503,
+      "previousDrawMs" : 0.2099168486893177
+    },
+    {
+      "atSeconds" : 14.796448291745037,
+      "currentDrawMs" : 0.24370802566409111,
+      "intervalMs" : 25.061916559934616,
+      "previousDrawMs" : 0.18312502652406693
+    },
+    {
+      "atSeconds" : 14.88223333330825,
+      "currentDrawMs" : 1.7136251553893089,
+      "intervalMs" : 25.110125076025724,
+      "previousDrawMs" : 0.27020834386348724
+    },
+    {
+      "atSeconds" : 14.913660208228976,
+      "currentDrawMs" : 0.44533330947160721,
+      "intervalMs" : 31.426874920725822,
+      "previousDrawMs" : 1.7136251553893089
+    }
+  ],
+  "measurementSeconds" : 15,
+  "method" : "real native transparent window; synthetic capture transport; 1s warmup; no recording",
+  "moduleID" : "staff-note",
+  "resumedFramesInOneSecond" : 61,
+  "syntheticKeyboardPresses" : 275,
+  "widthPoints" : 800,
+  "withBeats" : true,
+  "withPitchGaps" : true
+}

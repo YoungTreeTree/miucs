@@ -1,0 +1,133 @@
+{
+  "scope": "Beat tracking and rings; existing uncommitted pitch and trajectory fixes are preserved",
+  "tests": {
+    "beat-tracker-tests": {
+      "passed": 24,
+      "failed": 0
+    },
+    "staff-beat-tests": {
+      "passed": 20,
+      "failed": 0
+    },
+    "contract-tests": {
+      "passed": 20,
+      "failed": 0
+    },
+    "staff-note-tests": {
+      "passed": 89,
+      "failed": 0
+    },
+    "staff-note-platform-tests": {
+      "passed": 40,
+      "failed": 0
+    },
+    "staff-keyboard-tests": {
+      "passed": 36,
+      "failed": 0
+    },
+    "staff-keyboard-platform-tests": {
+      "passed": 20,
+      "failed": 0
+    },
+    "audio-feature-tests": {
+      "passed": 28,
+      "failed": 0
+    },
+    "audio-pipeline-tests": {
+      "passed": 13,
+      "failed": 0
+    }
+  },
+  "totalPassed": 290,
+  "totalFailed": 0,
+  "appBinarySHA256": "d4d44b3123407a3052b1786121e6bed0f497e7552290a80d4aec9a27d16c02ea",
+  "performance": "staff-beat-performance.json",
+  "nativeCadence": "staff-beat-cadence-800.json",
+  "songSmoke": "beat-song-smoke.json",
+  "liveVerification": {
+    "installedApplication": "/Applications/Miucs.app",
+    "restarted": true,
+    "runningPID": 66903,
+    "capture": "ScreenCaptureKit 48000Hz stereo with Rapidly and CREPE still active",
+    "observed": "Causal beat ring visibly surrounding the moving note head during playback of an existing uninterrupted Ani_2_06 mixture; all playback initiated for this check has stopped",
+    "screenshotCommitted": false
+  },
+  "visualRedesign": {
+    "date": "2026-10-25",
+    "scope": "Larger delayed dual rings, constant-width pencil strokes and soft canvas edges; beat detection unchanged",
+    "pulseLifetimeMs": 780,
+    "ringLifetimeMs": 680,
+    "echoDelayMs": 100,
+    "primaryRadiusRangePoints": [
+      14,
+      84
+    ],
+    "pulseLimit": 4,
+    "ringLimit": 8,
+    "tests": {
+      "staff-beat-tests": {
+        "passed": 25,
+        "failed": 0
+      },
+      "staff-note-platform-tests": {
+        "passed": 40,
+        "failed": 0
+      }
+    },
+    "appBinarySHA256": "ab5c87656b8ced2ebc77c35ff46dfbc9d05a7066cf6ec9465f7cebbf271ffa0d",
+    "performance": "staff-beat-performance.json",
+    "nativeCadence": "staff-beat-cadence-800.json",
+    "demo": "staff-beat-demo.json",
+    "restarted": true,
+    "previousValidation": "Top-level 290-check record describes the original beat implementation, before this visual redesign",
+    "liveVerification": {
+      "installedApplication": "/Applications/Miucs.app",
+      "capture": "ScreenCaptureKit 48000Hz stereo; existing Rapidly and CREPE active",
+      "observed": "Large concentric rings visibly surround the G4 note while the trace moves, using bounded 120 BPM generated PCM playback",
+      "syntheticPlaybackStopped": true,
+      "screenshotCommitted": false
+    }
+  },
+  "randomPlacementRedesign": {
+    "date": "2026-10-25",
+    "scope": "Each beat selects one random center; both expanding waves keep that center independently of the note. Beat detection is unchanged.",
+    "horizontalRangePoints": [
+      112,
+      712
+    ],
+    "verticalRangePoints": [
+      36,
+      124
+    ],
+    "minimumSuccessiveHorizontalDistancePoints": 120,
+    "primaryRadiusRangePoints": [
+      14,
+      84
+    ],
+    "pulseLifetimeMs": 780,
+    "pulseLimit": 4,
+    "ringLimit": 8,
+    "tests": {
+      "staff-beat-tests": {
+        "passed": 27,
+        "failed": 0
+      },
+      "staff-note-platform-tests": {
+        "passed": 40,
+        "failed": 0
+      }
+    },
+    "appBinarySHA256": "e946dac68168a70f92f25a8c488032b1c4139474256a83a5d9e941ca921a44c0",
+    "restarted": true,
+    "performance": "staff-beat-performance.json",
+    "nativeCadence": "staff-beat-cadence-800.json",
+    "demo": "staff-beat-demo.json",
+    "liveVerification": {
+      "capture": "ScreenCaptureKit 48000Hz stereo with existing Rapidly and CREPE",
+      "observed": "Independent ring center above the G4 note during bounded generated 120 BPM playback; distribution and fixed-origin behavior checked in core/native tests",
+      "syntheticPlaybackStopped": true,
+      "screenshotCommitted": false
+    },
+    "previousValidation": "Top-level and visualRedesign entries describe the two earlier beat revisions; linked generated reports now describe this revision."
+  }
+}

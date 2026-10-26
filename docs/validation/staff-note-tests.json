@@ -29,6 +29,14 @@
       "passed" : true
     },
     {
+      "name" : "Gated CREPE confidence uses its own scale rather than the spectral cutoff",
+      "passed" : true
+    },
+    {
+      "name" : "Trusting the CREPE gate still rejects unvoiced, nonfinite and out-of-range observations",
+      "passed" : true
+    },
+    {
       "name" : "First missing melody waits faintly on B4",
       "passed" : true
     },
@@ -73,7 +81,7 @@
       "passed" : true
     },
     {
-      "name" : "Pitch after a stale gap starts a fresh trace segment",
+      "name" : "Pitch after a model-only gap reconnects the same audible session",
       "passed" : true
     },
     {
@@ -81,7 +89,19 @@
       "passed" : true
     },
     {
-      "name" : "Brief filtering gaps stay connected; stale input never draws a held-note tail",
+      "name" : "A returning delayed pitch starts a fresh visual join while the new note is immediately accepted",
+      "passed" : true
+    },
+    {
+      "name" : "Join growth advances between analysis frames and duplicate snapshots cannot restart it",
+      "passed" : true
+    },
+    {
+      "name" : "A long frame settles a pending visual join without adding or moving any pitch samples",
+      "passed" : true
+    },
+    {
+      "name" : "Filtering gaps keep one session contour while stale pitch never draws a held-note tail",
       "passed" : true
     },
     {
@@ -277,7 +297,51 @@
       "passed" : true
     },
     {
-      "name" : "The next sung phrase starts at its real pitch with no bridge across the rest",
+      "name" : "Singing resumes at its real pitch and reconnects the visual line across a vocal rest",
+      "passed" : true
+    },
+    {
+      "name" : "40-120ms neural dropouts reconnect real endpoints even with 120-200ms model latency",
+      "passed" : true
+    },
+    {
+      "name" : "Pending neural gaps never append held notes, extend a live tail or allow new sway",
+      "passed" : true
+    },
+    {
+      "name" : "Vocal gaps up to two seconds and large note changes preserve a continuous visual contour without invented samples",
+      "passed" : true
+    },
+    {
+      "name" : "A short dropout cannot bypass jump confirmation or revive its tail during confirmation",
+      "passed" : true
+    },
+    {
+      "name" : "A confirmed nearby jump reconnects within the same bounded gap",
+      "passed" : true
+    },
+    {
+      "name" : "Raw-audio silence cancels a pending neural bridge immediately",
+      "passed" : true
+    },
+    {
+      "name" : "Duplicate or older unvoiced observations cannot reopen a gap or replay a note",
+      "passed" : true
+    },
+    {
+      "name" : "Stalled pitch with live audio reconnects history without treating the old pitch as reliable",
+      "passed" : true
+    },
+    {
+      "name" : "An actual audio stall still breaks the visual session",
+      "passed" : true
+    },
+    {
+      "name" : "Continuous music with no pitch still expires all history after eight seconds",
+      "passed" : true
+    },
+    {
+      "name" : "A return after history expiry draws only the new real point",
       "passed" : true
     },
     {
@@ -307,7 +371,7 @@
   ],
   "failed" : 0,
   "maximumRemainingFractionAt150ms" : 0.017351562048803712,
-  "passed" : 76,
+  "passed" : 92,
   "pitchConfirmationMillisecondsAt48kHz" : {
     "60->64" : 106.66666666666667,
     "60->67" : 128,

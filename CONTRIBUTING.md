@@ -41,6 +41,8 @@ zsh scripts/test-flight.sh          # 飞鸟规则，含距离/体积/气团
 zsh scripts/test-staff-note.sh      # 真实谱位、平滑运动、左右摆动、轨迹和输入生命周期
 zsh scripts/test-staff-note-platform.sh # 两种布局、独立偏好、生产绘图和合成静帧
 zsh scripts/test-staff-keyboard.sh  # ANSI 布局、并行星爆、长按生命周期、原生图层池和五色缩放
+zsh scripts/test-beat-tracker.sh    # 原始 PCM 节拍、半速/倍速、变速、静音和时序
+zsh scripts/test-staff-beats.sh     # 拍点轻弧、全部动效并行、生命周期和原生绘制
 zsh scripts/test-melody.sh          # 合成独奏/伴奏与响应时序
 zsh scripts/test-audio-pipeline.sh  # 分析编排等价与格式切换
 zsh scripts/test-rapidly.sh         # 可选 SDK：实际模型、格式切换、预热、重置与时间对齐
@@ -78,6 +80,8 @@ python3 scripts/benchmark-pop-melody.py --prepare --adc-dataset build/adc2004 --
 zsh scripts/measure-performance.sh
 zsh scripts/measure-performance.sh --cadence
 zsh scripts/measure-performance.sh --staff-cadence build/staff-note-cadence.json
+zsh scripts/measure-performance.sh --staff-beats build/staff-beat-performance.json
+zsh scripts/measure-performance.sh --staff-beats-cadence build/staff-beat-cadence.json 800 15
 zsh scripts/measure-performance.sh --staff-keyboard build/staff-keyboard-performance.json
 zsh scripts/measure-performance.sh --staff-keyboard-cadence build/staff-keyboard-cadence.json 800 15
 zsh scripts/render-demo.sh --desktop
@@ -104,4 +108,6 @@ zsh scripts/render-demo.sh --staff
 
 Windows 可选择其他语言；优先维持数据语义与可复现数值，不引入 macOS 目录依赖。实际实现确定工具链后补充构建入口与 CI，在真实平台通过验收后更新支持矩阵。预留目录仅放职责说明，不用返回假数据的空实现表示支持。
 
-歌声音高相关改动需运行 `zsh scripts/test-singing-pitch.sh`、`zsh scripts/test-audio-pipeline.sh` 和五线谱回归。`zsh build.sh --rapidly` 同时准备固定校验和的 CREPE Tiny 权重并转换为 Core ML，Python 只在构建时使用。识别质量用 `python3 scripts/benchmark-singing-pitch.py` 做同一分离 PCM 上的配对对照，不能将单元测试通过数当作识谱准确率。
+歌声音高相关改动需运行 `zsh scripts/test-singing-pitch.sh`、`zsh scripts/test-audio-pipeline.sh` 和五线谱回归。`zsh build.sh --rapidly` 同时准备固定校验和的 CREPE Tiny 权重并转换为 Core ML，Python 只在构建时使用。识别质量用 `python3 scripts/benchmark-vocal-energy.py` 与前一 CREPE 门控做同一分离 PCM 上的配对对照（与旧频谱算法对照用 `benchmark-singing-pitch.py`），不能将单元测试通过数当作识谱准确率。
+
+混音主旋律现在是默认来源。修改该路径时运行 `test-melody.sh`、`test-audio-pipeline.sh`、`test-audio-recovery.sh`；与保留的人声模式对照使用 `python3 scripts/benchmark-predominant-mixture.py`，对比图使用 `python3 scripts/plot-predominant-mixture.py`。这些脚本复用已校验的本地音频和模型，不在运行时下载样本。歌手休止期间的乐器输出不能直接当作新任务误报；完整数据与限制见[混音主旋律](docs/predominant-mixture.md)。验证记录入口见[验证索引](docs/validation/README.md)。

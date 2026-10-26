@@ -7,6 +7,7 @@ final class StaffNoteSimulation: VisualizationSession {
     var descriptor: VisualizationDescriptor { Self.module }
     private(set) var scene = StaffNoteScene()
     private(set) var keyboardStars: StaffKeyboardStars
+    private(set) var beatRings = StaffBeatRings()
     private(set) var needsDisplay = true
     private var active = false
     private var sessionID: UUID?
@@ -26,12 +27,14 @@ final class StaffNoteSimulation: VisualizationSession {
         active = true; needsDisplay = true
         scene.resetInput(clearHistory: true)
         keyboardStars.clear(); pendingKeyboard = nil
+        beatRings.clear()
         sequence = nil; lastMelodyTime = nil; lastAudioTime = nil
     }
     func resize(to viewport: VisualizationViewport) { needsDisplay = true }
     func deactivate() {
         active = false; scene.resetInput(clearHistory: true)
         keyboardStars.clear(); pendingKeyboard = nil
+        beatRings.clear()
     }
     func dispose() { deactivate() }
     func receive(keyboard: KeyboardInput) {
@@ -44,8 +47,11 @@ final class StaffNoteSimulation: VisualizationSession {
         let wasMoving = scene.needsMotionUpdates
         scene.elapse(seconds: deltaTime)
         var changed = false
+        var beatEvents = [AudioBeatEvent](), beatNow = 0.0, beatCursor: UInt64 = 0
+        var acceptsBeats = false
         if sessionID != input.sessionID {
             scene.resetInput(clearHistory: true); sessionID = input.sessionID
+            changed = beatRings.clear() || changed
             sequence = nil; lastMelodyTime = nil; lastAudioTime = nil
             sampleRate = nil; channels = nil; onsetSequence = 0; changed = true
         }
@@ -55,6 +61,7 @@ final class StaffNoteSimulation: VisualizationSession {
                 (lastAudioTime.map { frame.audio.time < $0 } ?? false)
             if formatChanged {
                 scene.resetInput(clearHistory: true); lastMelodyTime = nil; sequence = nil
+                changed = beatRings.clear(through: sampleRate == nil ? 0 : frame.sequence) || changed
                 // Events from the earlier format must not spill into the new scene.
                 if sampleRate != nil { onsetSequence = frame.sequence }
                 sampleRate = frame.audio.sampleRate; channels = frame.audio.channelCount; changed = true
@@ -76,10 +83,16 @@ final class StaffNoteSimulation: VisualizationSession {
             let events = input.onsets.filter { $0.sequence > onsetSequence && $0.sequence <= frame.sequence }
             if let strength = events.map(\.strength).max() { scene.receiveOnset(strength: strength) }
             onsetSequence = max(onsetSequence, frame.sequence)
+            acceptsBeats = !frame.audio.isSilent
+            beatEvents = input.beats ?? []
+            beatNow = frame.receivedAt + age; beatCursor = frame.sequence
         } else {
             scene.receive(audio: nil)
         }
         scene.animate(seconds: min(deltaTime, 0.1))
-        needsDisplay = changed || wasMoving || scene.needsMotionUpdates || starsChanged
+        let ringsChanged = acceptsBeats
+            ? beatRings.advance(seconds: deltaTime, events: beatEvents, now: beatNow, through: beatCursor)
+            : beatRings.clear(through: input.frame?.sequence ?? 0)
+        needsDisplay = changed || wasMoving || scene.needsMotionUpdates || starsChanged || ringsChanged
     }
 }

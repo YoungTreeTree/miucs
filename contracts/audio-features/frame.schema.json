@@ -238,6 +238,74 @@
           "minItems": 24,
           "maxItems": 24,
           "description": "24 logarithmic display bands; not independent energy measurements."
+        },
+        "beat": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "Optional causal beat estimate from the original mixture; nil BPM/phase means no stable pulse. Confidence is not a calibrated probability.",
+              "properties": {
+                "time": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "bpm": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "minimum": 50,
+                      "maximum": 200
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "phase": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "minimum": 0,
+                      "exclusiveMaximum": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "confidence": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "strength": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "beatTime": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "time",
+                "confidence",
+                "strength"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [

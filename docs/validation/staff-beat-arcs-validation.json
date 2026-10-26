@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-26",
+  "design": "轻弧水波, selected interactive preview",
+  "mainLayers": 2,
+  "satellites": 3,
+  "groupLifetimeMs": 890,
+  "mainMaximumRadiusPoints": 32,
+  "ringLimit": 20,
+  "cachedTaperBands": 3,
+  "tests": {
+    "passed": 29,
+    "failed": 0
+  },
+  "performance": "staff-beat-arcs-performance.json",
+  "nativeCadence": "staff-beat-arcs-cadence-800.json",
+  "cpuP95MsRange": [
+    0.077834,
+    0.09208300000000001
+  ],
+  "demo": "staff-beat-demo.json",
+  "binarySHA256": "7a3b5017a53bcfea0ac0e68e27b3f6ea11098fafc6033933223f8a5656f21ec2",
+  "restarted": true,
+  "audioCaptureVerified": "48kHz stereo PCM after restart; Rapidly 96ms + CREPE Tiny",
+  "visualChecks": "Native 600/800/1600 point rendering, light/dark backgrounds and five inks; production-path synthetic GIF. Live window restored with note and trace. Subjective music trial remains with user.",
+  "sourceSHA256": {
+    "modules/visualizations/staff-note/core/StaffBeatRings.swift": "e2576b85823da1b232d49306fc3fc4bd7c9b5bb4d10c9a5530139de26bb6eb17",
+    "modules/visualizations/staff-note/platforms/macos/StaffNoteView.swift": "dd4a9bf38c3ebea6fc474bca7eb9456debec1904501abc888ab3e8b57c4a2bc2"
+  }
+}

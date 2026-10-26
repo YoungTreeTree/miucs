@@ -43,8 +43,16 @@
     {
       "name" : "Neural inference failure suspends notes once without interrupting audio measurements",
       "passed" : true
+    },
+    {
+      "name" : "Original mixture references arrive during separator warm-up and before delayed pitch PCM",
+      "passed" : true
+    },
+    {
+      "name" : "Reference failure suspends melody once while raw measurements keep running",
+      "passed" : true
     }
   ],
   "failed" : 0,
-  "passed" : 11
+  "passed" : 13
 }

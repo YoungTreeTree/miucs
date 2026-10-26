@@ -1,0 +1,71 @@
+{
+  "validatedAt": "2026-10-24T02:32:23.224259",
+  "installation": {
+    "stamp": "20261024-023100",
+    "backup": "/Users/yangquan/Documents/ChatGPT/miucs/build/before-vocal-energy-20261024-023100/Miucs.app",
+    "installedAt": "2026-10-24T02:31:17.705586",
+    "installedApp": "/Applications/Miucs.app",
+    "binarySHA256": "eb8d56aaebda729de8d845ebc7124c90137bf7acb0759f7a4005485bf0462a12"
+  },
+  "checks": {
+    "singing-pitch-tests": {
+      "passed": 25,
+      "failed": 0
+    },
+    "audio-pipeline-tests": {
+      "passed": 13,
+      "failed": 0
+    },
+    "audio-recovery-tests": {
+      "passed": 21,
+      "failed": 0
+    },
+    "staff-note-tests": {
+      "passed": 76,
+      "failed": 0
+    },
+    "staff-note-platform-tests": {
+      "passed": 37,
+      "failed": 0
+    },
+    "contract-tests": {
+      "passed": 16,
+      "failed": 0
+    }
+  },
+  "totalPassed": 188,
+  "totalFailed": 0,
+  "baselineParity": {
+    "frames": 376,
+    "exactlyEqual": true,
+    "method": "Same frozen PCM through the preceding standalone probe binary and the new probe without mixture gating; all JSON frame fields equal."
+  },
+  "runtime": {
+    "pid": "52482",
+    "capture": "48kHz stereo; production log confirms aligned vocal energy gate",
+    "visualCheck": "Actual Miucs window displayed C-sharp3 and a melody trace during short test playback; after playback the label became a dash and the live tail disappeared. No physical keyboard retest."
+  },
+  "sourceSHA256": {
+    "modules/audio/core/AudioAnalysisPipeline.swift": "1bf519b5b635fa972092b4c2c17b835eb2c17f061b3173f82b5fa8c48f003a8e",
+    "modules/audio/core/AudioFeatureAnalyzer.swift": "6f8992a7fcd665ca3868f062427f615ee99e4a383b664c8dfb71b7bc28da1561",
+    "modules/audio/core/AudioFeatures.swift": "c2776598ba786ad5a05aa455ebd48ebc1f5694e6a32f83064f2ef5f37c3ca1da",
+    "modules/audio/core/AudioPCMBlock.swift": "be6a8497fc212a1e64b5d9be14c58d0048b562a05a602c93e950eae853cd8d41",
+    "modules/audio/core/FeatureChannel.swift": "a007d1f6998bbcf862e6048c850c006c56032b85198d192df050bc54ebfcff4a",
+    "modules/audio/core/MelodyAnalyzer.swift": "b0ab87ca59ea900e992a1c303277921bc576e6706f85fb06e87175ea170f48e1",
+    "modules/audio/core/MelodyEstimating.swift": "e81fe2cfba4fc8ade3f685b93f244157df84b6340df690e8f3b34ad0a98a9a1e",
+    "modules/audio/core/MelodyFrame.swift": "5dc6fd34c525f5b432a0384bc361216b9c727b97719a5cd805466f5881e3e18f",
+    "modules/audio/core/SingingPitchAnalyzer.swift": "f9d2e38a3fafbbfff85058c07a4cb0d63868fbede264a097099b362c729b96ce",
+    "modules/audio/core/SpectrumTransform.swift": "b492a773e1b8697cf6ff87686f2d36c2acd85d102515a8fbdbc76abb213ed940",
+    "modules/audio/core/StreamingMonoResampler.swift": "91b56c675158144f5ab88834ddc274d84ecdccd49c53ef4cc973ab5405ef386e",
+    "modules/audio/core/VocalPCMProcessor.swift": "b1b3a3b5fe8f9d9810bb6e44755e118c52dd33a78555e3a2d75973ab8e3bfc14",
+    "modules/audio/platforms/macos/AccelerateSpectrumTransform.swift": "bcc163720d55fb7d67850edb6b6206adf9684fb8f7e2b588b7f87f1243e01742",
+    "modules/audio/platforms/macos/RapidlyVocalProcessor.swift": "53e9245f5dbbce56b38fec630694d2ed4a9f6a6303705f2faea39e3c5e7705d4",
+    "modules/audio/platforms/macos/CoreMLSingingPitch.swift": "c2fa6f3b292edf9c3aee4a58cbb63e733943f9dd96479cdabbf14fd9528464b0",
+    "tools/macos/SingingPitchFileProbe.swift": "5b84809741aed670578d37f8f28cec620c4a8e97ca0060536634da1ce64112ab"
+  },
+  "limits": [
+    "No complete capture-to-display latency measurement",
+    "Some clips have higher false-alarm and other-pitch-error rates; all are retained",
+    "Rapidly demo watermark intact; no licensed A/B"
+  ]
+}
