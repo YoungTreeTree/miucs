@@ -11,7 +11,10 @@ final class VisualizationHostView: NSView {
     private var resizeStartFrame: NSRect?
     private var resizeStartMouse = NSPoint.zero
     var adjustingPosition = false {
-        didSet { overlay.adjustingPosition = adjustingPosition; overlay.needsDisplay = true }
+        didSet {
+            if !adjustingPosition { resizeStartFrame = nil }
+            overlay.adjustingPosition = adjustingPosition; overlay.needsDisplay = true
+        }
     }
     var activeView: NSView? { (controller.current as? any MacVisualizationSession)?.view }
     override var isFlipped: Bool { true }
@@ -139,7 +142,7 @@ private final class HostOverlayView: NSView {
         NSGraphicsContext.saveGraphicsState(); defer { NSGraphicsContext.restoreGraphicsState() }
         let scale = NSAffineTransform(); scale.scaleX(by: bounds.width / layout.width, yBy: bounds.height / layout.height); scale.concat()
         let text: String
-        if adjustingPosition { text = "拖动移动 · 右下角缩放 · 菜单栏完成" }
+        if adjustingPosition { text = "拖动移动 · 右下角缩放 · 点击锁完成" }
         else {
             switch state {
             case .connecting: text = "正在连接声音…"
@@ -154,7 +157,7 @@ private final class HostOverlayView: NSView {
         let attributes: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: ink.withAlphaComponent(0.9),
             .strokeColor: NSColor(calibratedWhite: 0.98, alpha: 0.6), .strokeWidth: -3]
         let label = NSAttributedString(string: text, attributes: attributes)
-        label.draw(at: NSPoint(x: max(18, (layout.width - label.size().width) / 2), y: layout.height - 25))
+        label.draw(at: NSPoint(x: max(18, (CGFloat(layout.width) - label.size().width) / 2), y: layout.height - 25))
         if adjustingPosition {
             NSColor(calibratedWhite: 0.45, alpha: 0.75).setStroke()
             let path = NSBezierPath(); path.lineWidth = 1

@@ -2,7 +2,10 @@ import AppKit
 import Combine
 import CoreAudio
 import CoreMedia
-import ScreenCaptureKit
+// Xcode 16's ScreenCaptureKit async overlay does not yet mark its content snapshot
+// Sendable. Consume that snapshot only in ScreenAudioCapture's main-actor factory;
+// do not disable Swift 6 checks for our own capture state or send it to workers.
+@preconcurrency import ScreenCaptureKit
 
 @MainActor
 protocol AudioCaptureSession: AnyObject {

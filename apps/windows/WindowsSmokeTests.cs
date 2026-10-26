@@ -9,12 +9,14 @@ using Miucs.Visualizations;
 
 namespace Miucs.Windows;
 
-/// <summary>Native WPF offscreen tests. Synthetic data only; never starts capture or changes user preferences.</summary>
+/// <summary>Native WPF rendering and isolated hover-window tests. Synthetic data only; never starts capture or changes user preferences.</summary>
 internal static class WindowsSmokeTests
 {
     public static void Run(string output)
     {
         Directory.CreateDirectory(output);
+        VerifyLockGlyph(output);
+        VerifyHoverLockWindow();
         foreach (var factory in new Func<VisualizationView>[] { () => new PencilFlightView(), () => new StaffNoteView() })
         {
             using var view = factory();
@@ -63,6 +65,106 @@ internal static class WindowsSmokeTests
             }
             view.Dispose(); view.Dispose();
         }
-        File.WriteAllText(Path.Combine(output, "result.json"), "{\"nativeWpfOffscreen\":\"passed\",\"realLoopback\":\"not-run\",\"realKeyboard\":\"not-run\",\"desktopWindow\":\"not-run\"}\n");
+        File.WriteAllText(Path.Combine(output, "result.json"), "{\"nativeWpfOffscreen\":\"passed\",\"realLoopback\":\"not-run\",\"realKeyboard\":\"not-run\",\"desktopWindow\":\"not-run\",\"syntheticHoverWindow\":\"passed\"}\n");
     }
+    private static void VerifyLockGlyph(string output)
+    {
+        byte[]? lockedPixels = null;
+        foreach (bool locked in new[] { true, false })
+        {
+            var glyph = new LockGlyph { Locked = locked, Width = 36, Height = 36 };
+            glyph.Measure(new Size(36, 36)); glyph.Arrange(new Rect(0, 0, 36, 36)); glyph.UpdateLayout();
+            var image = new RenderTargetBitmap(36, 36, 96, 96, PixelFormats.Pbgra32);
+            image.Render(glyph);
+            var pixels = new byte[36 * 36 * 4]; image.CopyPixels(pixels, 36 * 4, 0);
+            int ink = 0;
+            for (int i = 0; i < pixels.Length; i += 4)
+                if (pixels[i + 3] > 200 && pixels[i] < 130) ink++;
+            if (ink < 20) throw new InvalidOperationException("Lock glyph missing pencil strokes");
+            if (locked) lockedPixels = pixels;
+            else
+            {
+                int changed = 0;
+                for (int i = 0; i < pixels.Length; i++) if (pixels[i] != lockedPixels![i]) changed++;
+                if (changed < 15) throw new InvalidOperationException("Lock/unlock glyphs indistinguishable");
+            }
+            var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(image));
+            using var file = File.Create(Path.Combine(output, locked ? "hover-locked.png" : "hover-unlocked.png"));
+            encoder.Save(file);
+        }
+    }
+
+    private static void VerifyHoverLockWindow()
+    {
+        var owner = new Window
+        {
+            Width = 200, Height = 140, Left = 20, Top = 20, WindowStyle = WindowStyle.None,
+            AllowsTransparency = true, Background = Brushes.Transparent, ShowActivated = false,
+            ShowInTaskbar = false, Content = new System.Windows.Controls.Grid()
+        };
+        owner.Show();
+        NativeWindow.SetInteractive(owner, false);
+        bool adjusting = false, available = true;
+        HoverLockControl? hover = null;
+        try
+        {
+            hover = new HoverLockControl(owner, () => available, () =>
+            {
+                adjusting = !adjusting;
+                NativeWindow.SetInteractive(owner, adjusting);
+                hover!.SetLocked(!adjusting);
+            }, pollPointer: false);
+            Assert(!hover.TargetWindow.IsVisible, "hidden before dwell");
+            for (int i = 0; i < 30; i++) hover.Sample(i * .1, true);
+            Assert(!hover.TargetWindow.IsVisible, "hidden before 3 seconds");
+            hover.Sample(3, true);
+            Assert(hover.TargetWindow.IsVisible, "visible at 3 seconds");
+            Assert(NativeWindow.IsClickThrough(owner), "revealing does not intercept canvas");
+            Assert(!NativeWindow.IsClickThrough(hover.TargetWindow), "only lock target interactive");
+            Assert(hover.TargetWindow.ActualWidth >= 32 && hover.TargetWindow.ActualWidth <= 36 &&
+                hover.TargetWindow.ActualHeight >= 32 && hover.TargetWindow.ActualHeight <= 36,
+                "interactive target remains small");
+            for (int i = 0; i < 20; i++)
+            {
+                hover.ClickForVerification();
+                Assert(NativeWindow.IsClickThrough(owner) == !adjusting, "click updates native click-through state");
+                Assert(hover.TargetWindow.IsVisible, "toggle does not flicker");
+            }
+            Assert(!adjusting, "even number of toggles relocks");
+            hover.ClickForVerification();
+            hover.Sample(3.05, false);
+            Assert(hover.TargetWindow.IsVisible, "unlocked target stays visible outside canvas");
+            hover.ClickForVerification();
+            hover.Sample(3.1, false);
+            Assert(!hover.TargetWindow.IsVisible, "leave hides target");
+            adjusting = true; NativeWindow.SetInteractive(owner, true); hover.SetLocked(false);
+            Assert(hover.TargetWindow.IsVisible, "menu unlock immediately reveals target");
+            hover.ClickForVerification(); hover.Sample(3.2, false);
+            for (int i = 0; i < 30; i++) hover.Sample(4 + i * .1, true);
+            Assert(!hover.TargetWindow.IsVisible, "reentry must dwell again");
+            hover.Sample(7, true);
+            Assert(hover.TargetWindow.IsVisible, "reentry reveals");
+            owner.Width = 280; owner.Height = 180; owner.Left = 40; owner.UpdateLayout();
+            hover.Sample(7.1, true);
+            Assert(hover.TargetWindow.Owner == owner, "target follows owner lifecycle");
+            var expected = owner.PointToScreen(new Point((owner.ActualWidth - 34) / 2, Math.Max(4, owner.ActualHeight * .28 - 17)));
+            var actual = hover.TargetWindow.PointToScreen(new Point(0, 0));
+            Assert(Math.Abs(expected.X - actual.X) <= 2 && Math.Abs(expected.Y - actual.Y) <= 2,
+                "target follows physical owner position and scale");
+            available = false; hover.Sample(7.2, true);
+            Assert(!hover.TargetWindow.IsVisible, "suspend hides target");
+            available = true;
+            for (int i = 0; i <= 30; i++) hover.Sample(8 + i * .1, true);
+            Assert(hover.TargetWindow.IsVisible, "resume fresh dwell");
+            hover.Reset();
+            Assert(!hover.TargetWindow.IsVisible, "explicit reset hides target");
+            owner.Hide(); hover.Sample(12, true);
+            Assert(!hover.TargetWindow.IsVisible, "hidden owner never reveals target");
+        }
+        finally { hover?.Dispose(); owner.Close(); }
+    }
+
+    private static void Assert(bool result, string message)
+    { if (!result) throw new InvalidOperationException("Hover lock: " + message); }
+
 }

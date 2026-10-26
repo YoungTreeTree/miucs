@@ -45,6 +45,98 @@
       "passed" : true
     },
     {
+      "name" : "Lock dwell stays hidden before three continuous seconds",
+      "passed" : true
+    },
+    {
+      "name" : "Lock dwell appears at three seconds",
+      "passed" : true
+    },
+    {
+      "name" : "Leaving resets lock dwell immediately",
+      "passed" : true
+    },
+    {
+      "name" : "Reentry starts a new dwell",
+      "passed" : true
+    },
+    {
+      "name" : "Sleep or a suspended sampler cannot satisfy hover dwell",
+      "passed" : true
+    },
+    {
+      "name" : "A reversed clock resets dwell",
+      "passed" : true
+    },
+    {
+      "name" : "Only a small child target becomes interactive on locked dwell",
+      "passed" : true
+    },
+    {
+      "name" : "Lock button unlocks movement and resizing through the existing state",
+      "passed" : true
+    },
+    {
+      "name" : "Unlocked target remains visible after pointer leaves the canvas",
+      "passed" : true
+    },
+    {
+      "name" : "Second click relocks without flicker and updates menu observer",
+      "passed" : true
+    },
+    {
+      "name" : "Repeated toggles remain synchronized",
+      "passed" : true
+    },
+    {
+      "name" : "Lock target follows resized drawing and remains inside it",
+      "passed" : true
+    },
+    {
+      "name" : "Lock changes preserve existing saved geometry",
+      "passed" : true
+    },
+    {
+      "name" : "Pointer exit hides and detaches the interactive target",
+      "passed" : true
+    },
+    {
+      "name" : "Menu adjustment immediately reveals the unlocked control without dwell",
+      "passed" : true
+    },
+    {
+      "name" : "Disabled canvas hides even an unlocked control",
+      "passed" : true
+    },
+    {
+      "name" : "Pointer reentry does not immediately redisplay the lock",
+      "passed" : true
+    },
+    {
+      "name" : "Display reconfiguration resets the control rather than stranding a click target",
+      "passed" : true
+    },
+    {
+      "name" : "Sleep and inactive session immediately relock and remove the target",
+      "passed" : true
+    },
+    {
+      "name" : "Partial resume cannot reveal target or unlock an inactive session",
+      "passed" : true
+    },
+    {
+      "name" : "Full resume begins with a fresh hidden dwell",
+      "passed" : true
+    },
+    {
+      "name" : "Continuous hover after full resume reveals a locked target",
+      "passed" : true
+    },
+    {
+      "name" : "Hiding locks drawing and removes the child target",
+      "passed" : true
+    },
+    {
       "name" : "Hiding the host pauses animation while capture continues",
       "passed" : true
     },
@@ -58,5 +150,5 @@
     }
   ],
   "failed" : 0,
-  "passed" : 14
+  "passed" : 37
 }

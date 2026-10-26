@@ -107,3 +107,7 @@ Windows 使用 .NET 8/C# 与 WPF，不引入 macOS 目录依赖。`scripts/build
 
 
 混音主旋律是唯一运行路径。修改时运行 `test-melody.sh`、`test-audio-pipeline.sh`、`test-audio-recovery.sh` 及五线谱回归；识别质量使用 `python3 scripts/benchmark-pop-melody.py --output build/current-mixture-benchmark.json`，需要已准备的本地音频样本。首次准备命令见上方歌曲基准。此前人声分离对照仅保留历史报告，可从提交 `757e7e3` 恢复相应实验代码；当前构建不下载或打包 SDK/模型。验证入口见[验证索引](docs/validation/README.md)。
+
+## 悬浮锁回归
+
+双端悬浮 3 秒的小锁入口与菜单共用调整状态，设计与实机检查见 [悬浮锁说明](docs/hover-lock.md)。Windows 核心测试包含悬浮等待状态；macOS 窗口测试包含按钮与穿透检查。`.github/workflows/macos.yml` 运行原生窗口、外观与五线谱回归，并编译完整应用（不生成个人签名证书）。原生 CI 通过也不替代混合 DPI、跨应用点击穿透的真实桌面验收。

@@ -13,23 +13,32 @@ final class VisualizerPanel: NSPanel, NSWindowDelegate {
     let visualizationHost: VisualizationHostView
     private let preferences: UserDefaults
     private let persistsFrame: Bool
+    private let monitorsHover: Bool
     private(set) var descriptor: VisualizationDescriptor
     private var isRestoringFrame = true
     private var isUpdatingDrawingSize = false
     private(set) var isAdjustingPosition = false
     var onSizeChange: (() -> Void)?
+    var onAdjustmentChange: (() -> Void)?
+    private var hoverDwell = HoverLockDwell()
+    private var hoverSuspensionReasons = Set<String>()
+    private var hoverTimer: Timer?
+    private lazy var hoverTimerTarget = HoverLockTimerTarget(panel: self)
+    private(set) var hoverLockPanel: HoverLockPanel?
+
     var drawingScale: Double { frame.width / descriptor.layout.width }
     var drawingAspectRatio: Double { descriptor.layout.aspectRatio }
 
     init(source: any AudioFeatureSource, registry: VisualizationRegistry, selectedID: String? = nil,
          preferences: UserDefaults = .standard, persistsFrame: Bool = true,
-         keyboardSource: (any KeyboardFeatureSource)? = nil) {
+         keyboardSource: (any KeyboardFeatureSource)? = nil, monitorsHover: Bool = true) {
         let requestedID = selectedID ?? preferences.string(forKey: Self.selectionPreferencesKey)
         let initial = requestedID.flatMap { registry.descriptor(id: $0) } ?? registry.descriptors.first!
         descriptor = initial
         visualizationHost = VisualizationHostView(source: source, registry: registry, selectedID: initial.id,
                                                    keyboardSource: keyboardSource)
         self.preferences = preferences; self.persistsFrame = persistsFrame
+        self.monitorsHover = monitorsHover
         super.init(contentRect: NSRect(x: 80, y: 80, width: initial.layout.width, height: initial.layout.height),
                    styleMask: [.borderless, .nonactivatingPanel, .fullSizeContentView],
                    backing: .buffered, defer: false)
@@ -45,6 +54,15 @@ final class VisualizerPanel: NSPanel, NSWindowDelegate {
         delegate = self
         isRestoringFrame = false
         saveDrawingFrame()
+        NotificationCenter.default.addObserver(self, selector: #selector(displaysChanged),
+                                               name: NSApplication.didChangeScreenParametersNotification, object: nil)
+        // Selector-based notification observers are zeroing-weak; no token closure retains this panel.
+        let workspace = NSWorkspace.shared.notificationCenter
+        for name in [NSWorkspace.willSleepNotification, NSWorkspace.screensDidSleepNotification,
+                     NSWorkspace.sessionDidResignActiveNotification, NSWorkspace.didWakeNotification,
+                     NSWorkspace.screensDidWakeNotification, NSWorkspace.sessionDidBecomeActiveNotification] {
+            workspace.addObserver(self, selector: #selector(workspaceStateChanged(_:)), name: name, object: nil)
+        }
     }
 
     override var canBecomeKey: Bool { false }
@@ -53,6 +71,7 @@ final class VisualizerPanel: NSPanel, NSWindowDelegate {
     func selectVisualization(id: String) -> Bool {
         guard let next = visualizationHost.controller.registry.descriptor(id: id) else { return false }
         guard next.id != descriptor.id else { return true }
+        hideHoverLock()
         saveDrawingFrame()
         let anchor = NSPoint(x: frame.minX, y: frame.maxY)
         let wasRendering = visualizationHost.controller.isActive
@@ -70,6 +89,7 @@ final class VisualizerPanel: NSPanel, NSWindowDelegate {
         isRestoringFrame = false
         saveDrawingFrame()
         if wasRendering { visualizationHost.setRendering(true) }
+        if isAdjustingPosition { showHoverLock() }
         return true
     }
 
@@ -93,7 +113,7 @@ final class VisualizerPanel: NSPanel, NSWindowDelegate {
                             width: layout.width, height: layout.height), display: false)
         }
         let legacyWidth = descriptor.id == "pencil-flight" ? preferences.object(forKey: "MiucsPencilFlightWidth") as? Double : nil
-        let width = saved?.width ?? (restored ? frame.width : legacyWidth ?? layout.width)
+        let width: Double = saved.map { Double($0.width) } ?? (restored ? Double(frame.width) : legacyWidth ?? layout.width)
         setDrawingWidth(width, persist: false)
         visualizationHost.updateViewport()
         if persistsFrame { setFrameAutosaveName(Self.autosaveName(for: descriptor.id)) }
@@ -111,7 +131,7 @@ final class VisualizerPanel: NSPanel, NSWindowDelegate {
     func setDrawingWidth(_ requested: Double, topLeft: NSPoint? = nil, persist: Bool = true) {
         guard requested.isFinite else { return }
         let layout = descriptor.layout, visible = visibleFrame()
-        let maximum = min(layout.maximumWidth, min(visible.width, visible.height / layout.aspectRatio))
+        let maximum = min(layout.maximumWidth, min(Double(visible.width), Double(visible.height) / layout.aspectRatio))
         let width = min(max(requested, min(layout.minimumWidth, maximum)), maximum)
         let height = width * layout.aspectRatio
         let anchor = topLeft ?? NSPoint(x: frame.minX, y: frame.maxY)
@@ -120,6 +140,7 @@ final class VisualizerPanel: NSPanel, NSWindowDelegate {
         isUpdatingDrawingSize = true
         setFrame(NSRect(origin: origin, size: NSSize(width: width, height: height)), display: true)
         isUpdatingDrawingSize = false
+        positionHoverLock()
         onSizeChange?()
         if persist { saveDrawingFrame() }
     }
@@ -143,18 +164,94 @@ final class VisualizerPanel: NSPanel, NSWindowDelegate {
         return NSRect(x: x, y: y, width: width, height: height)
     }
 
-    func windowDidMove(_ notification: Notification) { saveDrawingFrame() }
-    func windowDidResize(_ notification: Notification) { saveDrawingFrame() }
-    func windowWillClose(_ notification: Notification) { saveDrawingFrame() }
+    func windowDidMove(_ notification: Notification) { positionHoverLock(); saveDrawingFrame() }
+    func windowDidResize(_ notification: Notification) { positionHoverLock(); saveDrawingFrame() }
+    func windowWillClose(_ notification: Notification) {
+        stopHoverLock(); visualizationHost.setRendering(false); saveDrawingFrame()
+    }
     func setAdjustingPosition(_ adjusting: Bool) {
+        let adjusting = adjusting && hoverSuspensionReasons.isEmpty
         isAdjustingPosition = adjusting; ignoresMouseEvents = !adjusting
         visualizationHost.adjustingPosition = adjusting
-        if adjusting { orderFrontRegardless() } else { saveDrawingFrame() }
+        hoverLockPanel?.lockButton.unlocked = adjusting
+        onAdjustmentChange?()
+        if adjusting { orderFrontRegardless(); showHoverLock() } else { saveDrawingFrame() }
     }
     override func orderFrontRegardless() {
         super.orderFrontRegardless(); visualizationHost.setRendering(true)
+        startHoverSampling()
+    }
+    private func startHoverSampling() {
+        guard monitorsHover, hoverTimer == nil, hoverSuspensionReasons.isEmpty else { return }
+        let timer = Timer(timeInterval: 0.1, target: hoverTimerTarget,
+                          selector: #selector(HoverLockTimerTarget.tick(_:)), userInfo: nil, repeats: true)
+        RunLoop.main.add(timer, forMode: .common); hoverTimer = timer
     }
     override func orderOut(_ sender: Any?) {
+        stopHoverLock()
         setAdjustingPosition(false); visualizationHost.setRendering(false); super.orderOut(sender)
     }
+    private func stopHoverLock() {
+        hoverTimer?.invalidate(); hoverTimer = nil; hideHoverLock()
+    }
+    private func hideHoverLock() {
+        hoverDwell.reset()
+        if let control = hoverLockPanel { removeChildWindow(control); control.orderOut(nil) }
+    }
+    @objc private func displaysChanged() {
+        hideHoverLock(); setAdjustingPosition(false); setDrawingWidth(frame.width)
+    }
+    @objc private func workspaceStateChanged(_ notification: Notification) {
+        let reason: String
+        let suspended: Bool
+        switch notification.name {
+        case NSWorkspace.willSleepNotification: reason = "system"; suspended = true
+        case NSWorkspace.didWakeNotification: reason = "system"; suspended = false
+        case NSWorkspace.screensDidSleepNotification: reason = "screen"; suspended = true
+        case NSWorkspace.screensDidWakeNotification: reason = "screen"; suspended = false
+        case NSWorkspace.sessionDidResignActiveNotification: reason = "session"; suspended = true
+        case NSWorkspace.sessionDidBecomeActiveNotification: reason = "session"; suspended = false
+        default: return
+        }
+        if suspended {
+            hoverSuspensionReasons.insert(reason)
+            stopHoverLock(); setAdjustingPosition(false)
+        } else {
+            hoverSuspensionReasons.remove(reason)
+            if hoverSuspensionReasons.isEmpty, isVisible { startHoverSampling() }
+        }
+    }
+    func sampleHoverLock() {
+        updateHoverLock(pointer: NSEvent.mouseLocation, now: ProcessInfo.processInfo.systemUptime,
+                        enabled: isVisible && !NSApp.isHidden)
+    }
+    /// Explicit input makes dwell/leave and lifecycle behavior deterministic in native tests.
+    func updateHoverLock(pointer: NSPoint, now: TimeInterval, enabled: Bool) {
+        guard enabled, hoverSuspensionReasons.isEmpty else { hideHoverLock(); return }
+        let hovered = hoverDwell.update(inside: frame.contains(pointer), now: now)
+        guard isAdjustingPosition || hovered else {
+            if let control = hoverLockPanel, control.isVisible {
+                removeChildWindow(control); control.orderOut(nil)
+            }
+            return
+        }
+        showHoverLock()
+    }
+    private func showHoverLock() {
+        if hoverLockPanel == nil {
+            let control = HoverLockPanel()
+            control.lockButton.target = self; control.lockButton.action = #selector(toggleHoverLock)
+            hoverLockPanel = control
+        }
+        guard let control = hoverLockPanel else { return }
+        control.lockButton.unlocked = isAdjustingPosition
+        positionHoverLock()
+        if control.parent == nil { addChildWindow(control, ordered: .above) }
+        if !control.isVisible { control.orderFrontRegardless() }
+    }
+    private func positionHoverLock() {
+        guard let control = hoverLockPanel else { return }
+        control.setFrameOrigin(NSPoint(x: frame.midX - 17, y: frame.maxY - frame.height * 0.28 - 17))
+    }
+    @objc func toggleHoverLock() { setAdjustingPosition(!isAdjustingPosition) }
 }

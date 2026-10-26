@@ -22,6 +22,7 @@ internal sealed class DesktopHost : IDisposable
     private readonly LoopbackCapture capture;
     private readonly KeyboardCapture keyboardCapture;
     private readonly Window window;
+    private readonly HoverLockControl hoverLock;
     private readonly Grid root = new();
     private readonly Border adjustment;
     private readonly TextBlock status;
@@ -56,7 +57,7 @@ internal sealed class DesktopHost : IDisposable
         {
             BorderBrush = new SolidColorBrush(Color.FromArgb(180, 90, 130, 170)), BorderThickness = new Thickness(1),
             Background = new SolidColorBrush(Color.FromArgb(15, 90, 130, 170)), Visibility = Visibility.Collapsed,
-            Child = new TextBlock { Text = "拖动移动 · 右下角缩放 · 托盘菜单完成调整", FontSize = 11, Foreground = Brushes.SlateGray, Margin = new Thickness(6), VerticalAlignment = VerticalAlignment.Bottom }
+            Child = new TextBlock { Text = "拖动移动 · 右下角缩放 · 点击小锁完成调整", FontSize = 11, Foreground = Brushes.SlateGray, Margin = new Thickness(6), VerticalAlignment = VerticalAlignment.Bottom }
         };
         status = new TextBlock { FontSize = 11, Margin = new Thickness(6), Foreground = Brushes.SlateGray, IsHitTestVisible = false, VerticalAlignment = VerticalAlignment.Bottom };
         root.Children.Add(status);
@@ -82,6 +83,7 @@ internal sealed class DesktopHost : IDisposable
         statusTimer.Tick += (_, _) => UpdateStatus();
         statusTimer.Start();
         window.Show();
+        hoverLock = new HoverLockControl(window, () => isVisible && !suspended && !disposed, () => SetAdjusting(!adjusting));
         StartRendering();
     }
 
@@ -94,6 +96,7 @@ internal sealed class DesktopHost : IDisposable
         if (view != null && view.Id == id) return;
         if (id != "pencil-flight" && id != "staff-note") return;
         WindowFrame? previous = view == null ? null : CurrentFrame();
+        hoverLock?.Reset();
         StopRendering();
         if (view != null)
         {
@@ -161,13 +164,16 @@ internal sealed class DesktopHost : IDisposable
     private void SetVisible(bool value)
     {
         if (isVisible == value) return;
+        if (!value) SetAdjusting(false);
         isVisible = value;
+        hoverLock?.Reset();
         if (value) { SetFrame(CurrentFrame()); window.Show(); StartRendering(); }
         else { StopRendering(); SaveFrame(); window.Hide(); SavePreferences(); }
     }
     private void SetAdjusting(bool value)
     {
         adjusting = value;
+        hoverLock?.SetLocked(!value);
         adjustment.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
         NativeWindow.SetInteractive(window, value);
         if (value) SetVisible(true);
@@ -244,6 +250,8 @@ internal sealed class DesktopHost : IDisposable
     private void Suspend()
     {
         if (suspended) return;
+        SetAdjusting(false);
+        hoverLock.Reset();
         suspended = true; StopRendering(); capture.Suspend(); keyboardCapture.Suspend();
     }
     private void Resume()
@@ -264,12 +272,13 @@ internal sealed class DesktopHost : IDisposable
         if (e.Reason is SessionSwitchReason.SessionLock or SessionSwitchReason.SessionLogoff or SessionSwitchReason.RemoteDisconnect or SessionSwitchReason.ConsoleDisconnect) Dispatch(() => { sessionSuspended = true; UpdateSuspension(); });
         else if (e.Reason is SessionSwitchReason.SessionUnlock or SessionSwitchReason.SessionLogon or SessionSwitchReason.RemoteConnect or SessionSwitchReason.ConsoleConnect) Dispatch(() => { sessionSuspended = false; UpdateSuspension(); });
     }
-    private void OnDisplayChanged(object? sender, EventArgs e) => Dispatch(() => { SetFrame(CurrentFrame()); SaveFrame(); SavePreferences(); });
+    private void OnDisplayChanged(object? sender, EventArgs e) => Dispatch(() => { hoverLock.Reset(); SetAdjusting(false); SetFrame(CurrentFrame()); SaveFrame(); SavePreferences(); });
     public void Dispose()
     {
         if (disposed) return;
         SaveFrame(); SavePreferences(); StopRendering(); disposed = true;
         statusTimer?.Stop();
+        hoverLock.Dispose();
         SystemEvents.PowerModeChanged -= OnPowerModeChanged;
         SystemEvents.SessionSwitch -= OnSessionSwitch;
         SystemEvents.DisplaySettingsChanged -= OnDisplayChanged;
