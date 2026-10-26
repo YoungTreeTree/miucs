@@ -21,22 +21,30 @@ public static class ShellTests
     public static void Run()
     {
         var monitor = new WindowFrame(0, 0, 1920, 1040);
-        var flight = WindowPlacement.Fit(new(80, 80, 400, 260), monitor, 400d / 260, 280, 1000);
+        var flight = WindowPlacement.Fit(new(80, 80, 400, 260), monitor, 400d / 260, 40, 1000);
         Check(flight == new WindowFrame(80, 80, 400, 260), "valid flight placement unchanged");
-        var staff = WindowPlacement.Fit(new(-9000, 9000, 1600, 320), monitor, 5, 600, 1600);
+        var staff = WindowPlacement.Fit(new(-9000, 9000, 1600, 320), monitor, 5, 80, 1600);
         Contained(staff, monitor, 5);
         Check(Near(staff.X, 0) && Near(staff.Y, 720), "off-screen saved placement restored");
         var small = new WindowFrame(0, 0, 420, 90);
-        var scaled = WindowPlacement.Fit(new(12, 12, 800, 160), small, 5, 600, 1600);
+        var scaled = WindowPlacement.Fit(new(12, 12, 800, 160), small, 5, 80, 1600);
         Contained(scaled, small, 5);
         Check(Near(scaled.Width, 420), "small display overrides module minimum instead of clipping");
         var leftDisplay = new WindowFrame(-1920, -120, 1920, 1040);
-        var left = WindowPlacement.Fit(new(-1800, -80, 800, 160), leftDisplay, 5, 600, 1600);
+        var left = WindowPlacement.Fit(new(-1800, -80, 800, 160), leftDisplay, 5, 80, 1600);
         Check(Near(left.X, -1800) && Near(left.Y, -80), "negative monitor coordinates are not mistaken for invalid values");
         Contained(left, leftDisplay, 5);
-        var invalid = WindowPlacement.Fit(new(double.NaN, 0, double.PositiveInfinity, 0), monitor, 5, 600, 1600);
+        var invalid = WindowPlacement.Fit(new(double.NaN, 0, double.PositiveInfinity, 0), monitor, 5, 80, 1600);
         Contained(invalid, monitor, 5);
-        Check(Near(invalid.Width, 600), "corrupt saved geometry falls back to a finite module size");
+        Check(Near(invalid.Width, 80), "corrupt saved geometry falls back to the 10 percent module minimum");
+        var tinyFlight = WindowPlacement.Fit(new(80, 80, 40, 26), monitor, 400d / 260, 40, 1000);
+        Check(tinyFlight == new WindowFrame(80, 80, 40, 26), "10 percent flight scale stays at the module minimum");
+        var clampedFlight = WindowPlacement.Fit(new(80, 80, 10, 6.5), monitor, 400d / 260, 40, 1000);
+        Check(Near(clampedFlight.Width, 40) && Near(clampedFlight.Height, 26), "flight sizes below 10 percent clamp to the module minimum");
+        var tinyStaff = WindowPlacement.Fit(new(80, 80, 80, 16), monitor, 5, 80, 1600);
+        Check(Near(tinyStaff.Width, 80) && Near(tinyStaff.Height, 16), "10 percent staff scale stays at the module minimum");
+        var tinyKeys = WindowPlacement.Fit(new(80, 80, 80, 46), monitor, 800d / 460, 80, 1600);
+        Check(Near(tinyKeys.Width, 80) && Near(tinyKeys.Height, 46), "10 percent pixel keyboard scale stays at the module minimum");
         bool rejected = false;
         try { WindowPlacement.Fit(flight, new(0, 0, 0, 10), 5, 600, 1600); }
         catch (ArgumentException) { rejected = true; }

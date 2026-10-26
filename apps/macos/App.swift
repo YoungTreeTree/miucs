@@ -119,7 +119,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         moveItem = move
         let size = NSMenuItem(title: "画面大小", action: nil, keyEquivalent: "")
         let sizes = NSMenu(title: "画面大小")
-        for (percent, label) in [(80, "小"), (100, "标准"), (125, "舒展"), (150, "大"), (200, "特大")] {
+        for (percent, label) in [(10, "极小"), (80, "小"), (100, "标准"), (125, "舒展"), (150, "大"), (200, "特大")] {
             let preset = NSMenuItem(title: "\(label) · \(percent)%", action: #selector(changeSize(_:)), keyEquivalent: "")
             preset.target = self; preset.tag = percent
             sizes.addItem(preset)

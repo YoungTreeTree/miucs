@@ -33,7 +33,7 @@ enum FlightPreview {
         record("Shutdown save restores unfinished adjustment and click-through", afterQuit.frame == unfinishedFrame && afterQuit.ignoresMouseEvents && !afterQuit.isAdjustingPosition)
         panel.setAdjustingPosition(false)
         panel.setDrawingWidth(100)
-        record("Small size has readable lower bound", panel.frame.width == 280 && panel.frame.height == 182)
+        record("Small size reaches 10 percent of the 400-point layout", panel.frame.width == 40 && panel.frame.height == 26)
         panel.setDrawingWidth(100_000)
         record("Large size fits a visible display", panel.frame.width <= 1000 && abs(panel.frame.width / panel.frame.height - 400.0 / 260) < 1e-9 && NSScreen.screens.contains { $0.visibleFrame.insetBy(dx: -0.1, dy: -0.1).contains(panel.frame) })
         let validFrame = panel.frame

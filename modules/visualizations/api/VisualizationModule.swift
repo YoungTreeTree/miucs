@@ -6,7 +6,7 @@ struct VisualizationLayout: Equatable, Sendable {
     let minimumWidth: Double
     let maximumWidth: Double
     var aspectRatio: Double { height / width }
-    static let desktop = VisualizationLayout(width: 400, height: 260, minimumWidth: 280, maximumWidth: 1000)
+    static let desktop = VisualizationLayout(width: 400, height: 260, minimumWidth: 40, maximumWidth: 1000)
 }
 
 struct VisualizationDescriptor: Equatable, Sendable {

@@ -11,7 +11,7 @@ public sealed class PencilFlightView : VisualizationView
     public override string Id=>"pencil-flight";
     public override double BaseWidth=>400;
     public override double BaseHeight=>260;
-    public override double LayoutMinWidth=>280;
+    public override double LayoutMinWidth=>40;
     public override double LayoutMaxWidth=>1000;
     public FlightScene Scene { get; }=new();
     private static readonly StreamGeometry Bird=Path(c=> {
