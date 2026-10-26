@@ -33,6 +33,7 @@ enum StaffNoteDemo {
         var minScale = Double.infinity, maxScale = -Double.infinity
         var minAngle = Double.infinity, maxAngle = -Double.infinity
         var minY = Double.infinity, maxY = -Double.infinity
+        var previewScore = -Double.infinity, previewFrame = 0
         var extrema = [String: StaffNoteScene]()
         var extremaStars = [String: [StaffStar]]()
         var extremaRings = [String: [StaffBeatRing]]()
@@ -48,9 +49,13 @@ enum StaffNoteDemo {
                 let hz = 440 * pow(2, (midi - 69) / 12)
                 let articulation = max(0, min(1, beat / 0.012, (0.5 - beat) / 0.035))
                 let dynamics = 0.065 * pow(10, 0.5 * sin(2 * .pi * time / 2))
-                let voice = dynamics * articulation * (sin(2 * .pi * hz * time) +
+                let lead = dynamics * articulation * (sin(2 * .pi * hz * time) +
                     0.45 * sin(4 * .pi * hz * time) + 0.22 * sin(6 * .pi * hz * time))
-                left.append(Float(voice)); right.append(Float(voice * 0.96))
+                let bass = 0.022 * exp(-beat / 0.10) * sin(2 * .pi * 110 * time)
+                let hash = UInt64(index) &* 6364136223846793005 &+ 1442695040888963407
+                let noise = (Double(hash >> 32) / Double(UInt32.max) * 2 - 1) * 0.012 * exp(-beat / 0.018)
+                left.append(Float(lead + bass + noise))
+                right.append(Float(lead * 0.96 + bass - noise * 0.7))
             }
             let block = AudioPCMBlock(channels: [left, right], sampleRate: rate, isInterleaved: false)
             var beats = [AudioBeatEvent]()
@@ -84,6 +89,14 @@ enum StaffNoteDemo {
             if stars.hasLiveStars { starFrames += 1 }
             if !beatRings.rings.isEmpty { ringFrames += 1 }
             if let name = scene.pitch?.name { names.insert(name) }
+            // Pick an actual rendered instant with readable music and visible input effects.
+            let score = stars.stars.reduce(0.0) { $0 + $1.opacity } +
+                beatRings.rings.reduce(0.0) { $0 + $1.opacity * $1.radius * 0.2 }
+            if score > previewScore {
+                previewScore = score; previewFrame = rendered
+                extrema["overview"] = scene; extremaStars["overview"] = stars.stars
+                extremaRings["overview"] = beatRings.rings
+            }
             if scene.scale < minScale { minScale = scene.scale; extrema["small"] = scene; extremaStars["small"] = stars.stars; extremaRings["small"] = beatRings.rings }
             if scene.scale > maxScale { maxScale = scene.scale; extrema["large"] = scene; extremaStars["large"] = stars.stars; extremaRings["large"] = beatRings.rings }
             if scene.swayAngle < minAngle { minAngle = scene.swayAngle; extrema["left"] = scene; extremaStars["left"] = stars.stars; extremaRings["left"] = beatRings.rings }
@@ -109,8 +122,9 @@ enum StaffNoteDemo {
             try RenderDemo.writePNG(image, to: path)
         }
         let report: [String: Any] = [
-            "source": "generated PCM and invented physical key events; production audio analyzers, keyboard channel, star simulation and retained native layers; no capture or event injection",
+            "source": "generated lead, bass and percussion mixture plus invented physical key events; production audio analyzers, keyboard channel, star simulation and retained native layers; no capture or event injection",
             "width": width, "height": height, "frames": rendered, "fps": fps,
+            "staticPreviewFrame": previewFrame, "mixtureComponents": ["harmonic lead", "bass", "percussive noise"],
             "durationSeconds": Double(count) / fps, "loop": "infinite", "background": "plain paper",
             "notes": names.sorted(), "onsets": onsetCount, "noteCenterX": StaffNoteScene.noteX,
             "scaleRange": [minScale, maxScale], "swayDegrees": [minAngle * 180 / .pi, maxAngle * 180 / .pi],

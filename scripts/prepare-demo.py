@@ -65,6 +65,16 @@ def main():
     assert set(durations) == {40} and sum(durations) == 10_000
     assert min(changes) > 0 and temporary.stat().st_size < 5_000_000
     os.replace(temporary, output)
+    if size == (1200, 240):
+        # Export the chosen frame after GIF color conversion so the README PNG
+        # and animation use exactly the same pixels and palette.
+        render = json.loads(source.with_suffix(".json").read_text())
+        preview_index = render["staticPreviewFrame"]
+        with Image.open(output) as image:
+            image.seek(preview_index)
+            preview = image.convert("RGB")
+            preview.info.clear()
+            preview.save(output.with_suffix(".png"))
     report = {"frames": len(frames), "size": list(size), "durationSeconds": 10,
               "fps": 25, "bytes": output.stat().st_size, "loop": "infinite",
               "metadata": "format and animation fields only; inherited metadata removed",

@@ -1,14 +1,28 @@
 {
-  "date": "2026-10-23",
+  "date": "2026-10-26",
   "command": "zsh scripts/render-demo.sh --staff",
+  "baseRevision": "376162084339753ca57371c07d08cd2a05369730",
   "asset": "docs/assets/miucs-staff-note.gif",
-  "assetSHA256": "78483afbfa2bcff580a283dc55c6f53025e53bd88071642fcce3dab990e75402",
+  "assetSHA256": "6ad891071d98bd46f1f531836fd469bc519b1ae4a10928d27f0c7133e07547b4",
+  "staticPreview": {
+    "asset": "docs/assets/miucs-staff-note.png",
+    "frame": 110,
+    "size": [
+      1200,
+      240
+    ],
+    "exactlyMatchesGIFFrame": true,
+    "source": "Selected production-rendered animation frame, exported after GIF color conversion to preserve identical pixels"
+  },
+  "staticPreviewSHA256": "a9042e2916e8f0d262dd7e834774de081e84c2b9a33df8f1d8b6328fa86a371e",
   "render": {
     "animationRateIsPresentationBenchmark": false,
     "background": "plain paper",
+    "beats": 20,
     "durationSeconds": 10,
     "fps": 25,
     "frames": 250,
+    "framesWithBeatRings": 250,
     "framesWithStars": 242,
     "height": 240,
     "keyboardBursts": 48,
@@ -21,6 +35,11 @@
       4
     ],
     "loop": "infinite",
+    "mixtureComponents": [
+      "harmonic lead",
+      "bass",
+      "percussive noise"
+    ],
     "notationHeightRange": 27.999999204642776,
     "noteCenterX": 640,
     "notes": [
@@ -36,13 +55,14 @@
     "onsets": 20,
     "peakStars": 40,
     "scaleRange": [
-      0.8001351539366327,
-      1.4991906467401204
+      0.8001295939857936,
+      1.4991612234125296
     ],
-    "source": "generated PCM and invented physical key events; production audio analyzers, keyboard channel, star simulation and retained native layers; no capture or event injection",
+    "source": "generated lead, bass and percussion mixture plus invented physical key events; production audio analyzers, keyboard channel, star simulation and retained native layers; no capture or event injection",
+    "staticPreviewFrame": 110,
     "swayDegrees": [
-      -19.958460031519543,
-      19.59756179528484
+      -19.83672386349515,
+      19.43535777762688
     ],
     "warmupSeconds": 10,
     "width": 1200
@@ -55,7 +75,7 @@
     ],
     "durationSeconds": 10,
     "fps": 25,
-    "bytes": 1521304,
+    "bytes": 1867589,
     "loop": "infinite",
     "metadata": "format and animation fields only; inherited metadata removed",
     "allFramesChange": true,
@@ -67,24 +87,23 @@
       0,
       62,
       125,
-      187
+      187,
+      249
     ],
-    "extrema": [
-      "left",
-      "small",
-      "large"
-    ],
-    "result": "Audio tilt/scale/trajectory and keyboard stars are visible together; five-row physical positions, multiple keys and hold repeats use the production star simulation. Native rendering tests additionally cover five colors, scale, transparent interiors, boundaries and music foreground order."
+    "staticFrame": 110,
+    "result": "Current native mixture-driven staff, melody trail, pivot sway and scaling, keyboard starbursts and random beat arcs reviewed. Native output uses generated PCM and invented keys; no live capture."
   },
   "sourceSHA256": {
-    "tools/macos/StaffNoteDemo.swift": "a52a97777e8efae55b1291f6bcbee847d71b9bc7b04bf35a347a25d2d751e689",
+    "tools/macos/StaffNoteDemo.swift": "97f918153c755cc9e7cd40353f7389f071eff631bcfa62093b21d81287e4ecea",
     "tools/macos/SyntheticKeyboardInput.swift": "de193fa236b70265c969e90a9f6477b221dd3e3526fdf3046790f837b5bc4c0e",
     "tools/macos/RenderDemo.swift": "0b808f52fcd15d0a24b01cc0fe948dbde81d1b1cbc2d3c316bfa5fbd2d607a4b",
     "scripts/render-demo.sh": "69768d7dc212d4964940c1b5c1790f6319771dd56b4309f0854e7875285bd4d6",
-    "scripts/prepare-demo.py": "3075f4ffbc4f36b0e18fc38100f985109c12069b9400d527d2b86bc113ed02ad",
-    "modules/visualizations/staff-note/core/StaffNoteScene.swift": "aa273b5bf71144ac206c1c57ccdb751255284221a5def66f9a0873827ba11433",
+    "scripts/prepare-demo.py": "a939339b726adf5cd889b2d9042ec34617e3d22820b37e1b811cb8a0a00846d2",
+    "modules/audio/core/AudioAnalysisPipeline.swift": "39364bbad9d38b44763620e2e9d14d83b3bb88dfe81257bc0711e86eb002e2cd",
+    "modules/audio/core/MelodyAnalyzer.swift": "b0ab87ca59ea900e992a1c303277921bc576e6706f85fb06e87175ea170f48e1",
+    "modules/visualizations/staff-note/core/StaffNoteScene.swift": "e74c21712b148102aebc4dcf055d460cda7ef1a4d95ad2488edc1a3845c674fd",
     "modules/visualizations/staff-note/core/StaffKeyboardStars.swift": "e4a20201621a7cb0192e41b0eae4f9f5cdb80a9e2d2031ea6f20e7dcf9f397aa",
-    "modules/visualizations/staff-note/core/StaffKeyboardLayout.swift": "aa75549c2c6e8f2dc036540c98848166eff91110574a94b7c828b1f5f7f8e100",
-    "modules/visualizations/staff-note/platforms/macos/StaffNoteView.swift": "55f7159720a7127399cb2d3eacde2bb4504769c79fa72b5bb2828c6c8b46f0b9"
+    "modules/visualizations/staff-note/core/StaffBeatRings.swift": "e2576b85823da1b232d49306fc3fc4bd7c9b5bb4d10c9a5530139de26bb6eb17",
+    "modules/visualizations/staff-note/platforms/macos/StaffNoteView.swift": "dd4a9bf38c3ebea6fc474bca7eb9456debec1904501abc888ab3e8b57c4a2bc2"
   }
 }
