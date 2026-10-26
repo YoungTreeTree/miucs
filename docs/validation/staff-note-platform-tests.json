@@ -45,7 +45,7 @@
       "passed" : true
     },
     {
-      "name" : "Staff maximum is screen-constrained and never exceeds 1600 points",
+      "name" : "Staff maximum is screen-constrained and keeps its ratio within one backing pixel",
       "passed" : true
     },
     {

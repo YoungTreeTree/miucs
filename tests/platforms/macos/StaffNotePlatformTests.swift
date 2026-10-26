@@ -63,7 +63,16 @@ enum StaffNotePlatformTests {
         panel.setDrawingWidth(10)
         check("Staff has a readable minimum width of 600 points", panel.frame.width == min(600, visible.width) && abs(panel.frame.height * 5 - panel.frame.width) < 1e-8)
         panel.setDrawingWidth(100_000)
-        check("Staff maximum is screen-constrained and never exceeds 1600 points", panel.frame.width <= 1600 && visible.insetBy(dx: -0.1, dy: -0.1).contains(panel.frame) && abs(panel.frame.height * 5 - panel.frame.width) < 1e-8)
+        // AppKit rounds window frames to backing pixels. A 1024-point CI display
+        // requests 204.8 points of height, which cannot be represented exactly.
+        let framePixel = 1 / (panel.screen?.backingScaleFactor ?? 1)
+        let maximumFits = panel.frame.width <= 1600 &&
+            visible.insetBy(dx: -framePixel, dy: -framePixel).contains(panel.frame) &&
+            abs(panel.frame.height - panel.frame.width / 5) <= framePixel
+        if !maximumFits {
+            print("Maximum staff geometry: frame=\(panel.frame), visible=\(visible), pixel=\(framePixel)")
+        }
+        check("Staff maximum is screen-constrained and keeps its ratio within one backing pixel", maximumFits)
         panel.setAdjustingPosition(true)
         let resizeAnchor = NSPoint(x: panel.frame.minX, y: panel.frame.maxY)
         panel.setDrawingWidth(700, topLeft: resizeAnchor, persist: false)
