@@ -105,6 +105,7 @@ internal sealed class DesktopHost : IDisposable
         view = id switch { "staff-note" => new StaffNoteView(), "pixel-keyboard" => new PixelKeyboardView(), _ => new PencilFlightView() };
         preferences.Visualization = id;
         ApplyColor();
+        view.Opacity = 1 - preferences.Transparency / 100d;
         root.Children.Insert(0, view);
         var requested = preferences.Frames.TryGetValue(id, out var saved) ? saved :
             new WindowFrame(previous?.X ?? 80, previous?.Y ?? 80, view.BaseWidth, view.BaseHeight);
@@ -218,6 +219,17 @@ internal sealed class DesktopHost : IDisposable
         var colors = new Forms.ToolStripMenuItem("线条颜色"); menu.Items.Add(colors);
         foreach (var entry in Preferences.Palette)
             Add(colors.DropDownItems, entry.Value.Name, () => { preferences.Color = entry.Key; ApplyColor(); SavePreferences(); }, preferences.Color == entry.Key);
+        var transparency = new Forms.ToolStripMenuItem($"画面不透明度（{100 - preferences.Transparency}%）"); menu.Items.Add(transparency);
+        for (int value = 10; value <= 100; value += 10)
+        {
+            int percent = value;
+            Add(transparency.DropDownItems, percent == 100 ? "100%（原始效果）" : $"{percent}%", () =>
+            {
+                preferences.Transparency = 100 - percent;
+                view.Opacity = 1 - preferences.Transparency / 100d;
+                SavePreferences();
+            }, preferences.Transparency == 100 - percent);
+        }
         Add(menu.Items, adjusting ? "完成调整（恢复鼠标穿透）" : "调整位置与大小…", () => SetAdjusting(!adjusting));
         menu.Items.Add(new Forms.ToolStripSeparator());
         Add(menu.Items, "重新连接音频", () => { if (!suspended) capture.Reconnect(); });

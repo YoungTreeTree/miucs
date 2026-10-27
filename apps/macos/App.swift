@@ -18,8 +18,21 @@ struct MiucsApp: App {
             }
             CommandGroup(replacing: .appSettings) {
                 VisualizationColorCommand(store: appDelegate.appearanceStore)
+                VisualizationTransparencyCommand(store: appDelegate.appearanceStore)
             }
         }
+    }
+}
+
+private struct VisualizationTransparencyCommand: View {
+    @ObservedObject var store: VisualizationAppearanceStore
+    var body: some View {
+        Picker("画面不透明度", selection: Binding(get: { store.opacity }, set: { store.setOpacity($0) })) {
+            ForEach(VisualizationAppearanceStore.opacityPresets, id: \.self) { percent in
+                Text(percent == 100 ? "100%（原始效果）" : "\(percent)%").tag(percent)
+            }
+        }
+        .pickerStyle(.menu)
     }
 }
 
@@ -49,7 +62,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     var visualizationDescriptors: [VisualizationDescriptor] { registry.descriptors }
     private var visualizationMenu: NSMenu?
     private var colorMenu: VisualizationColorMenu?
+    private var transparencyMenu: VisualizationTransparencyMenu?
     private var appearanceSubscription: AnyCancellable?
+    private var transparencySubscription: AnyCancellable?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -139,6 +154,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         visualizationMenu = visualizations
         let colors = VisualizationColorMenu(store: appearanceStore)
         colorMenu = colors; menu.addItem(colors.item)
+        let transparency = VisualizationTransparencyMenu(store: appearanceStore)
+        transparencyMenu = transparency; menu.addItem(transparency.item)
         menu.addItem(.separator())
         menu.addItem(
             NSMenuItem(title: "重新连接音频", action: #selector(reconnect), keyEquivalent: "r")
@@ -158,6 +175,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         self.panel = panel
         appearanceSubscription = appearanceStore.$selection.sink { [weak self] ink in
             self?.panel?.visualizationHost.applyAppearance(ink.appearance)
+        }
+        transparencySubscription = appearanceStore.$transparency.sink { [weak self] percent in
+            self?.panel?.visualizationHost.applyTransparency(percent)
         }
         panel.orderFrontRegardless()
         panel.onAdjustmentChange = { [weak self, weak panel] in

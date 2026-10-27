@@ -29,6 +29,8 @@ public sealed class Preferences
 {
     public string Visualization { get; set; } = "pencil-flight";
     public string Color { get; set; } = "graphite";
+    private int transparency;
+    public int Transparency { get => transparency; set => transparency = Math.Clamp(value, 0, 90); }
     public bool KeyboardEnabled { get; set; }
     public Dictionary<string, WindowFrame> Frames { get; set; } = new();
     public static string DefaultPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Miucs", "preferences.v1.json");

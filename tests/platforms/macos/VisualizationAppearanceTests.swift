@@ -30,6 +30,16 @@ enum VisualizationAppearanceTests {
         let inks = VisualizationInk.allCases
         check("Exactly five distinct, stable ink choices are shared by all modules", inks.count == 5 && Set(inks.map(\.rawValue)).count == 5 && Set(inks.map(\.color)).count == 5)
         let empty = VisualizationAppearanceStore(preferences: preferences)
+        check("Existing installs retain original opacity without writing a new preference", empty.transparency == 0 && preferences.object(forKey: VisualizationAppearanceStore.transparencyKey) == nil)
+        empty.setTransparency(50)
+        check("Transparency survives relaunch independently of ink", VisualizationAppearanceStore(preferences: preferences).transparency == 50 && empty.selection == .graphite)
+        empty.setTransparency(999)
+        check("Transparency cannot make the visualization entirely invisible", empty.transparency == 90)
+        preferences.set(-20, forKey: VisualizationAppearanceStore.transparencyKey)
+        check("Invalid saved transparency is clamped", VisualizationAppearanceStore(preferences: preferences).transparency == 0)
+        preferences.set("invalid", forKey: VisualizationAppearanceStore.transparencyKey)
+        check("Corrupt transparency falls back to original opacity", VisualizationAppearanceStore(preferences: preferences).transparency == 0)
+        preferences.removeObject(forKey: VisualizationAppearanceStore.transparencyKey)
         check("Loading a store for offline tools does not write color preferences", preferences.object(forKey: VisualizationAppearanceStore.preferencesKey) == nil)
         empty.saveSelection()
         check("First launch uses graphite and stores one small identifier", empty.selection == .graphite && preferences.string(forKey: VisualizationAppearanceStore.preferencesKey) == "graphite")
@@ -51,6 +61,16 @@ enum VisualizationAppearanceTests {
         preferences.set(legacyData, forKey: PencilPaletteStore.preferencesKey)
 
         let store = VisualizationAppearanceStore(preferences: preferences)
+        let transparencyMenu = VisualizationTransparencyMenu(store: store)
+        var transparencyActionsWork = true
+        for (index, percent) in VisualizationAppearanceStore.opacityPresets.enumerated() {
+            transparencyMenu.item.submenu!.performActionForItem(at: index)
+            transparencyActionsWork = transparencyActionsWork && store.opacity == percent &&
+                VisualizationAppearanceStore(preferences: preferences).opacity == percent &&
+                transparencyMenu.item.submenu!.items.filter { $0.state == .on }.map(\.tag) == [percent]
+        }
+        check("Native opacity menu actions apply, mark and save ten levels from 10 to 100 percent", transparencyActionsWork && VisualizationAppearanceStore.opacityPresets == Array(stride(from: 10, through: 100, by: 10)))
+        store.setTransparency(0)
         let colorMenu = VisualizationColorMenu(store: store)
         let menu = colorMenu.item.submenu!
         check("The menu exposes only the five named swatches with one selection", menu.items.count == 5 && menu.items.allSatisfy { $0.image != nil } && menu.items.filter { $0.state == .on }.count == 1)
@@ -71,13 +91,24 @@ enum VisualizationAppearanceTests {
         let registry = BuiltInVisualizations.registry(preferences: preferences, paletteStore: legacyStore)
         let panel = VisualizerPanel(source: channel, registry: registry, selectedID: "pencil-flight", preferences: preferences, persistsFrame: false)
         let binding = store.$selection.sink { panel.visualizationHost.applyAppearance($0.appearance) }
-        defer { binding.cancel(); panel.orderOut(nil); panel.visualizationHost.dispose() }
+        let opacityBinding = store.$transparency.sink { panel.visualizationHost.applyTransparency($0) }
+        defer { binding.cancel(); opacityBinding.cancel(); panel.orderOut(nil); panel.visualizationHost.dispose() }
         let host = panel.visualizationHost
+        var opacitySurvivesSwitch = true
+        store.setTransparency(70)
+        for id in ["staff-note", "pixel-keyboard", "pencil-flight"] {
+            _ = panel.selectVisualization(id: id)
+            opacitySurvivesSwitch = opacitySurvivesSwitch && abs(Double(host.activeView!.alphaValue) - 0.3) < 0.001 &&
+                host.subviews.filter { $0 !== host.activeView }.allSatisfy { $0.alphaValue == 1 }
+        }
+        check("All three modes inherit transparency while adjustment overlays remain opaque", opacitySurvivesSwitch && panel.alphaValue == 1)
         host.controller.resume()
         channel.publish(audio: StaffNotePreview.audio(0), melody: StaffNotePreview.melody(0, midi: 60), sessionID: generation)
         host.controller.tick(deltaTime: 1.0 / 60)
         let flight = host.controller.current as! MacPencilFlightSession
         let flightY = flight.simulation.world.birdY, initialFrame = panel.frame
+        store.setTransparency(50)
+        check("Changing transparency preserves music session, geometry and mouse passthrough", host.controller.current === flight && flight.simulation.world.birdY == flightY && panel.frame == initialFrame && panel.ignoresMouseEvents && host.activeView?.alphaValue == 0.5)
         store.select(.blue)
         check("A single ink reaches every flight part and its status text immediately", PencilPart.allCases.allSatisfy { flight.drawing.palette[$0] == VisualizationInk.blue.color } && flight.hintColor == VisualizationInk.blue.color.nsColor)
         check("Recoloring keeps the same session, pitch, geometry, transparency and click-through", host.controller.current === flight && flight.simulation.world.birdY == flightY && panel.frame == initialFrame && panel.ignoresMouseEvents && !panel.isOpaque)
@@ -98,6 +129,8 @@ enum VisualizationAppearanceTests {
         check("Returning to flight retains the shared selection even if legacy colors changed", PencilPart.allCases.allSatisfy { returned.drawing.palette[$0] == VisualizationInk.violet.color })
         check("Shared coloring uses no per-module palette window", returned.settingsTitle == nil && staff.settingsTitle == nil)
         panel.orderOut(nil); store.select(.green)
+        store.setTransparency(20)
+        check("Transparency changes while hidden do not restart rendering", !host.controller.isActive && host.activeView?.alphaValue == 0.8)
         check("Changing ink while hidden updates paint without activating rendering", !host.controller.isActive && returned.drawing.palette.bird == VisualizationInk.green.color)
 
         let probeRegistry = VisualizationRegistry(), probe = InkProbe()

@@ -5,6 +5,26 @@
       "passed" : true
     },
     {
+      "name" : "Existing installs retain original opacity without writing a new preference",
+      "passed" : true
+    },
+    {
+      "name" : "Transparency survives relaunch independently of ink",
+      "passed" : true
+    },
+    {
+      "name" : "Transparency cannot make the visualization entirely invisible",
+      "passed" : true
+    },
+    {
+      "name" : "Invalid saved transparency is clamped",
+      "passed" : true
+    },
+    {
+      "name" : "Corrupt transparency falls back to original opacity",
+      "passed" : true
+    },
+    {
       "name" : "Loading a store for offline tools does not write color preferences",
       "passed" : true
     },
@@ -33,6 +53,10 @@
       "passed" : true
     },
     {
+      "name" : "Native opacity menu actions apply, mark and save ten levels from 10 to 100 percent",
+      "passed" : true
+    },
+    {
       "name" : "The menu exposes only the five named swatches with one selection",
       "passed" : true
     },
@@ -42,6 +66,14 @@
     },
     {
       "name" : "Choosing a color opens no configuration window",
+      "passed" : true
+    },
+    {
+      "name" : "All three modes inherit transparency while adjustment overlays remain opaque",
+      "passed" : true
+    },
+    {
+      "name" : "Changing transparency preserves music session, geometry and mouse passthrough",
       "passed" : true
     },
     {
@@ -70,6 +102,10 @@
     },
     {
       "name" : "Shared coloring uses no per-module palette window",
+      "passed" : true
+    },
+    {
+      "name" : "Transparency changes while hidden do not restart rendering",
       "passed" : true
     },
     {
@@ -110,5 +146,5 @@
     }
   ],
   "failed" : 0,
-  "passed" : 27
+  "passed" : 36
 }

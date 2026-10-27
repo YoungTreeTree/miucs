@@ -8,6 +8,7 @@ final class VisualizationHostView: NSView {
     private lazy var frameTarget = HostFrameTarget(view: self)
     private var lastTick = 0.0
     private let overlay = HostOverlayView()
+    private var drawingOpacity: CGFloat = 1
     private var resizeStartFrame: NSRect?
     private var resizeStartMouse = NSPoint.zero
     var adjustingPosition = false {
@@ -40,6 +41,7 @@ final class VisualizationHostView: NSView {
         if previous !== view {
             previous?.removeFromSuperview()
             view.frame = bounds; view.autoresizingMask = [.width, .height]
+            view.alphaValue = drawingOpacity
             addSubview(view, positioned: .below, relativeTo: overlay.superview == nil ? nil : overlay)
             view.needsDisplay = true
         }
@@ -53,6 +55,11 @@ final class VisualizationHostView: NSView {
     func applyAppearance(_ appearance: VisualizationAppearance) {
         controller.applyAppearance(appearance)
         overlay.ink = appearance.ink.nsColor; overlay.needsDisplay = true
+    }
+    /// Fade only the visualization; adjustment controls and status remain readable.
+    func applyTransparency(_ percent: Int) {
+        drawingOpacity = 1 - CGFloat(min(90, max(0, percent))) / 100
+        activeView?.alphaValue = drawingOpacity
     }
     func dispose() {
         setRendering(false); activeView?.removeFromSuperview(); controller.dispose()
