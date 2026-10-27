@@ -69,6 +69,48 @@ internal static class PixelKeyboardTests
         double middleB=PixelTailSprite.Centerline(.5,2.4,1).Y-PixelTailSprite.Centerline(.5,2.4,0).Y;
         double tipB=PixelTailSprite.Centerline(1,2.4,1).Y-PixelTailSprite.Centerline(1,2.4,0).Y;
         Check(Math.Abs(middleA)<.01 && Math.Abs(tipA)>8 && Math.Abs(middleB)>3 && Math.Abs(tipB)<.01,"Bend propagates toward tip instead of rigid rotation");
+        var headID=Guid.NewGuid();long headSeq=0;
+        KeyboardInput Typing(double time,double rate=2,KeyboardEventKind? kind=null,KeyboardState state=KeyboardState.Running,double lag=0,long dropped=0)
+        {
+            var ev=kind is {} k?new[]{new KeyboardEvent(++headSeq,time-lag,k,30,KeyboardModifiers.None,null)}:Array.Empty<KeyboardEvent>();
+            return new(headID,headSeq,state,time,KeyboardModifiers.None,Array.Empty<HeldKey>(),rate,0,ev,dropped);
+        }
+        var head=new PixelHeadScene();
+        head.Update(Typing(0,6),.1);head.Update(Typing(.1,2,KeyboardEventKind.Repeated),.1);
+        head.Update(Typing(.2,2,KeyboardEventKind.ModifiersChanged),.1);
+        Check(head.Amplitude==0,"Existing rate, modifiers and repeat cannot start head motion");
+        head.Update(Typing(.3,2,KeyboardEventKind.Pressed,lag:1),.1);
+        Check(head.Amplitude==0,"Stale presses cannot start head motion");
+        head.Update(Typing(1,2,KeyboardEventKind.Pressed),1d/60);head.Update(Typing(1.1),.1);
+        Check(Math.Abs(head.Angle)>.03 && head.Amplitude>.5,"Fresh typing starts visible head motion");
+        double phaseBefore=head.Phase;head.Update(Typing(1.12,4,KeyboardEventKind.Pressed),1d/60);
+        Check(head.Phase>phaseBefore && head.Phase-phaseBefore<.25,"Head phase continues across new presses");
+        var frequencies=new System.Collections.Generic.List<double>();bool bounded=true;
+        foreach(int rate in new[]{1,2,4})
+        {
+            var sample=new PixelHeadScene();
+            for(int frame=0;frame<300;frame++)
+            {sample.Update(Typing(frame/60d,rate,frame%(60/rate)==0?KeyboardEventKind.Pressed:null),1d/60);bounded &= Math.Abs(sample.Angle)<=Math.PI/15+.00001;}
+            frequencies.Add(sample.Frequency);
+        }
+        Check(Math.Abs(frequencies[1]/frequencies[0]-2)<.001 && Math.Abs(frequencies[2]/frequencies[0]-4)<.001 && bounded,"Typing rate sets proportional frequency with bounded tilt");
+        head.Update(Typing(2,state:KeyboardState.SecureInput),.01);head.Update(Typing(2.01,6),.01);
+        Check(head.Amplitude==0,"Secure input and restore never replay old head motion");
+        head.Update(Typing(2.1,2,KeyboardEventKind.Pressed),.1);head.Update(Typing(2.2,dropped:1),.1);
+        Check(head.Amplitude==0,"Dropped input clears head motion");
+        head.Update(Typing(2.3,2,KeyboardEventKind.Pressed),.1);headID=Guid.NewGuid();head.Update(Typing(2.4,6),.1);
+        Check(head.Amplitude==0,"Generation changes clear head motion");
+        head.Update(Typing(3,2,KeyboardEventKind.Pressed),1d/60);
+        for(int i=1;i<=180;i++)head.Update(Typing(3+i/60d,0,KeyboardEventKind.Repeated),1d/60);
+        Check(head.Angle==0 && head.Amplitude==0,"Auto-repeat cannot sustain head motion");
+        head.Update(Typing(7,2,KeyboardEventKind.Pressed),1d/60);
+        for(int i=0;i<120;i++)head.Update(null,1d/60);
+        Check(head.Amplitude==0,"Missing input settles head motion");
+        head.Update(Typing(12,1000,KeyboardEventKind.Pressed),5);
+        Check(head.Frequency<=2.40001 && head.Phase<.51,"Long stalls never queue motion and frequency is capped");
+        head.Update(Typing(12.1,double.NaN),double.PositiveInfinity);
+        Check(double.IsFinite(head.Angle),"Invalid rate and dt cannot create nonfinite head transforms");
+        head.Reset();Check(head.Angle==0,"Hide restores head orientation");
         Console.WriteLine($"PASS: {count} pixel keyboard assertions");
     }
 }

@@ -39,9 +39,15 @@ import UniformTypeIdentifiers
         }
         for i in 0..<180 { tick(i,press:i==170) }
         check("Beats and keyboard drive tail and paws together", session.keyboard.pressed.contains(.a) && session.tail.beatCount == 6)
+        check("Typing drives the head alongside the music tail", session.head.amplitude > 0.5 && abs(session.head.angle) > 0.01)
+        let headPhase = session.head.phase
         audio.reset(sessionID:UUID(),state:.permissionRequired)
         session.receive(keyboard:keyboard.read());session.update(input:sounds.read(),deltaTime:1/60)
         check("Audio loss cannot reset held keys", session.keyboard.pressed.contains(.a))
+        check("Audio reconnect cannot reset typing-driven head phase", session.head.phase > headPhase)
+        let portrait = session.drawing.layer?.sublayers?.first?.sublayers?.first { $0.name == "pixel-cat-portrait" }
+        check("Native portrait rotates about the fixed chin pivot", portrait?.anchorPoint == CGPoint(x:0.5,y:0.88) &&
+            portrait?.position == CGPoint(x:76,y:54+64*0.88) && abs(atan2(portrait!.affineTransform().b,portrait!.affineTransform().a)-session.head.angle)<0.00001)
         keys.publish(KeyboardRawEvent(kind:.released,keyCode:0,modifiers:[]),sessionID:keyID)
         for _ in 0..<30 {session.receive(keyboard:keyboard.read());session.update(input:sounds.read(),deltaTime:1/60)}
         check("Key release works without audio", session.keyboard.pressed.isEmpty && session.keyboard.left.down == 0)
@@ -140,6 +146,7 @@ import UniformTypeIdentifiers
         check("Higher BPM drives a faster swing", fast.phase > slow.phase + 0.4)
         session.deactivate()
         check("Hide clears held keys and restores the resting tail", session.keyboard.pressed.isEmpty && session.tail.amplitude == 0)
+        check("Hide returns the cat head to its original orientation", session.head.angle == 0 && portrait?.affineTransform() == .identity)
         session.activate(viewport:.desktop)
         session.receive(keyboard:keyboard.read());session.update(input:sounds.read(),deltaTime:1/60)
         check("Resume does not replay historical keyboard events", session.keyboard.litKeys.isEmpty)

@@ -1,0 +1,8 @@
+Use case: precise-object-edit.
+Asset type: transparent animation sprite sheet for an existing pixel cat head.
+Input image: the exact existing Miucs black cat head, identity and style reference.
+Create EXACTLY 16 consecutive poses in a perfectly regular 4 columns by 4 rows grid, square canvas, one isolated head per cell, transparent background. No labels, grid lines, text, body, keyboard or shadows.
+Preserve this specific black tuxedo cat's yellow-green round eyes, dark nose, white chin, white whiskers, brown inner ears and coarse square pixel-art palette. Maintain the SAME face, facial landmarks, expression, dimensions and pixel size across every cell. Both eyes remain open. No new face designs.
+The cat gently rocks its head left and right about a FIXED pivot at the bottom center of the chin, like a curious cat swaying while typing. Rotate in the image plane, do not slide the whole head sideways, do not nod vertically, do not turn to profile or blink. Keep it lively but small and comfortable, max +/-12 degrees relative to its original pose.
+Exact row-major angles: 0, +4.6, +8.5, +11.1 / +12, +11.1, +8.5, +4.6 / 0, -4.6, -8.5, -11.1 / -12, -11.1, -8.5, -4.6 degrees. This is ONE seamless sinusoidal loop, not 16 different designs.
+All cells have exactly the same logical bounds and identical fixed chin pivot at cell x=50%, y=78%; head width about 60% and height about 65% of each cell. Leave generous margins so ears and whiskers never touch cell edges. Sharp coarse stepped pixels, no anti-aliased illustration, no motion blur or ghost images. Use actual transparent alpha and preserve all cat details.

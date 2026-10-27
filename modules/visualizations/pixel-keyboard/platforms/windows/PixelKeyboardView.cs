@@ -18,6 +18,7 @@ public sealed class PixelKeyboardView : VisualizationView
     public override double LayoutMaxWidth => 1600;
     public PixelKeyboardScene Keyboard { get; } = new();
     public PixelTailScene Tail { get; } = new();
+    public PixelHeadScene Head { get; } = new();
     private static readonly DrawingGroup[] TailFrames = BuildTailFrames();
     private static DrawingGroup[] BuildTailFrames()
     {
@@ -59,17 +60,18 @@ public sealed class PixelKeyboardView : VisualizationView
                 { int n=PixelPawSprite.Rows[y][x]-'0'; if(n>0) dc.DrawRectangle(palette[n],null,new Rect(x*2+2,y*2+2,2,2)); }
         paw.Freeze();
     }
-    protected override void ResetInput() { Tail.Reset(); Keyboard.Reset(); }
+    protected override void ResetInput() { Tail.Reset(); Head.Reset(); Keyboard.Reset(); }
     public override void Update(AudioInput audio, KeyboardInput keyboard, double dt)
     {
         if (!Active || Disposed) return;
-        Keyboard.Update(keyboard,dt); Tail.Update(audio,dt); InvalidateVisual();
+        Keyboard.Update(keyboard,dt); Head.Update(keyboard,dt); Tail.Update(audio,dt); InvalidateVisual();
     }
     protected override void RenderScene(DrawingContext dc)
     {
         dc.DrawDrawing(hardware);
         foreach(var key in PixelKeyboardScene.Keys) if(Keyboard.IsLit(key.Code)) dc.DrawDrawing(activeKeys[key.Code]);
-        dc.DrawImage(CatPortrait,new Rect(44,54,64,64));
+        dc.PushTransform(new RotateTransform(Head.Angle * 180 / Math.PI,76,54+64*.88));
+        dc.DrawImage(CatPortrait,new Rect(44,54,64,64)); dc.Pop();
         dc.DrawDrawing(TailFrames[Tail.SpriteIndex]);
         foreach(var (state,angle) in new[]{(Keyboard.Left,-7d),(Keyboard.Right,7d)})
         {

@@ -54,6 +54,65 @@ import Foundation
         scene.reset()
         check("Hide clears cursors and returns both paws home", scene.left.key == .f && scene.right.key == .j && scene.litKeys.isEmpty)
         check("Pixel grid has a fixed size and a bounded palette", PixelPawSprite.rows.count == 32 && PixelPawSprite.rows.allSatisfy { $0.count == 22 && $0.allSatisfy { "012345".contains($0) } })
+        var headID = UUID(), headSeq: UInt64 = 0
+        func typing(_ time: Double, rate: Double = 2, kind: KeyboardEventKind? = nil,
+                    state: KeyboardSourceState = .running, lag: Double = 0, dropped: UInt64 = 0) -> KeyboardInput {
+            var events = [KeyboardInputEvent]()
+            if let kind {
+                headSeq += 1
+                events = [KeyboardInputEvent(sequence:headSeq,receivedAt:time-lag,kind:kind,keyCode:0,modifiers:[],heldDuration:nil)]
+            }
+            return KeyboardInput(sessionID:headID,sequence:headSeq,state:state,sampledAt:time,modifiers:[],heldKeys:[],
+                pressesPerSecond:rate,idleDuration:0,events:events,droppedEventCount:dropped)
+        }
+        var head = PixelHeadScene()
+        head.advance(seconds:0.1,input:typing(0,rate:6))
+        check("Existing rate without a fresh press cannot start the head", head.angle == 0)
+        head.advance(seconds:0.1,input:typing(0.1,kind:.repeated))
+        head.advance(seconds:0.1,input:typing(0.2,kind:.modifiersChanged))
+        check("Repeats and modifiers do not trigger head motion", head.amplitude == 0)
+        head.advance(seconds:0.1,input:typing(0.3,kind:.pressed,lag:1))
+        check("Stale presses do not trigger head motion", head.amplitude == 0)
+        head.advance(seconds:1/60,input:typing(1,kind:.pressed))
+        head.advance(seconds:0.1,input:typing(1.1))
+        check("Fresh typing starts a visible gentle sway", abs(head.angle) > 0.03 && head.amplitude > 0.5)
+        let oldPhase = head.phase
+        head.advance(seconds:1/60,input:typing(1.12,rate:4,kind:.pressed))
+        check("New presses preserve phase rather than restarting each swing", head.phase > oldPhase && head.phase-oldPhase < 0.25)
+        var frequencies = [Double](), bounded = true
+        for rate in [1,2,4] {
+            var sample = PixelHeadScene()
+            for frame in 0..<300 {
+                let t = Double(frame)/60
+                sample.advance(seconds:1/60,input:typing(t,rate:Double(rate),kind:frame%(60/rate)==0 ? .pressed : nil))
+                bounded = bounded && abs(sample.angle) <= .pi/15 + 0.00001
+            }
+            frequencies.append(sample.frequency)
+        }
+        check("One, two and four presses per second give proportional head frequency", abs(frequencies[1]/frequencies[0]-2)<0.001 && abs(frequencies[2]/frequencies[0]-4)<0.001)
+        check("Head tilt stays within twelve degrees at every typing rate", bounded)
+        head.advance(seconds:0.01,input:typing(2,state:.secureInput))
+        head.advance(seconds:0.01,input:typing(2.01,rate:6))
+        check("Secure input stops the head and restore never replays old rate", head.angle == 0 && head.amplitude == 0)
+        head.advance(seconds:0.1,input:typing(2.1,kind:.pressed))
+        head.advance(seconds:0.1,input:typing(2.2,dropped:1))
+        check("Dropped input stops the head until a new press", head.amplitude == 0)
+        head.advance(seconds:0.1,input:typing(2.3,kind:.pressed))
+        headID = UUID()
+        head.advance(seconds:0.1,input:typing(2.4,rate:6))
+        check("Keyboard generation changes clear head motion", head.amplitude == 0)
+        head.advance(seconds:1/60,input:typing(3,kind:.pressed))
+        for i in 1...180 { head.advance(seconds:1/60,input:typing(3+Double(i)/60,rate:0,kind:.repeated)) }
+        check("Held-key auto-repeat cannot sustain head motion", head.amplitude == 0 && head.angle == 0)
+        head.advance(seconds:1/60,input:typing(7,kind:.pressed))
+        for _ in 0..<120 { head.advance(seconds:1/60,input:nil) }
+        check("Missing keyboard updates settle without running forever", head.amplitude == 0)
+        head.advance(seconds:5,input:typing(12,rate:1000,kind:.pressed))
+        check("Long frames start fresh without backlog and excessive rates are capped", head.frequency <= 2.4+0.0001 && head.phase < 0.51)
+        head.advance(seconds:.infinity,input:typing(12.1,rate:.nan))
+        check("Malformed rate and delta never produce nonfinite transforms", head.angle.isFinite)
+        head.reset()
+        check("Settled or hidden head requires no redraw", !head.advance(seconds:1/60,input:nil) && head.angle == 0)
         print("PASS \(count) pixel keyboard core checks")
     }
 }

@@ -50,7 +50,9 @@ final class PixelKeyboardView: NSView {
         status.frame = CGRect(x: 60, y: 442, width: 680, height: 16); status.contentsScale = 2
         canvas.addSublayer(status)
         portrait.name = "pixel-cat-portrait"
-        portrait.frame = CGRect(x: 44, y: 54, width: 64, height: 64)
+        portrait.bounds = CGRect(x: 0, y: 0, width: 64, height: 64)
+        portrait.anchorPoint = CGPoint(x: 0.5, y: 0.88)
+        portrait.position = CGPoint(x: 76, y: 54 + 64 * 0.88)
         portrait.contents = PixelCatPortrait.image
         portrait.contentsGravity = .resizeAspect
         portrait.magnificationFilter = .nearest; portrait.minificationFilter = .nearest
@@ -77,6 +79,11 @@ final class PixelKeyboardView: NSView {
     func presentTail(_ scene: PixelTailScene) {
         CATransaction.begin(); CATransaction.setDisableActions(true)
         tail.path = Self.tailPaths[scene.spriteIndex]
+        CATransaction.commit()
+    }
+    func presentHead(_ scene: PixelHeadScene) {
+        CATransaction.begin(); CATransaction.setDisableActions(true)
+        portrait.setAffineTransform(CGAffineTransform(rotationAngle: scene.angle))
         CATransaction.commit()
     }
     func present(_ scene: PixelKeyboardScene) {

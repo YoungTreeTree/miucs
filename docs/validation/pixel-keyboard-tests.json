@@ -13,7 +13,19 @@
       "passed" : true
     },
     {
+      "name" : "Typing drives the head alongside the music tail",
+      "passed" : true
+    },
+    {
       "name" : "Audio loss cannot reset held keys",
+      "passed" : true
+    },
+    {
+      "name" : "Audio reconnect cannot reset typing-driven head phase",
+      "passed" : true
+    },
+    {
+      "name" : "Native portrait rotates about the fixed chin pivot",
       "passed" : true
     },
     {
@@ -105,6 +117,10 @@
       "passed" : true
     },
     {
+      "name" : "Hide returns the cat head to its original orientation",
+      "passed" : true
+    },
+    {
       "name" : "Resume does not replay historical keyboard events",
       "passed" : true
     },
@@ -114,5 +130,5 @@
     }
   ],
   "failed" : 0,
-  "passed" : 28
+  "passed" : 32
 }
