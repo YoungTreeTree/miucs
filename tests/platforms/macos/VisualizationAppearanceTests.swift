@@ -85,7 +85,7 @@ enum VisualizationAppearanceTests {
         check("Actual native menu actions select, mark and persist every color", actionsWork)
         check("Choosing a color opens no configuration window", app.windows.count == windowCount)
 
-        let channel = FeatureChannel(), generation = UUID()
+        let channel = FeatureChannel(now: { 0 }), generation = UUID()
         channel.reset(sessionID: generation, state: .running)
         let legacyStore = PencilPaletteStore(preferences: preferences)
         let registry = BuiltInVisualizations.registry(preferences: preferences, paletteStore: legacyStore)

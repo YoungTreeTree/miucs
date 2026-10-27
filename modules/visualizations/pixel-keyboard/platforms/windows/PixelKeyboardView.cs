@@ -8,12 +8,28 @@ using Miucs.Audio;
 using Miucs.Keyboard;
 namespace Miucs.Visualizations;
 
-/// <summary>Embeds the existing staff renderer; hardware and key drawings are retained/frozen.</summary>
-public sealed class PixelKeyboardView : StaffNoteView
+/// <summary>Pixel keyboard with a portrait, blank center and beat-driven black tail.</summary>
+public sealed class PixelKeyboardView : VisualizationView
 {
     public override string Id => "pixel-keyboard";
+    public override double BaseWidth => 800;
     public override double BaseHeight => 460;
+    public override double LayoutMinWidth => 80;
+    public override double LayoutMaxWidth => 1600;
     public PixelKeyboardScene Keyboard { get; } = new();
+    public PixelTailScene Tail { get; } = new();
+    private static readonly DrawingGroup[] TailFrames = BuildTailFrames();
+    private static DrawingGroup[] BuildTailFrames()
+    {
+        var frames=new DrawingGroup[PixelTailSprite.FrameCount];
+        for(int i=0;i<frames.Length;i++)
+        {
+            var frame=new DrawingGroup();
+            using(var dc=frame.Open())foreach(var (x,y) in PixelTailSprite.Pixels(i))dc.DrawRectangle(Brushes.Black,null,new Rect(652+x,40+y,2,2));
+            frame.Freeze();frames[i]=frame;
+        }
+        return frames;
+    }
     private static readonly Brush Outline = Brush(0x393044), Dark = Brush(0x62576F), Side = Brush(0x9A8FA8), Paper = Brush(0xFBF7EF);
     private static readonly BitmapSource CatPortrait = LoadPortrait();
     private static BitmapSource LoadPortrait()
@@ -43,21 +59,18 @@ public sealed class PixelKeyboardView : StaffNoteView
                 { int n=PixelPawSprite.Rows[y][x]-'0'; if(n>0) dc.DrawRectangle(palette[n],null,new Rect(x*2+2,y*2+2,2,2)); }
         paw.Freeze();
     }
-    protected override void ResetInput() { base.ResetInput(); Keyboard.Reset(); }
+    protected override void ResetInput() { Tail.Reset(); Keyboard.Reset(); }
     public override void Update(AudioInput audio, KeyboardInput keyboard, double dt)
     {
         if (!Active || Disposed) return;
-        Keyboard.Update(keyboard,dt); base.Update(audio,keyboard,dt);
+        Keyboard.Update(keyboard,dt); Tail.Update(audio,dt); InvalidateVisual();
     }
     protected override void RenderScene(DrawingContext dc)
     {
         dc.DrawDrawing(hardware);
         foreach(var key in PixelKeyboardScene.Keys) if(Keyboard.IsLit(key.Code)) dc.DrawDrawing(activeKeys[key.Code]);
-        // Preserve the exact staff coordinate system and aspect ratio inside its ivory screen.
         dc.DrawImage(CatPortrait,new Rect(44,54,64,64));
-        dc.PushClip(new RectangleGeometry(new Rect(116,22,640,128)));
-        dc.PushTransform(new TranslateTransform(116,22)); dc.PushTransform(new ScaleTransform(.8,.8));
-        base.RenderScene(dc); dc.Pop(); dc.Pop(); dc.Pop();
+        dc.DrawDrawing(TailFrames[Tail.SpriteIndex]);
         foreach(var (state,angle) in new[]{(Keyboard.Left,-7d),(Keyboard.Right,7d)})
         {
             dc.PushTransform(new TranslateTransform(state.X,state.Y-(1-state.Down)*8));

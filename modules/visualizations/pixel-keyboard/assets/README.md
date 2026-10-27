@@ -4,4 +4,4 @@
 
 Art direction: a coarse retro-game head icon with a limited dark palette, yellow-green eyes, white chin, stepped edges and short pixel whiskers. Preserve the slight head tilt; omit the body, background and collar.
 
-Both native renderers load this asset once and display it at 64×64 logical points with nearest-neighbor scaling, in the reserved left column of the keyboard screen. The staff has its own 640×128 area to the right.
+Both native renderers load this asset once and display it at 64×64 logical points with nearest-neighbor scaling, in the reserved left column of the keyboard screen. The middle of the screen stays empty; a code-drawn pure black pixel tail occupies the right column.

@@ -5,7 +5,7 @@ import UniformTypeIdentifiers
 @main @MainActor enum PixelKeyboardPlatformTests {
     static func bitmap(_ view: PixelKeyboardView, width: Int = 800, background: NSColor? = nil) -> NSBitmapImageRep {
         let height = Int(Double(width)*460/800)
-        view.setFrameSize(NSSize(width: width, height: height)); view.layoutSubtreeIfNeeded(); view.staff.updateLayer()
+        view.setFrameSize(NSSize(width: width, height: height)); view.layoutSubtreeIfNeeded()
         CATransaction.flush()
         let rep = NSBitmapImageRep(bitmapDataPlanes:nil,pixelsWide:width,pixelsHigh:height,bitsPerSample:8,samplesPerPixel:4,
             hasAlpha:true,isPlanar:false,colorSpaceName:.deviceRGB,bytesPerRow:0,bitsPerPixel:0)!
@@ -31,22 +31,21 @@ import UniformTypeIdentifiers
         func tick(_ index:Int, press:Bool=false, release:Bool=false) {
             let t=Double(index)/60
             var feature=StaffNotePreview.audio(t);feature.envelope = 0.03 + 0.15 * (0.5+0.5*sin(t*3))
+            feature.beat = BeatFrame(time:t,bpm:120,phase:0,confidence:0.9,strength:0.8,beatTime:index%30 == 0 ? t : nil)
             if press {keys.publish(KeyboardRawEvent(kind:.pressed,keyCode:0,modifiers:[]),sessionID:keyID)}
             if release {keys.publish(KeyboardRawEvent(kind:.released,keyCode:0,modifiers:[]),sessionID:keyID)}
             audio.publish(audio:feature,melody:StaffNotePreview.melody(t,midi:[67.0,69,71,72,74,72,69,67][(index/30)%8]),sessionID:audioID)
             session.receive(keyboard:keyboard.read());session.update(input:sounds.read(),deltaTime:1/60)
         }
         for i in 0..<180 { tick(i,press:i==170) }
-        check("Music and keyboard are consumed together", session.keyboard.pressed.contains(.a) && session.music.scene.trace.count > 10)
-        let pitch=session.music.scene.pitch
+        check("Beats and keyboard drive tail and paws together", session.keyboard.pressed.contains(.a) && session.tail.beatCount == 6)
         audio.reset(sessionID:UUID(),state:.permissionRequired)
         session.receive(keyboard:keyboard.read());session.update(input:sounds.read(),deltaTime:1/60)
         check("Audio loss cannot reset held keys", session.keyboard.pressed.contains(.a))
         keys.publish(KeyboardRawEvent(kind:.released,keyCode:0,modifiers:[]),sessionID:keyID)
         for _ in 0..<30 {session.receive(keyboard:keyboard.read());session.update(input:sounds.read(),deltaTime:1/60)}
         check("Key release works without audio", session.keyboard.pressed.isEmpty && session.keyboard.left.down == 0)
-        // Use a composed music snapshot for screenshot comparisons and the delivered preview.
-        session.drawing.staff.updatePreview(StaffNotePreview.sampleScene(midi:71))
+        check("Audio loss lets the tail settle while keys remain independent", session.tail.spriteIndex == 0)
         let output=URL(fileURLWithPath:"build/pixel-keyboard-preview")
         try FileManager.default.createDirectory(at:output,withIntermediateDirectories:true)
         var validSizes=true, transparent=true, colored=true
@@ -59,29 +58,92 @@ import UniformTypeIdentifiers
         check("600/800/1600 widths retain transparent margins and exact module proportions", validSizes && transparent)
         for ink in VisualizationInk.allCases {
             session.applyAppearance(ink.appearance)
-            colored = colored && session.drawing.staff.inkStyle == ink.appearance
+            colored = colored && session.hintColor == ink.color.nsColor
             for (name,bg) in [("light",NSColor.white),("dark",NSColor(calibratedWhite:0.12,alpha:1))] {
                 let rep=bitmap(session.drawing,background:bg)
                 try rep.representation(using:.png,properties:[:])!.write(to:output.appendingPathComponent("\(ink.rawValue)-\(name).png"))
             }
         }
         let screenBitmap = bitmap(session.drawing)
-        var screenInk = 0
-        for y in 34..<130 { for x in 132..<740 {
+        var centerInk = 0, tailInk = 0
+        for y in 24..<146 { for x in 116..<638 {
             let c = screenBitmap.colorAt(x:x,y:y)!.usingColorSpace(.deviceRGB)!
-            if c.redComponent < 0.8 && c.greenComponent < 0.8 { screenInk += 1 }
+            if c.redComponent < 0.8 || c.greenComponent < 0.8 { centerInk += 1 }
         } }
-        check("Embedded music is actually visible inside the screen pixels", screenInk > 100)
+        for y in 40..<128 { for x in 652..<748 {
+            let c = screenBitmap.colorAt(x:x,y:y)!.usingColorSpace(.deviceRGB)!
+            if c.redComponent < 0.01 && c.greenComponent < 0.01 && c.blueComponent < 0.01 { tailInk += 1 }
+        } }
+        check("Screen center stays completely blank without staff or music effects", centerInk == 0)
+        check("Pure black pixel tail is visible in the right column", tailInk > 250)
         let catPixel = screenBitmap.colorAt(x:76,y:90)!.usingColorSpace(.deviceRGB)!
-        check("Cat portrait occupies the reserved left margin without covering staff", catPixel.redComponent < 0.6 &&
-            session.drawing.staff.frame == NSRect(x:116,y:22,width:640,height:128))
-        check("Five global inks reach the embedded real staff renderer", colored && pitch != nil)
+        check("Left portrait remains visible at its original scale", catPixel.redComponent < 0.6)
+        check("Global ink applies only to status, preserving the black tail", colored)
+        let sprites = (0..<PixelTailSprite.frameCount).map { PixelTailSprite.pixels(index:$0) }
+        check("All tail poses fit beside the portrait without clipping or moving the root", sprites.allSatisfy {
+            !$0.isEmpty && $0.allSatisfy { $0.0 >= 2 && $0.0 <= 92 && $0.1 >= 2 && $0.1 <= 84 } && $0.contains { $0.0 == 12 && $0.1 == 48 }
+        })
+        let rest = PixelTailSprite.pixels(index:0)
+        check("Resting tail extends horizontally at the same scale as the portrait", rest.map { $0.0 }.max()! - rest.map { $0.0 }.min()! > 60 && rest.map { $0.1 }.max()! - rest.map { $0.1 }.min()! < 36)
+        let middleA = PixelTailSprite.centerline(t:0.5,phase:1.2,amplitude:1).1 - PixelTailSprite.centerline(t:0.5,phase:1.2,amplitude:0).1
+        let tipA = PixelTailSprite.centerline(t:1,phase:1.2,amplitude:1).1 - PixelTailSprite.centerline(t:1,phase:1.2,amplitude:0).1
+        let middleB = PixelTailSprite.centerline(t:0.5,phase:2.4,amplitude:1).1 - PixelTailSprite.centerline(t:0.5,phase:2.4,amplitude:0).1
+        let tipB = PixelTailSprite.centerline(t:1,phase:2.4,amplitude:1).1 - PixelTailSprite.centerline(t:1,phase:2.4,amplitude:0).1
+        check("A delayed bend travels from the middle toward the tip", abs(middleA) < 0.01 && abs(tipA) > 8 && abs(middleB) > 3 && abs(tipB) < 0.01)
+        check("Rounded tail retains a broad shaft and tip in every pose", sprites.allSatisfy { pixels in
+            [24,48,70].allSatisfy { column in pixels.filter { $0.0 == column }.count >= 5 }
+        })
+        let areas = sprites.map { $0.count }
+        check("Tail volume stays consistent throughout the swish", Double(areas.max()!) / Double(areas.min()!) < 1.2)
+        let rootCells = Set(rest.filter { $0.0 <= 14 }.map { $0.1 * 96 + $0.0 })
+        check("The full root silhouette stays anchored", sprites.allSatisfy {
+            Set($0.filter { $0.0 <= 14 }.map { $0.1 * 96 + $0.0 }) == rootCells
+        })
+        let loop = sprites[193...256].map { Set($0.map { $0.1 * 96 + $0.0 }) }
+        check("Adjacent poses and the loop seam have no large jumps", (0..<64).allSatisfy {
+            loop[$0].symmetricDifference(loop[($0+1)%64]).count < 60
+        })
+        var tail = PixelTailScene(), tailID = UUID()
+        func tailInput(_ seq:UInt64, now:Double, beat:Bool=false, bpm:Double=120, confidence:Double=0.9, lag:Double=0, silent:Bool=false, strength:Double=1) -> FeatureInput {
+            var sound=StaffNotePreview.audio(now);sound.isSilent=silent
+            let frame=AudioFeatureFrame(sessionID:tailID,sequence:seq,receivedAt:now,audio:sound,melody:nil)
+            return FeatureInput(sessionID:tailID,state:.running,frame:frame,frameAge:0,onsets:[],spectralFluxPeak:0,
+                beats:beat ? [AudioBeatEvent(sequence:seq,time:now,receivedAt:now-lag,strength:strength,bpm:bpm,confidence:confidence)] : [])
+        }
+        var responsive = PixelTailScene()
+        responsive.advance(tailInput(1,now:0,beat:true,strength:0.1),seconds:0)
+        responsive.advance(tailInput(2,now:0.05),seconds:0.05)
+        check("A quiet reliable beat reaches visible half-amplitude within 50ms", responsive.amplitude > 0.5 && responsive.spriteIndex > 64)
+        tail.advance(tailInput(1,now:0,beat:true),seconds:0)
+        tail.advance(tailInput(2,now:0.4),seconds:0.4)
+        let phaseBeforeBeat=tail.phase
+        tail.advance(tailInput(3,now:0.5,beat:true),seconds:0.1)
+        tail.advance(tailInput(4,now:0.9),seconds:0.4)
+        check("Fresh beats preserve continuous motion instead of flipping the tail", phaseBeforeBeat > 0 && tail.phase > phaseBeforeBeat && tail.beatCount == 2 && tail.amplitude > 0.9)
+        tail.advance(tailInput(4,now:0.9,beat:true),seconds:0)
+        tail.advance(tailInput(5,now:1,beat:true,confidence:0.1),seconds:0.1)
+        tail.advance(tailInput(6,now:1.1,beat:true,lag:1),seconds:0.1)
+        check("Repeated, unreliable and stale beats never trigger swings", tail.beatCount == 2)
+        tail.advance(tailInput(7,now:5),seconds:4)
+        check("Long gaps settle directly without queued swings", tail.amplitude == 0)
+        tail.advance(tailInput(8,now:5.1,beat:true),seconds:0)
+        tail.advance(tailInput(9,now:5.2),seconds:0.1)
+        tail.advance(tailInput(10,now:5.5,silent:true),seconds:0.3)
+        check("Silence returns the tail to rest", tail.amplitude == 0)
+        tailID=UUID();tail.advance(tailInput(1,now:6,beat:true,lag:1),seconds:1)
+        check("Reconnect ignores old beats", tail.beatCount == 0 && tail.amplitude == 0)
+        var slow=PixelTailScene(), fast=PixelTailScene()
+        slow.advance(tailInput(1,now:0,beat:true,bpm:60),seconds:0)
+        fast.advance(tailInput(1,now:0,beat:true,bpm:180),seconds:0)
+        slow.advance(tailInput(2,now:0.2),seconds:0.2)
+        fast.advance(tailInput(2,now:0.2),seconds:0.2)
+        check("Higher BPM drives a faster swing", fast.phase > slow.phase + 0.4)
         session.deactivate()
-        check("Hide clears held keys and the embedded music history", session.keyboard.pressed.isEmpty && session.music.scene.trace.isEmpty)
+        check("Hide clears held keys and restores the resting tail", session.keyboard.pressed.isEmpty && session.tail.amplitude == 0)
         session.activate(viewport:.desktop)
         session.receive(keyboard:keyboard.read());session.update(input:sounds.read(),deltaTime:1/60)
         check("Resume does not replay historical keyboard events", session.keyboard.litKeys.isEmpty)
-        // Synthetic demonstration: independently moving paws and the same staff pipeline.
+        // Synthetic demonstration: independently moving paws and beat-driven tail.
         let demo=MacPixelKeyboardSession();demo.activate(viewport:.desktop);demo.applyAppearance(VisualizationInk.violet.appearance)
         let musicID=UUID(), demoKeyID=UUID();var seq:UInt64=0
         let gifURL=URL(fileURLWithPath:"docs/assets/miucs-pixel-keyboard.gif")
@@ -101,7 +163,8 @@ import UniformTypeIdentifiers
             let note=[67.0,69,71,72,74,72,69,67][(frame/10)%8]
             var sound=StaffNotePreview.audio(t);sound.envelope=0.03+0.15*(0.5+0.5*sin(t*3))
             let audioFrame=AudioFeatureFrame(sessionID:musicID,sequence:UInt64(frame+1),receivedAt:t,audio:sound,melody:StaffNotePreview.melody(t,midi:note))
-            demo.update(input:FeatureInput(sessionID:musicID,state:.running,frame:audioFrame,frameAge:0,onsets:[],spectralFluxPeak:0),deltaTime:0.05)
+            let beats = frame%10 == 0 ? [AudioBeatEvent(sequence:UInt64(frame+1),time:t,receivedAt:t,strength:0.9,bpm:120,confidence:0.9)] : []
+            demo.update(input:FeatureInput(sessionID:musicID,state:.running,frame:audioFrame,frameAge:0,onsets:[],spectralFluxPeak:0,beats:beats),deltaTime:0.05)
             let rep=bitmap(demo.drawing,background:.white)
             CGImageDestinationAddImage(gif,rep.cgImage!,[kCGImagePropertyGIFDictionary:[kCGImagePropertyGIFDelayTime:0.05]] as CFDictionary)
             if frame==65 {try rep.representation(using:.png,properties:[:])!.write(to:URL(fileURLWithPath:"docs/assets/miucs-pixel-keyboard.png"))}

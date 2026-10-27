@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Miucs.Keyboard;
+using Miucs.Audio;
 using Miucs.Visualizations;
 
 internal static class PixelKeyboardTests
@@ -41,6 +42,33 @@ internal static class PixelKeyboardTests
         Check(!scene.IsLit(30),"OS repeat cannot create a new press");
         scene.Reset();Check(scene.Left.Code==33&&scene.Right.Code==36,"Hide restores resting pose");
         Check(PixelPawSprite.Rows.Length==32&&PixelPawSprite.Rows.All(r=>r.Length==22),"Paw bitmap dimensions");
+        var tail=new PixelTailScene();var audioID=Guid.NewGuid();
+        AudioInput Sound(long sequence,double time,bool beat=false,double bpm=120,double confidence=.9,double lag=0,bool silent=false)
+        {
+            var sound=new AudioFeatures{Time=time,SampleRate=48000,ChannelCount=2,IsSilent=silent};
+            return new(audioID,AudioState.Running,new(audioID,sequence,time,sound,null),0,Array.Empty<OnsetEvent>(),
+                beat?new[]{new BeatEvent(sequence,time,time-lag,1,bpm,confidence)}:Array.Empty<BeatEvent>(),0);
+        }
+        tail.Update(Sound(1,0,true),0);tail.Update(Sound(2,.4),.4);double phaseBeforeBeat=tail.Phase;
+        tail.Update(Sound(3,.5,true),.1);tail.Update(Sound(4,.9),.4);
+        Check(phaseBeforeBeat>0 && tail.Phase>phaseBeforeBeat && tail.BeatCount==2 && tail.Amplitude>.9,"Beats preserve continuous tail motion");
+        tail.Update(Sound(4,.9,true),0);tail.Update(Sound(5,1,true,confidence:.1),.1);tail.Update(Sound(6,1.1,true,lag:1),.1);
+        Check(tail.BeatCount==2,"No repeated, unreliable or stale tail beats");
+        tail.Update(Sound(7,5),4);Check(tail.Amplitude==0,"Tail settles after long frame without backlog");
+        tail.Update(Sound(8,5.1,true),0);tail.Update(Sound(9,5.2),.1);tail.Update(Sound(10,5.5,silent:true),.3);
+        Check(tail.Amplitude==0,"Silence returns tail to rest");
+        audioID=Guid.NewGuid();tail.Update(Sound(1,6,true,lag:1),1);Check(tail.Amplitude==0 && tail.BeatCount==0,"Reconnect ignores stale beats");
+        var fast=new PixelTailScene();var slow=new PixelTailScene();
+        fast.Update(Sound(1,0,true,bpm:180),0);slow.Update(Sound(1,0,true,bpm:60),0);
+        fast.Update(Sound(2,.2),.2);slow.Update(Sound(2,.2),.2);Check(fast.Phase>slow.Phase+.4,"Tail follows BPM");
+        Check(Enumerable.Range(0,PixelTailSprite.FrameCount).All(i=>PixelTailSprite.Pixels(i).All(p=>p.X>=2 && p.X<=92 && p.Y>=2 && p.Y<=84) && PixelTailSprite.Pixels(i).Contains((12,48))),"Tail sprite stays in bounds with fixed root");
+        var rest=PixelTailSprite.Pixels(0);
+        Check(rest.Max(p=>p.X)-rest.Min(p=>p.X)>60 && rest.Max(p=>p.Y)-rest.Min(p=>p.Y)<36,"Resting tail is horizontal");
+        double middleA=PixelTailSprite.Centerline(.5,1.2,1).Y-PixelTailSprite.Centerline(.5,1.2,0).Y;
+        double tipA=PixelTailSprite.Centerline(1,1.2,1).Y-PixelTailSprite.Centerline(1,1.2,0).Y;
+        double middleB=PixelTailSprite.Centerline(.5,2.4,1).Y-PixelTailSprite.Centerline(.5,2.4,0).Y;
+        double tipB=PixelTailSprite.Centerline(1,2.4,1).Y-PixelTailSprite.Centerline(1,2.4,0).Y;
+        Check(Math.Abs(middleA)<.01 && Math.Abs(tipA)>8 && Math.Abs(middleB)>3 && Math.Abs(tipB)<.01,"Bend propagates toward tip instead of rigid rotation");
         Console.WriteLine($"PASS: {count} pixel keyboard assertions");
     }
 }

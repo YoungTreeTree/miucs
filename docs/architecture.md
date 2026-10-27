@@ -96,4 +96,4 @@ flowchart LR
 
 ### 像素音乐键盘
 
-`MacPixelKeyboardSession` 组合已有 `StaffNoteSimulation`、`StaffNoteView` 和独立的 `PixelKeyboardScene`。屏幕保留原始 800×160 坐标和 5:1 比例，放入 800×460 模块内的 640×128 谱面，屏幕左侧为照片转制的 64×64 像素猫头；不复制音高分析和轨迹算法。`PixelKeyboardView` 缓存静态机身、每个按下键帽和双爪像素图，运行中仅更新叠层显隐与两个猫爪位置。键盘状态拥有自己的代次、事件游标和已观察按下集合，音频重连不重置它。Windows 通过 `PixelKeyboardView : StaffNoteView` 复用现有屏幕绘制与场景，增加独立的可移植 `PixelKeyboardScene`。
+`MacPixelKeyboardSession` 组合独立的 `PixelKeyboardScene` 与 `PixelTailScene`，不再嵌入五线谱模拟或绘制器。屏幕左侧保留 64×64 像素猫头，中间留白，右侧纯黑尾巴由可靠拍点驱动。尾巴横向伸展，预缓存静止姿态及 4 档幅度 × 64 相位的 2 点像素矢量路径，根部固定，弯曲滞后传递到尾尖，节拍平滑控制速度与起伏，静音或节拍失联后回正；同帧仅接受最新且未过期的事件，不积压动作。键盘拥有独立代次和事件游标，音频重连不重置猫爪。Windows 的 `PixelKeyboardView` 直接继承通用 `VisualizationView`，使用对应的独立尾巴状态与冻结绘图缓存。

@@ -1,10 +1,15 @@
 import AppKit
 import QuartzCore
 
-/// Static pixel hardware is cached once; only key overlays and two paw layers move.
+/// Static hardware and pixel tail paths are cached; no per-frame path rebuilding.
 @MainActor
 final class PixelKeyboardView: NSView {
-    let staff = StaffNoteView()
+    private let tail = CAShapeLayer()
+    private static let tailPaths: [CGPath] = (0..<PixelTailSprite.frameCount).map { index in
+        let path = CGMutablePath()
+        for (x,y) in PixelTailSprite.pixels(index: index) { path.addRect(CGRect(x: x, y: y, width: 2, height: 2)) }
+        return path
+    }
     private let hardware = CALayer()
     private let portrait = CALayer()
     private let canvas = CALayer()
@@ -44,19 +49,16 @@ final class PixelKeyboardView: NSView {
         status.fontSize = 11; status.alignmentMode = .center; status.foregroundColor = Self.dark.cgColor
         status.frame = CGRect(x: 60, y: 442, width: 680, height: 16); status.contentsScale = 2
         canvas.addSublayer(status)
-        staff.wantsLayer = true; staff.layer?.masksToBounds = true
-        // Host the retained staff layer in the same logical canvas. Its view is kept
-        // as the existing renderer, with explicit updates rather than a second display link.
         portrait.name = "pixel-cat-portrait"
         portrait.frame = CGRect(x: 44, y: 54, width: 64, height: 64)
         portrait.contents = PixelCatPortrait.image
         portrait.contentsGravity = .resizeAspect
         portrait.magnificationFilter = .nearest; portrait.minificationFilter = .nearest
         canvas.addSublayer(portrait)
-        staff.frame = NSRect(x: 116, y: 22, width: 640, height: 128)
-        staff.layer?.frame = staff.frame
-        canvas.addSublayer(staff.layer!)
-        staff.updateLayer()
+        tail.name = "pixel-cat-tail"
+        tail.frame = CGRect(x: 652, y: 40, width: 96, height: 88)
+        tail.fillColor = NSColor.black.cgColor; tail.strokeColor = nil
+        tail.path = Self.tailPaths[0]; canvas.addSublayer(tail)
         setAccessibilityElement(true); setAccessibilityRole(.image); setAccessibilityLabel("Miucs · 像素音乐键盘")
         present(keyboard)
         resizeContents()
@@ -67,11 +69,15 @@ final class PixelKeyboardView: NSView {
         let scale = min(bounds.width / 800, bounds.height / 460)
         CATransaction.begin(); CATransaction.setDisableActions(true)
         canvas.setAffineTransform(CGAffineTransform(scaleX: scale, y: scale))
-        staff.updateLayer()
         CATransaction.commit()
     }
     func applyAppearance(_ value: VisualizationAppearance) {
-        staff.applyAppearance(value); staff.updateLayer()
+        status.foregroundColor = value.ink.nsColor.cgColor
+    }
+    func presentTail(_ scene: PixelTailScene) {
+        CATransaction.begin(); CATransaction.setDisableActions(true)
+        tail.path = Self.tailPaths[scene.spriteIndex]
+        CATransaction.commit()
     }
     func present(_ scene: PixelKeyboardScene) {
         keyboard = scene

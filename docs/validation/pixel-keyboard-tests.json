@@ -9,7 +9,7 @@
       "passed" : true
     },
     {
-      "name" : "Music and keyboard are consumed together",
+      "name" : "Beats and keyboard drive tail and paws together",
       "passed" : true
     },
     {
@@ -21,23 +21,87 @@
       "passed" : true
     },
     {
+      "name" : "Audio loss lets the tail settle while keys remain independent",
+      "passed" : true
+    },
+    {
       "name" : "600\/800\/1600 widths retain transparent margins and exact module proportions",
       "passed" : true
     },
     {
-      "name" : "Embedded music is actually visible inside the screen pixels",
+      "name" : "Screen center stays completely blank without staff or music effects",
       "passed" : true
     },
     {
-      "name" : "Cat portrait occupies the reserved left margin without covering staff",
+      "name" : "Pure black pixel tail is visible in the right column",
       "passed" : true
     },
     {
-      "name" : "Five global inks reach the embedded real staff renderer",
+      "name" : "Left portrait remains visible at its original scale",
       "passed" : true
     },
     {
-      "name" : "Hide clears held keys and the embedded music history",
+      "name" : "Global ink applies only to status, preserving the black tail",
+      "passed" : true
+    },
+    {
+      "name" : "All tail poses fit beside the portrait without clipping or moving the root",
+      "passed" : true
+    },
+    {
+      "name" : "Resting tail extends horizontally at the same scale as the portrait",
+      "passed" : true
+    },
+    {
+      "name" : "A delayed bend travels from the middle toward the tip",
+      "passed" : true
+    },
+    {
+      "name" : "Rounded tail retains a broad shaft and tip in every pose",
+      "passed" : true
+    },
+    {
+      "name" : "Tail volume stays consistent throughout the swish",
+      "passed" : true
+    },
+    {
+      "name" : "The full root silhouette stays anchored",
+      "passed" : true
+    },
+    {
+      "name" : "Adjacent poses and the loop seam have no large jumps",
+      "passed" : true
+    },
+    {
+      "name" : "A quiet reliable beat reaches visible half-amplitude within 50ms",
+      "passed" : true
+    },
+    {
+      "name" : "Fresh beats preserve continuous motion instead of flipping the tail",
+      "passed" : true
+    },
+    {
+      "name" : "Repeated, unreliable and stale beats never trigger swings",
+      "passed" : true
+    },
+    {
+      "name" : "Long gaps settle directly without queued swings",
+      "passed" : true
+    },
+    {
+      "name" : "Silence returns the tail to rest",
+      "passed" : true
+    },
+    {
+      "name" : "Reconnect ignores old beats",
+      "passed" : true
+    },
+    {
+      "name" : "Higher BPM drives a faster swing",
+      "passed" : true
+    },
+    {
+      "name" : "Hide clears held keys and restores the resting tail",
       "passed" : true
     },
     {
@@ -50,5 +114,5 @@
     }
   ],
   "failed" : 0,
-  "passed" : 12
+  "passed" : 28
 }
