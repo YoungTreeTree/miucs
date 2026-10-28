@@ -27,6 +27,7 @@ jobs:
         run: ./scripts/build-windows.ps1
       - shell: pwsh
         run: |
+          New-Item -ItemType Directory -Force -Path build/windows-smoke | Out-Null
           $process = Start-Process -FilePath ./dist/windows/win-x64/Miucs.exe -ArgumentList '--smoke-test', 'build/windows-smoke' -RedirectStandardOutput 'build/windows-smoke.stdout.log' -RedirectStandardError 'build/windows-smoke.stderr.log' -Wait -PassThru
           Get-Content 'build/windows-smoke.stdout.log', 'build/windows-smoke.stderr.log'
           if ($process.ExitCode -ne 0) { throw "Native WPF smoke failed" }
