@@ -110,10 +110,10 @@ import UniformTypeIdentifiers
             loop[$0].symmetricDifference(loop[($0+1)%64]).count < 60
         })
         var tail = PixelTailScene(), tailID = UUID()
-        func tailInput(_ seq:UInt64, now:Double, beat:Bool=false, bpm:Double=120, confidence:Double=0.9, lag:Double=0, silent:Bool=false, strength:Double=1) -> FeatureInput {
+        func tailInput(_ seq:UInt64, now:Double, beat:Bool=false, bpm:Double=120, confidence:Double=0.9, lag:Double=0, silent:Bool=false, strength:Double=1, onset:Bool=false) -> FeatureInput {
             var sound=StaffNotePreview.audio(now);sound.isSilent=silent
             let frame=AudioFeatureFrame(sessionID:tailID,sequence:seq,receivedAt:now,audio:sound,melody:nil)
-            return FeatureInput(sessionID:tailID,state:.running,frame:frame,frameAge:0,onsets:[],spectralFluxPeak:0,
+            return FeatureInput(sessionID:tailID,state:.running,frame:frame,frameAge:0,onsets:onset ? [AudioOnsetEvent(sequence:seq,time:now,receivedAt:now-lag,strength:strength)] : [],spectralFluxPeak:0,
                 beats:beat ? [AudioBeatEvent(sequence:seq,time:now,receivedAt:now-lag,strength:strength,bpm:bpm,confidence:confidence)] : [])
         }
         var responsive = PixelTailScene()
@@ -138,6 +138,27 @@ import UniformTypeIdentifiers
         check("Silence returns the tail to rest", tail.amplitude == 0)
         tailID=UUID();tail.advance(tailInput(1,now:6,beat:true,lag:1),seconds:1)
         check("Reconnect ignores old beats", tail.beatCount == 0 && tail.amplitude == 0)
+        var unlocked = PixelTailScene()
+        unlocked.advance(tailInput(1,now:0,strength:0.5,onset:true),seconds:1/60)
+        unlocked.advance(tailInput(2,now:0.1),seconds:0.1)
+        check("Music attacks animate the tail before BPM locks", unlocked.onsetCount == 1 && unlocked.beatCount == 0 && unlocked.amplitude > 0.5)
+        unlocked.advance(tailInput(2,now:0.1,strength:0.5,onset:true),seconds:0)
+        unlocked.advance(tailInput(3,now:0.3,lag:1,strength:0.5,onset:true),seconds:0.2)
+        unlocked.advance(tailInput(4,now:0.4,strength:0.1,onset:true),seconds:0.1)
+        check("Repeated stale and weak attacks cannot retrigger the tail", unlocked.onsetCount == 1)
+        unlocked.advance(tailInput(5,now:0.5,beat:true,onset:true),seconds:0.1)
+        unlocked.advance(tailInput(6,now:0.7,onset:true),seconds:0.2)
+        check("Reliable beats take priority without double-triggering", unlocked.beatCount == 1 && unlocked.onsetCount == 1)
+        unlocked.advance(tailInput(7,now:2,strength:0.5,onset:true),seconds:1.3)
+        check("Fresh attacks resume motion after tempo lock is lost", unlocked.onsetCount == 2)
+        unlocked.advance(tailInput(8,now:2.01,strength:0.5,onset:true),seconds:0.01)
+        check("Dense attacks are coalesced rather than queued", unlocked.onsetCount == 2)
+        unlocked.advance(tailInput(9,now:2.31,silent:true,onset:true),seconds:0.3)
+        check("Silence stops fallback motion even with an attack event", unlocked.amplitude == 0 && unlocked.onsetCount == 2)
+        unlocked.advance(tailInput(10,now:5),seconds:2.69)
+        check("Unpitched sustained audio without attacks does not invent a rhythm", unlocked.amplitude == 0)
+        tailID=UUID();unlocked.advance(tailInput(1,now:6,lag:1,onset:true),seconds:1)
+        check("Reconnection never replays fallback attacks", unlocked.onsetCount == 0 && unlocked.amplitude == 0)
         var slow=PixelTailScene(), fast=PixelTailScene()
         slow.advance(tailInput(1,now:0,beat:true,bpm:60),seconds:0)
         fast.advance(tailInput(1,now:0,beat:true,bpm:180),seconds:0)

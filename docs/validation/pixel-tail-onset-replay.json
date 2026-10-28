@@ -1,0 +1,23 @@
+{
+  "scenario": "Live system-audio feature replay with music on QQ Music; numeric features only, no PCM retained",
+  "before": {
+    "nonSilentFrames": 1021,
+    "movingFrames": 0,
+    "acceptedBeats": 0
+  },
+  "after": {
+    "nonSilentFrames": 1021,
+    "movingFrames": 703,
+    "acceptedBeats": 0,
+    "fallbackOnsets": 40
+  },
+  "control": {
+    "scenario": "Synthetic 120 BPM rhythm through system capture",
+    "frames": 876,
+    "beforeMovingFrames": 600,
+    "afterMovingFrames": 766,
+    "acceptedBeats": 26,
+    "startupFallbackOnsets": 8
+  },
+  "scope": "Same captured feature stream replayed through FeatureChannel and both old/new PixelTailScene. Visual activity is not a BPM accuracy metric."
+}
