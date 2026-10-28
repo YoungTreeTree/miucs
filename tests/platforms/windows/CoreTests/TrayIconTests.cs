@@ -40,6 +40,13 @@ public static class TrayIconTests
         byte[] left = TrayIconArtwork.Render(source, 32, 32, 0, 32), right = TrayIconArtwork.Render(source, 32, 32, 24, 32);
         Check(!left.SequenceEqual(right), "opposite poses produce different pixels");
         Check(source.SequenceEqual(original), "artwork never modifies the bundled portrait");
+        var solid = new byte[16 * 16 * 4];
+        for (int i = 3; i < solid.Length; i += 4) solid[i] = 255;
+        byte[] filled = TrayIconArtwork.Render(solid, 16, 16, TrayIconPose.RestFrame, 32);
+        int minX = 32, maxX = -1;
+        for (int y = 0; y < 32; y++) for (int x = 0; x < 32; x++)
+            if (filled[(y * 32 + x) * 4 + 3] != 0) { if (x < minX) minX = x; if (x > maxX) maxX = x; }
+        Check(maxX - minX + 1 >= 30, "tray cat fills the icon slot instead of sitting inside a small margin");
         foreach (int frame in new[] { 0, 12, 24 })
         {
             var encoded = TrayIconArtwork.EncodeIcon(source, 32, 32, frame);

@@ -13,7 +13,7 @@ public static class TrayIconArtwork
         if (width <= 0 || height <= 0 || source.LongLength != (long)width * height * 4 || size is < 16 or > 64)
             throw new ArgumentException("Invalid portrait dimensions or icon size");
         double angle = TrayIconPose.Angle(frame), cosine = Math.Cos(angle), sine = Math.Sin(angle);
-        double side = size * .82, left = (size - side) / 2, top = size / 32d;
+        double side = size * .94, left = (size - side) / 2, top = size / 32d;
         double pivotX = size / 2d, pivotY = top + side * .88;
         var pixels = new byte[size * size * 4];
         for (int y = 0; y < size; y++) for (int x = 0; x < size; x++)
