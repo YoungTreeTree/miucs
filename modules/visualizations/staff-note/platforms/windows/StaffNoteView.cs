@@ -31,23 +31,11 @@ public class StaffNoteView : VisualizationView
     {
         for (int i = 0; i < 5; i++) dc.DrawLine(Ink(.3,.8),new Point(24,58+i*8),new Point(778,58+i*8));
         dc.DrawGeometry(null, Ink(.7,1.7), Clef);
-        // Trace follows notation, not volume scaling or stem rotation.
-        for (int i = 1; i < Scene.Trace.Count; i++)
-        {
-            var a = Scene.Trace[i-1]; var b = Scene.Trace[i];
-            if (a.Segment != b.Segment) continue;
-            double x1 = 640 - (Scene.Elapsed - a.Time) * 70, x2 = 640 - (Scene.Elapsed - b.Time) * 70;
-            double progress = b.JoinDuration <= 0 ? 1 : Math.Clamp((Scene.Elapsed - b.JoinedAt) / b.JoinDuration,0,1);
-            progress = progress * progress * (3 - 2 * progress);
-            var curve = Path(c => { c.BeginFigure(new Point(x1,a.Y),false,false); c.BezierTo(new Point((x1+x2)/2,a.Y),new Point((x1+x2)/2,b.Y),new Point(x2,b.Y),true,false); });
-            dc.DrawGeometry(null,Ink(Math.Max(0,1-(Scene.Elapsed-a.Time)/8)*.5*progress,1.2),curve);
-        }
-        if (Scene.Reliable && Scene.Trace.Count > 0)
-        {
-            var last = Scene.Trace[^1]; double x = 640 - (Scene.Elapsed-last.Time)*70;
-            var tail = Path(c => { c.BeginFigure(new Point(x,last.Y),false,false); c.BezierTo(new Point(Math.Max(x,630),last.Y),new Point(630,Scene.Y),new Point(640,Scene.Y),true,false); });
-            dc.DrawGeometry(null,Ink(.5,1.2),tail);
-        }
+        // One stroked path and one spatial fade avoid seams between separately drawn edges.
+        dc.PushClip(new RectangleGeometry(new Rect(80, 0, 560, 160)));
+        dc.PushOpacityMask(TraceFade);
+        dc.DrawGeometry(null, Ink(.52, 1.05), CreateTraceGeometry(Scene));
+        dc.Pop(); dc.Pop();
         foreach (var ring in Scene.Rings)
         {
             double t = Math.Clamp((Scene.Elapsed-ring.Born)/.89,0,1);
@@ -77,6 +65,30 @@ public class StaffNoteView : VisualizationView
         dc.Pop();dc.Pop();
         if(Scene.Pitch is int note && new[]{1,3,6,8,10}.AsSpan().Contains(note%12)) Text(dc,"♯",621,Scene.Y-12,17,Scene.LabelOpacity);
         Text(dc,Scene.Pitch is int p ? StaffNoteScene.PitchName(p) : "—",659,Scene.Y-11,14,Scene.LabelOpacity);
+    }
+    internal static StreamGeometry CreateTraceGeometry(StaffNoteScene scene) => Path(context =>
+    {
+        foreach (var command in StaffTracePath.Build(scene))
+        {
+            var end = new Point(command.End.X, command.End.Y);
+            switch (command.Operation)
+            {
+                case StaffTraceOperation.Move: context.BeginFigure(end, false, false); break;
+                case StaffTraceOperation.Line: context.LineTo(end, true, false); break;
+                case StaffTraceOperation.Curve:
+                    context.BezierTo(new Point(command.Control1.X, command.Control1.Y),
+                        new Point(command.Control2.X, command.Control2.Y), end, true, false);
+                    break;
+            }
+        }
+    });
+    private static readonly LinearGradientBrush TraceFade = CreateTraceFade();
+    private static LinearGradientBrush CreateTraceFade()
+    {
+        var fade = new LinearGradientBrush(Colors.Transparent, Colors.White, new Point(80, 0), new Point(640, 0))
+        { MappingMode = BrushMappingMode.Absolute };
+        fade.Freeze();
+        return fade;
     }
     private void DrawArc(DrawingContext dc,double x,double y,double radius,double start,double sweep,double opacity)
     {

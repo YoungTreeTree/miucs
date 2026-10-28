@@ -22,6 +22,8 @@ public sealed class StaffNoteScene
     public double LabelOpacity { get; private set; }
     public int? Pitch { get; private set; }
     public bool Reliable { get; private set; }
+    public bool HasContinuousTraceTail => Reliable && acceptedTime >= 0 &&
+        Trace.Count > 0 && Trace[^1].Segment == segment;
     public List<TracePoint> Trace { get; } = new();
     public List<StaffRing> Rings { get; } = new();
     public KeyboardStars Keyboard { get; } = new();
@@ -49,6 +51,8 @@ public sealed class StaffNoteScene
     {
         if (!double.IsFinite(dt) || dt < 0) return;
         Elapsed += dt; melodyAge += dt;
+        // Expire the previous observation before deciding whether a new point reconnects it.
+        if (melodyAge >= .24) Reliable = false;
         Trace.RemoveAll(p => Elapsed - p.Time >= 8);
         Rings.RemoveAll(p => Elapsed - p.Born >= .89);
         Keyboard.Update(keyboard, dt);
@@ -86,14 +90,14 @@ public sealed class StaffNoteScene
                         }
                         if (accept)
                         {
-                            bool reconnect = !Reliable;
+                            bool reconnect = !HasContinuousTraceTail;
                             referencePitch = Pitch = note; TargetY = PitchY(note); Reliable = true; melodyAge = age; pendingCount = 0;
                             double y = TargetY, join = 0;
                             if (Trace.Count > 0 && Trace[^1].Segment == segment && acceptedTime >= 0)
                             {
                                 double gap = melody.Time - acceptedTime;
                                 y = Trace[^1].Y + (TargetY - Trace[^1].Y) * (1 - Math.Exp(-gap / .025));
-                                if (reconnect && gap >= .08) join = .18 + Math.Min(.12, gap * .12);
+                                if (reconnect && gap >= .08 - 1e-9) join = .18 + Math.Min(.12, gap * .12);
                             }
                             Trace.Add(new TracePoint(Elapsed - age, y, segment, Elapsed, join));
                             if (Trace.Count > 512) Trace.RemoveAt(0);

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Miucs.Audio;
 using Miucs.Keyboard;
 using Miucs.Visualizations;
@@ -20,6 +21,7 @@ public static class VisualizationTests
     private static KeyboardInput EmptyKeys()=>new(KeySession,0,KeyboardState.Running,0,KeyboardModifiers.None,Array.Empty<HeldKey>(),0,null,Array.Empty<KeyboardEvent>(),0);
     public static void Run()
     {
+        VerifyStaffTrace();
         Check(StaffNoteScene.PitchY(71)==74,"B4 fixed staff position");
         Check(StaffNoteScene.PitchY(60)==98,"C4 true staff position");
         Check(StaffNoteScene.PitchY(61)==98,"C sharp shares C staff position");
@@ -77,4 +79,78 @@ public static class VisualizationTests
         flight.Update(Input(801,16.02,null),.02);Check(flight.Note=="—","flight explicit missing melody");
         Console.WriteLine($"Visualization tests: {assertions} assertions passed (portable scene only; no WPF execution).");
     }
+    private static void VerifyStaffTrace()
+    {
+        var scene = new StaffNoteScene(); var keys = EmptyKeys();
+        StaffTraceCommand[] Path() => StaffTracePath.Build(scene).ToArray();
+        int Figures() => Path().Count(c => c.Operation == StaffTraceOperation.Move);
+        bool AtHead() => Path()[^1].End == new StaffTracePosition(640, scene.Y);
+        scene.Update(Input(1, 0, 71), keys, 0);
+        for (int i = 2; i <= 12; i++)
+        {
+            scene.Update(Input(i, (i - 1) * .02, i % 2 == 0 ? 72 : 71), keys, .02);
+            Check(Figures() == 1 && AtHead(), "continuous changing pitch shares one path with the moving head");
+            Check(Path()[^2].End.Y == scene.Y, "newest zero-latency sample blends into the moving head without a kink");
+        }
+        int count = scene.Trace.Count;
+        var filtered = Input(13, .24, 84);
+        scene.Update(filtered, keys, .02);
+        Check(scene.Trace.Count == count && Figures() == 1 && AtHead(), "filtered jump preserves live tail without adding pitch samples");
+        scene.Update(filtered, keys, .01);
+        Check(scene.Trace.Count == count && AtHead(), "repeated snapshot keeps live contour without duplicating history");
+        var accepted = scene.Trace.ToArray();
+        scene.Update(Input(14, .26, null), keys, .01);
+        Check(!scene.HasContinuousTraceTail && Path()[^1].End.X < 640 && scene.Trace.SequenceEqual(accepted),
+            "explicit pitch dropout stops tail but preserves real history");
+        scene.Update(Input(15, .50, 72), keys, .24);
+        var join = scene.Trace[^1];
+        Check(join.JoinDuration > 0 && Figures() == 2 && AtHead(), "recovery starts at both real endpoints and retains live head");
+        var originalHistory = scene.Trace.ToArray();
+        var repeat = Input(15, .50, 72);
+        scene.Update(repeat, keys, join.JoinDuration / 2);
+        var middle = Path();
+        var curves = middle.Where(c => c.Operation == StaffTraceOperation.Curve).ToArray();
+        Check(curves.Length == 2 && Figures() == 2, "half-finished join grows two curved tips");
+        var rightStart = middle.Last(c => c.Operation == StaffTraceOperation.Move).End;
+        Check(curves[0].End.X < rightStart.X && rightStart.X < curves[1].End.X,
+            "two join tips approach across a shrinking gap");
+        // At half duration the smoothstep is 0.5; each tip covers one quarter of the final cubic.
+        var leftStart = middle[Array.FindIndex(middle, c => c.Operation == StaffTraceOperation.Curve) - 1].End;
+        double width = curves[1].End.X - leftStart.X;
+        Check(Math.Abs((curves[0].End.X - leftStart.X) / width - .2828125) < 1e-9,
+            "join tip lies on the macOS final cubic at t=0.25");
+        scene.Update(repeat, keys, join.JoinDuration / 2 + .001);
+        Check(Figures() == 1 && Path().Count(c => c.Operation == StaffTraceOperation.Curve) == 1,
+            "finished join becomes one continuous path without waiting for another sample");
+        Check(scene.Trace.SequenceEqual(originalHistory), "join animation never changes accepted positions or timestamps");
+
+        // Model latency must not consume the reveal animation before the result arrives.
+        scene.Reset(); scene.Update(Input(1, 0, 71), keys, 0);
+        scene.Update(Input(2, .02, null), keys, .02);
+        var delayed = Input(3, .5, 72);
+        delayed = delayed with { Frame = delayed.Frame! with { Melody = delayed.Frame.Melody! with { Time = .38 } } };
+        scene.Update(delayed, keys, .48);
+        Check(Math.Abs(scene.Trace[^1].Time - (scene.Elapsed - .12)) < 1e-9 &&
+            scene.Trace[^1].JoinedAt == scene.Elapsed && Figures() == 2, "delayed result retains PCM time and starts reveal on arrival");
+        scene.Update(Input(4, .52, null), keys, .02);
+        scene.Update(Input(5, .62, 71), keys, .1);
+        Check(scene.Trace.Count(p => p.JoinDuration > 0) == 2 && Figures() == 3, "overlapping gaps reveal independently");
+        scene.Update(Input(5, .62, 71), keys, .35);
+        Check(Figures() == 1, "overlapping joins finish without another pitch result");
+
+        scene.Reset(); scene.Update(Input(1, 0, 71), keys, 0);
+        scene.Update(Input(2, .3, 72), keys, .3);
+        Check(scene.Trace[^1].JoinDuration > 0, "expired previous pitch is recognized before accepting sparse recovery");
+        scene.Update(Input(3, .32, null, silent: true), keys, .02);
+        Check(!scene.HasContinuousTraceTail && Path()[^1].End.X < 640, "silence detaches live tail immediately");
+        scene.Update(Input(4, .34, 72), keys, .02);
+        scene.Update(Input(4, .34, 72), keys, .35);
+        Check(Figures() == 2 && scene.Trace[^1].JoinDuration == 0, "real silence remains a separate phrase after joins settle");
+        scene.Update(Input(5, .36, 72) with { FrameAge = .5 }, keys, .02);
+        scene.Update(Input(6, .38, 72), keys, .02);
+        Check(Figures() == 3, "stale capture starts a separate phrase");
+        scene.Reset();
+        Check(Path().Length == 0, "reset clears rendered history");
+    }
+
 }

@@ -17,6 +17,7 @@ internal static class WindowsSmokeTests
         Directory.CreateDirectory(output);
         VerifyLockGlyph(output);
         VerifyHoverLockWindow();
+        VerifyStaffTraceGeometry();
         foreach (var factory in new Func<VisualizationView>[] { () => new PencilFlightView(), () => new StaffNoteView(), () => new PixelKeyboardView() })
         {
             using var view = factory();
@@ -67,6 +68,52 @@ internal static class WindowsSmokeTests
         }
         File.WriteAllText(Path.Combine(output, "result.json"), "{\"nativeWpfOffscreen\":\"passed\",\"realLoopback\":\"not-run\",\"realKeyboard\":\"not-run\",\"desktopWindow\":\"not-run\",\"syntheticHoverWindow\":\"passed\"}\n");
     }
+    private static void VerifyStaffTraceGeometry()
+    {
+        var scene = new StaffNoteScene();
+        var audio = new AudioChannel(); var keyboard = new KeyboardChannel();
+        Guid session = audio.BeginSession(AudioState.Running);
+        using var sounds = audio.Subscribe(); using var keys = keyboard.Subscribe();
+        audio.Publish(session, new AudioFeatures
+        {
+            Time = 0, SampleRate = 48000, ChannelCount = 2, Envelope = .2, IsSilent = false
+        }, null, 0);
+        scene.Update(sounds.Read(0), keys.Read(0), 0);
+        // A horizontal missing interval isolates native path joins from other decoration.
+        scene.Trace.Add(new TracePoint(-1, 110, 1, 0, 0));
+        scene.Trace.Add(new TracePoint(-.1, 110, 1, 0, .2));
+        scene.Update(sounds.Read(.1), keys.Read(.1), .1);
+        var growing = StaffNoteView.CreateTraceGeometry(scene).GetFlattenedPathGeometry();
+        if (growing.Figures.Count != 2) throw new InvalidOperationException("Staff join must grow from two endpoints");
+        scene.Update(sounds.Read(.21), keys.Read(.21), .11);
+        var geometry = StaffNoteView.CreateTraceGeometry(scene);
+        if (geometry.GetFlattenedPathGeometry().Figures.Count != 1)
+            throw new InvalidOperationException("Staff join must settle into one WPF figure");
+        foreach (double scale in new[] { .8, 1.0, 2.0 })
+        {
+            var drawing = new DrawingVisual();
+            using (var dc = drawing.RenderOpen())
+            {
+                dc.PushTransform(new ScaleTransform(scale, scale));
+                dc.DrawGeometry(null, new Pen(Brushes.Black, 1.05), geometry);
+                dc.Pop();
+            }
+            int width = (int)(800 * scale), height = (int)(160 * scale);
+            var image = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Pbgra32);
+            image.Render(drawing);
+            var pixels = new byte[width * height * 4]; image.CopyPixels(pixels, width * 4, 0);
+            int left = (int)Math.Ceiling((640 - (scene.Elapsed + 1) * 70) * scale) + 1;
+            int right = (int)Math.Floor((640 - (scene.Elapsed + .1) * 70) * scale) - 1;
+            for (int x = left; x <= right; x++)
+            {
+                bool ink = false;
+                for (int y = (int)(108 * scale); y <= (int)(112 * scale); y++)
+                    ink |= pixels[(y * width + x) * 4 + 3] > 0;
+                if (!ink) throw new InvalidOperationException("Settled staff curve has a transparent column");
+            }
+        }
+    }
+
     private static void VerifyLockGlyph(string output)
     {
         byte[]? lockedPixels = null;
