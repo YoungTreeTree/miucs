@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Media;
 using Miucs.Audio;
@@ -36,25 +37,12 @@ public class StaffNoteView : VisualizationView
         dc.PushOpacityMask(TraceFade);
         dc.DrawGeometry(null, Ink(.52, 1.05), CreateTraceGeometry(Scene));
         dc.Pop(); dc.Pop();
-        foreach (var ring in Scene.Rings)
-        {
-            double t = Math.Clamp((Scene.Elapsed-ring.Born)/.89,0,1);
-            for (int j = 0; j < 5; j++)
-            {
-                double delay = j < 2 ? j*.04 : .1+(j-2)*.055;
-                double age = Scene.Elapsed-ring.Born-delay; if(age < 0) continue;
-                double radius = j < 2 ? (8+24*Math.Min(1,age/.65))*(j==0?1:.73) : 3+age*12;
-                double cx=ring.X, cy=ring.Y;
-                if(j>=2) { double angle=j*2.2; cx+=Math.Cos(angle)*age*35; cy+=Math.Sin(angle)*age*18; }
-                dc.PushClip(new RectangleGeometry(new Rect(20,54,760,40)));
-                DrawArc(dc,cx,cy,radius,j*.9,.9+Math.PI*(j<2?1.15:.5),.4*Math.Pow(1-t,1.5)); dc.Pop();
-            }
-        }
         foreach(var star in Scene.Keyboard.Stars)
         {
             dc.PushTransform(new TranslateTransform(star.X,star.Y)); dc.PushTransform(new RotateTransform(star.Rotation*180/Math.PI)); dc.PushTransform(new ScaleTransform(star.Radius,star.Radius));
             dc.DrawGeometry(null,Ink(star.Opacity,.85/star.Radius),Star); dc.Pop();dc.Pop();dc.Pop();
         }
+        DrawBeatRings(dc, Scene.Rings);
         dc.PushTransform(new TranslateTransform(640,Scene.Y)); dc.PushTransform(new ScaleTransform(Scene.Scale,Scene.Scale));
         // The head and sharp remain upright. Only stem and flag pivot around the head center.
         dc.DrawEllipse(Ink(Scene.Opacity).Brush,null,new Point(0,0),7,4.5);
@@ -90,11 +78,75 @@ public class StaffNoteView : VisualizationView
         fade.Freeze();
         return fade;
     }
-    private void DrawArc(DrawingContext dc,double x,double y,double radius,double start,double sweep,double opacity)
+    private static readonly double[] BeatTapers = { .48, .78, 1 };
+    private static readonly StreamGeometry[] BeatMainArcs = CreateBeatPaths(new[] { (.05, 1.30), (1.88, 3.57), (4.15, 5.72) });
+    private static readonly StreamGeometry[] BeatSatelliteArcs = CreateBeatPaths(new[] { (-.65, 1.55) });
+    private static readonly LinearGradientBrush BeatFade = CreateBeatFade();
+    private readonly Dictionary<double, Pen> beatHalos = new();
+    internal void DrawBeatRings(DrawingContext dc, IReadOnlyList<StaffBeatRing> rings)
     {
-        var geometry=Path(c=> { c.BeginFigure(new Point(x+Math.Cos(start)*radius,y+Math.Sin(start)*radius),false,false);
-            c.ArcTo(new Point(x+Math.Cos(start+sweep)*radius,y+Math.Sin(start+sweep)*radius),new Size(radius,radius),0,sweep>Math.PI,SweepDirection.Clockwise,true,false); });
-        dc.DrawGeometry(null,Ink(opacity,.9),geometry);
+        if (rings.Count == 0) return;
+        // macOS allows ripples to cross the staff lines, fading only at the full canvas edges.
+        dc.PushClip(new RectangleGeometry(new Rect(0, 0, 800, 160)));
+        dc.PushOpacityMask(BeatFade);
+        for (int i = 0; i < Math.Min(rings.Count, StaffBeatRings.Limit); i++)
+        {
+            var ring = rings[i]; double scale = ring.Radius / 10;
+            dc.PushTransform(new TranslateTransform(ring.X, ring.Y));
+            dc.PushTransform(new ScaleTransform(scale, scale * .9));
+            dc.PushTransform(new RotateTransform(ring.Rotation * 180 / Math.PI));
+            var paths = ring.Arc == StaffBeatArc.Main ? BeatMainArcs : BeatSatelliteArcs;
+            for (int band = 0; band < paths.Length; band++)
+            {
+                dc.PushOpacity(ring.Opacity * BeatTapers[band] * .8);
+                dc.DrawGeometry(null, BeatHalo((ring.LineWidth + .85) / scale), paths[band]); dc.Pop();
+                dc.PushOpacity(ring.Opacity * BeatTapers[band]);
+                dc.DrawGeometry(null, Ink(1, ring.LineWidth / scale), paths[band]); dc.Pop();
+            }
+            dc.Pop(); dc.Pop(); dc.Pop();
+        }
+        dc.Pop(); dc.Pop();
+    }
+    private Pen BeatHalo(double width)
+    {
+        width = Math.Clamp(Math.Round(width * 20) / 20, .05, 12);
+        if (!beatHalos.TryGetValue(width, out var pen))
+        {
+            var brush = new SolidColorBrush(Color.FromRgb(250, 250, 250)); brush.Freeze();
+            pen = new Pen(brush, width) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round, LineJoin = PenLineJoin.Round };
+            pen.Freeze(); beatHalos.Add(width, pen);
+        }
+        return pen;
+    }
+    private static StreamGeometry[] CreateBeatPaths((double Start, double End)[] arcs)
+    {
+        var ranges = new[] { new[] { (0d, .07), (.93, 1d) }, new[] { (.07, .22), (.78, .93) }, new[] { (.22, .78) } };
+        var paths = new StreamGeometry[3];
+        for (int band = 0; band < paths.Length; band++)
+        {
+            int current = band;
+            paths[band] = Path(context =>
+            {
+                foreach (var (start, end) in arcs) foreach (var (lo, hi) in ranges[current])
+                    for (int step = 0; step <= 24; step++)
+                    {
+                        double angle = start + (end - start) * (lo + (hi - lo) * step / 24);
+                        double radius = 10 * (1 + .016 * Math.Sin(angle * 3));
+                        var point = new Point(Math.Cos(angle) * radius, Math.Sin(angle) * radius);
+                        if (step == 0) context.BeginFigure(point, false, false); else context.LineTo(point, true, false);
+                    }
+            });
+        }
+        return paths;
+    }
+    private static LinearGradientBrush CreateBeatFade()
+    {
+        var fade = new LinearGradientBrush { MappingMode = BrushMappingMode.Absolute, StartPoint = new Point(0, 0), EndPoint = new Point(0, 160) };
+        fade.GradientStops.Add(new GradientStop(Colors.Transparent, 0));
+        fade.GradientStops.Add(new GradientStop(Colors.White, .05));
+        fade.GradientStops.Add(new GradientStop(Colors.White, .95));
+        fade.GradientStops.Add(new GradientStop(Colors.Transparent, 1));
+        fade.Freeze(); return fade;
     }
     private static StreamGeometry CreateStar() => Path(c=> {
         for(int i=0;i<10;i++) { double angle=-Math.PI/2+i*Math.PI/5, r=i%2==0?1:.43;var p=new Point(Math.Cos(angle)*r,Math.Sin(angle)*r);if(i==0)c.BeginFigure(p,false,true);else c.LineTo(p,true,false); }

@@ -18,6 +18,7 @@ internal static class WindowsSmokeTests
         VerifyLockGlyph(output);
         VerifyHoverLockWindow();
         VerifyStaffTraceGeometry();
+        VerifyStaffBeatRegion(output);
         VerifyTrayCat(output);
         foreach (var factory in new Func<VisualizationView>[] { () => new PencilFlightView(), () => new StaffNoteView(), () => new PixelKeyboardView() })
         {
@@ -120,6 +121,49 @@ internal static class WindowsSmokeTests
         if (Math.Abs(preserved) < .001) throw new InvalidOperationException("Synthetic typing did not animate shared head");
         view.Deactivate(); view.Activate();
         if (sharedHead.Angle != preserved) throw new InvalidOperationException("Window hide/switch reset shared tray motion");
+    }
+
+    private static void VerifyStaffBeatRegion(string output)
+    {
+        using var view = new StaffNoteView();
+        foreach (double scale in new[] { .75, 1.0, 2.0 })
+        {
+            foreach (bool edge in new[] { false, true })
+            {
+                var drawing = new DrawingVisual();
+                using (var dc = drawing.RenderOpen())
+                {
+                    dc.PushTransform(new ScaleTransform(scale, scale));
+                    view.DrawBeatRings(dc, new[] { new StaffBeatRing(280, edge ? 20 : 74, 32, 1) });
+                    dc.Pop();
+                }
+                int width = (int)(800 * scale), height = (int)(160 * scale);
+                var image = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Pbgra32);
+                image.Render(drawing);
+                var pixels = new byte[width * height * 4]; image.CopyPixels(pixels, width * 4, 0);
+                int Count(double top, double bottom)
+                {
+                    int count = 0;
+                    for (int y = (int)(top * scale); y < (int)(bottom * scale); y++)
+                        for (int x = (int)(240 * scale); x < (int)(320 * scale); x++)
+                            if (pixels[(y * width + x) * 4 + 3] > 16) count++;
+                    return count;
+                }
+                if (!edge && (Count(38, 54) < 5 || Count(94, 110) < 5))
+                    throw new InvalidOperationException("Staff waves are still clipped to the five-line band");
+                if (edge)
+                {
+                    int firstRowAlpha = 0;
+                    for (int x = (int)(240 * scale); x < (int)(320 * scale); x++)
+                        firstRowAlpha = Math.Max(firstRowAlpha, pixels[x * 4 + 3]);
+                    if (firstRowAlpha > 32 || Count(8, 16) < 5)
+                        throw new InvalidOperationException("Staff waves must fade only at the full canvas edge");
+                }
+                var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(image));
+                using var file = File.Create(Path.Combine(output, $"staff-beat-{(int)(scale * 100)}-{(edge ? "edge" : "full")}.png"));
+                encoder.Save(file);
+            }
+        }
     }
 
     private static void VerifyStaffTraceGeometry()
