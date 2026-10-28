@@ -43,10 +43,10 @@ internal static class PixelKeyboardTests
         scene.Reset();Check(scene.Left.Code==33&&scene.Right.Code==36,"Hide restores resting pose");
         Check(PixelPawSprite.Rows.Length==32&&PixelPawSprite.Rows.All(r=>r.Length==22),"Paw bitmap dimensions");
         var tail=new PixelTailScene();var audioID=Guid.NewGuid();
-        AudioInput Sound(long sequence,double time,bool beat=false,double bpm=120,double confidence=.9,double lag=0,bool silent=false)
+        AudioInput Sound(long sequence,double time,bool beat=false,double bpm=120,double confidence=.9,double lag=0,bool silent=false,bool onset=false,double strength=.5)
         {
             var sound=new AudioFeatures{Time=time,SampleRate=48000,ChannelCount=2,IsSilent=silent};
-            return new(audioID,AudioState.Running,new(audioID,sequence,time,sound,null),0,Array.Empty<OnsetEvent>(),
+            return new(audioID,AudioState.Running,new(audioID,sequence,time,sound,null),0,onset?new[]{new OnsetEvent(sequence,time,time-lag,strength)}:Array.Empty<OnsetEvent>(),
                 beat?new[]{new BeatEvent(sequence,time,time-lag,1,bpm,confidence)}:Array.Empty<BeatEvent>(),0);
         }
         tail.Update(Sound(1,0,true),0);tail.Update(Sound(2,.4),.4);double phaseBeforeBeat=tail.Phase;
@@ -58,6 +58,18 @@ internal static class PixelKeyboardTests
         tail.Update(Sound(8,5.1,true),0);tail.Update(Sound(9,5.2),.1);tail.Update(Sound(10,5.5,silent:true),.3);
         Check(tail.Amplitude==0,"Silence returns tail to rest");
         audioID=Guid.NewGuid();tail.Update(Sound(1,6,true,lag:1),1);Check(tail.Amplitude==0 && tail.BeatCount==0,"Reconnect ignores stale beats");
+        var unlocked=new PixelTailScene();
+        unlocked.Update(Sound(1,0,onset:true),1d/60);unlocked.Update(Sound(2,.1),.1);
+        Check(unlocked.OnsetCount==1 && unlocked.BeatCount==0 && unlocked.Amplitude>.5,"Attacks animate before BPM locks");
+        unlocked.Update(Sound(2,.1,onset:true),0);unlocked.Update(Sound(3,.3,lag:1,onset:true),.2);unlocked.Update(Sound(4,.4,onset:true,strength:.1),.1);
+        Check(unlocked.OnsetCount==1,"Repeated stale and weak attacks are ignored");
+        unlocked.Update(Sound(5,.5,beat:true,onset:true),.1);unlocked.Update(Sound(6,.7,onset:true),.2);
+        Check(unlocked.BeatCount==1 && unlocked.OnsetCount==1,"Reliable beats take priority");
+        unlocked.Update(Sound(7,2,onset:true),1.3);Check(unlocked.OnsetCount==2,"Attacks resume after tempo loss");
+        unlocked.Update(Sound(8,2.01,onset:true),.01);Check(unlocked.OnsetCount==2,"Dense attacks never queue gestures");
+        unlocked.Update(Sound(9,2.31,silent:true,onset:true),.3);Check(unlocked.Amplitude==0 && unlocked.OnsetCount==2,"Silence stops fallback");
+        unlocked.Update(Sound(10,5),2.69);Check(unlocked.Amplitude==0,"Constant sound does not invent rhythm");
+        audioID=Guid.NewGuid();unlocked.Update(Sound(1,6,lag:1,onset:true),1);Check(unlocked.OnsetCount==0 && unlocked.Amplitude==0,"Reconnect discards old attacks");
         var fast=new PixelTailScene();var slow=new PixelTailScene();
         fast.Update(Sound(1,0,true,bpm:180),0);slow.Update(Sound(1,0,true,bpm:60),0);
         fast.Update(Sound(2,.2),.2);slow.Update(Sound(2,.2),.2);Check(fast.Phase>slow.Phase+.4,"Tail follows BPM");

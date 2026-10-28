@@ -1,10 +1,12 @@
 import Foundation
 
-/// Continuous traveling bend, gently paced by reliable beats. No queued impulses.
+/// Reliable beats pace a continuous bend. Before tempo lock, fresh onsets trigger
+/// short gestures without inventing BPM. Neither mode queues old impulses.
 struct PixelTailScene {
     private(set) var amplitude = 0.0
     private(set) var phase = 0.0
     private(set) var beatCount = 0
+    private(set) var onsetCount = 0
     var spriteIndex: Int {
         let level = min(4, max(0, Int((amplitude * 4).rounded())))
         return level == 0 ? 0 : 1 + (level - 1) * 64 + Int(phase / (2 * .pi) * 64) % 64
@@ -12,6 +14,7 @@ struct PixelTailScene {
     private var session: UUID?
     private var cursor: UInt64 = 0
     private var sinceBeat = 100.0, period = 0.5, desiredPeriod = 0.5, strength = 0.0
+    private var sinceOnset = 100.0, onsetStrength = 0.0
     private var sampleRate: Double?, channels: Int?, audioTime: Double?
 
     mutating func reset() { self = PixelTailScene() }
@@ -20,15 +23,16 @@ struct PixelTailScene {
         let previous = spriteIndex
         let dt = seconds.isFinite ? max(0, seconds) : 0
         if session != input.sessionID { reset(); session = input.sessionID }
-        sinceBeat += dt
+        sinceBeat += dt; sinceOnset += dt
         var latest: AudioBeatEvent?
+        var latestOnset: AudioOnsetEvent?
         var running = false
         if input.state == .running, let frame = input.frame, frame.sessionID == input.sessionID,
            let age = input.frameAge, age.isFinite, age >= 0, age < 0.4, !frame.audio.isSilent {
             running = true
             let changed = sampleRate != nil && (sampleRate != frame.audio.sampleRate || channels != frame.audio.channelCount ||
                 audioTime.map { frame.audio.time < $0 } == true)
-            if changed { cursor = frame.sequence; sinceBeat = 100 }
+            if changed { cursor = frame.sequence; sinceBeat = 100; sinceOnset = 100 }
             sampleRate = frame.audio.sampleRate; channels = frame.audio.channelCount; audioTime = frame.audio.time
             let now = frame.receivedAt + age
             for beat in input.beats ?? [] where beat.sequence > cursor && beat.sequence <= frame.sequence {
@@ -39,19 +43,33 @@ struct PixelTailScene {
                       beat.strength.isFinite, (0...1).contains(beat.strength) else { continue }
                 if latest == nil || beat.sequence > latest!.sequence { latest = beat }
             }
+            if latest == nil, sinceBeat > max(0.9, desiredPeriod * 1.5), sinceOnset >= 0.12 {
+                for onset in input.onsets where onset.sequence > cursor && onset.sequence <= frame.sequence {
+                    let lag = now - onset.receivedAt
+                    guard lag.isFinite, lag >= 0, lag <= 0.15,
+                          onset.strength.isFinite, (0.18...1).contains(onset.strength) else { continue }
+                    if latestOnset == nil || onset.sequence > latestOnset!.sequence { latestOnset = onset }
+                }
+            }
             cursor = max(cursor, frame.sequence)
             if let beat = latest {
                 desiredPeriod = 60 / beat.bpm
                 if beatCount == 0 { period = desiredPeriod }
                 beatCount += 1; sinceBeat = now - beat.receivedAt
                 strength = 0.88 + 0.12 * beat.strength
+                sinceOnset = 100
+            } else if let onset = latestOnset {
+                onsetCount += 1; sinceOnset = now - onset.receivedAt
+                onsetStrength = 0.55 + 0.30 * sqrt(onset.strength)
             }
         } else { cursor = max(cursor, input.frame?.sequence ?? 0) }
-        let engaged = running && sinceBeat <= max(0.9, desiredPeriod * 1.5)
+        let beatEngaged = running && sinceBeat <= max(0.9, desiredPeriod * 1.5)
+        let onsetEngaged = running && !beatEngaged && sinceOnset <= 0.42
+        let engaged = beatEngaged || onsetEngaged
         // A newly arrived beat after a long stall starts now, never catches up old motion.
-        let step = latest == nil ? dt : min(dt, 0.05)
+        let step = latest == nil && latestOnset == nil ? dt : min(dt, 0.05)
         period += (desiredPeriod - period) * (1 - exp(-step / 0.14))
-        let target = engaged ? strength : 0
+        let target = beatEngaged ? strength : (onsetEngaged ? onsetStrength : 0)
         amplitude += (target - amplitude) * (1 - exp(-step / (engaged ? 0.055 : 0.08)))
         if !engaged && amplitude < 0.025 { amplitude = 0 }
         if amplitude > 0 {

@@ -109,6 +109,38 @@
       "passed" : true
     },
     {
+      "name" : "Music attacks animate the tail before BPM locks",
+      "passed" : true
+    },
+    {
+      "name" : "Repeated stale and weak attacks cannot retrigger the tail",
+      "passed" : true
+    },
+    {
+      "name" : "Reliable beats take priority without double-triggering",
+      "passed" : true
+    },
+    {
+      "name" : "Fresh attacks resume motion after tempo lock is lost",
+      "passed" : true
+    },
+    {
+      "name" : "Dense attacks are coalesced rather than queued",
+      "passed" : true
+    },
+    {
+      "name" : "Silence stops fallback motion even with an attack event",
+      "passed" : true
+    },
+    {
+      "name" : "Unpitched sustained audio without attacks does not invent a rhythm",
+      "passed" : true
+    },
+    {
+      "name" : "Reconnection never replays fallback attacks",
+      "passed" : true
+    },
+    {
       "name" : "Higher BPM drives a faster swing",
       "passed" : true
     },
@@ -130,5 +162,5 @@
     }
   ],
   "failed" : 0,
-  "passed" : 32
+  "passed" : 40
 }
