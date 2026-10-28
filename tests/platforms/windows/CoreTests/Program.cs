@@ -13,6 +13,7 @@ internal static class Program
             KeyboardTests.Run();
             PcmDecoderTests.Run();
             VisualizationTests.Run();
+            StaffBeatTests.Run();
             ShellTests.Run();
             HoverLockTests.Run();
             PixelKeyboardTests.Run();

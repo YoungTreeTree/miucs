@@ -8,7 +8,6 @@ namespace Miucs.Visualizations;
 
 public readonly record struct TracePoint(double Time, double Y, int Segment, double JoinedAt, double JoinDuration);
 public readonly record struct StaffStar(double X, double Y, double Radius, double Rotation, double Opacity);
-public readonly record struct StaffRing(double X, double Y, double Born, double Strength);
 
 /// <summary>Pure data scene; host time ages effects, distinct PCM time confirms melody.</summary>
 public sealed class StaffNoteScene
@@ -25,16 +24,16 @@ public sealed class StaffNoteScene
     public bool HasContinuousTraceTail => Reliable && acceptedTime >= 0 &&
         Trace.Count > 0 && Trace[^1].Segment == segment;
     public List<TracePoint> Trace { get; } = new();
-    public List<StaffRing> Rings { get; } = new();
+    public StaffBeatRings BeatRings { get; } = new();
+    public IReadOnlyList<StaffBeatRing> Rings => BeatRings.Rings;
     public KeyboardStars Keyboard { get; } = new();
     private Guid session;
-    private long sequence, onsetSequence, beatSequence;
+    private long sequence, onsetSequence;
     private double sampleRate, lastAudioTime = -1, melodyTime = -1, acceptedTime = -1, melodyAge = double.PositiveInfinity;
     private int channels, segment, pendingPitch, pendingCount;
     private double pendingTime, lowDb, highDb, volumeTime = -1, contrast = .5;
     private double velocity, angularVelocity, direction = -1;
     private int? referencePitch;
-    private readonly Random random = new(73619);
     public static double PitchY(int midi) => 74 - (((midi / 12 - 1) * 7 + new[] { 0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 5, 6 }[midi % 12]) - 34) * 4;
     public static string PitchName(int midi) => new[] { "C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B" }[midi % 12] + (midi / 12 - 1);
     public void Reset()
@@ -44,7 +43,7 @@ public sealed class StaffNoteScene
     private void ResetAudio(bool clear)
     {
         Reliable = false; referencePitch = null; pendingCount = 0; melodyTime = lastAudioTime = acceptedTime = volumeTime = -1;
-        melodyAge = double.PositiveInfinity; segment++; angularVelocity = 0; Rings.Clear();
+        melodyAge = double.PositiveInfinity; segment++; angularVelocity = 0; BeatRings.Clear();
         if (clear) Trace.Clear();
     }
     public void Update(AudioInput input, KeyboardInput keyboard, double dt)
@@ -54,9 +53,8 @@ public sealed class StaffNoteScene
         // Expire the previous observation before deciding whether a new point reconnects it.
         if (melodyAge >= .24) Reliable = false;
         Trace.RemoveAll(p => Elapsed - p.Time >= 8);
-        Rings.RemoveAll(p => Elapsed - p.Born >= .89);
         Keyboard.Update(keyboard, dt);
-        if (session != input.SessionId) { session = input.SessionId; sequence = onsetSequence = beatSequence = 0; sampleRate = 0; ResetAudio(true); }
+        if (session != input.SessionId) { session = input.SessionId; sequence = onsetSequence = 0; sampleRate = 0; ResetAudio(true); }
         var frame = input.Frame;
         bool sounding = input.State == AudioState.Running && frame != null && input.FrameAge is >= 0 and < .4 && !frame.Audio.IsSilent;
         if (sounding && frame != null)
@@ -65,7 +63,13 @@ public sealed class StaffNoteScene
             {
                 var audio = frame.Audio;
                 if (sampleRate != audio.SampleRate || channels != audio.ChannelCount || audio.Time < lastAudioTime)
-                { ResetAudio(true); sampleRate = audio.SampleRate; channels = audio.ChannelCount; }
+                {
+                    bool hadFormat = sampleRate != 0;
+                    ResetAudio(true);
+                    // Like macOS, discard queued beats from the previous capture format.
+                    BeatRings.Clear(hadFormat ? frame.Sequence : 0);
+                    sampleRate = audio.SampleRate; channels = audio.ChannelCount;
+                }
                 sequence = frame.Sequence; lastAudioTime = audio.Time;
                 ReceiveVolume(audio.Envelope, audio.Time);
                 var melody = frame.Melody;
@@ -114,22 +118,12 @@ public sealed class StaffNoteScene
                 onsetSequence = onset.Sequence;
                 if (Reliable) { angularVelocity = Math.Clamp(angularVelocity + direction * (6 + Math.Clamp(onset.Strength, 0, 1) * 2), -10.5, 10.5); direction *= -1; }
             }
-            foreach (var beat in input.Beats)
-            {
-                if (beat.Sequence <= beatSequence) continue;
-                beatSequence = beat.Sequence;
-                double now = frame.ReceivedAt + (input.FrameAge ?? 0);
-                if (now - beat.ReceivedAt > .15 || now < beat.ReceivedAt) continue;
-                double x = 100 + random.NextDouble() * 480;
-                if (Rings.Count > 0 && Math.Abs(x - Rings[^1].X) < 120) x = x < 340 ? x + 150 : x - 150;
-                Rings.Add(new StaffRing(x, 64 + random.NextDouble() * 20, Elapsed - Math.Max(0, now - beat.ReceivedAt), beat.Strength));
-                if (Rings.Count > 4) Rings.RemoveAt(0);
-            }
+            BeatRings.Advance(dt, input.Beats, frame.ReceivedAt + (input.FrameAge ?? 0), frame.Sequence);
         }
         else
         {
             if (acceptedTime >= 0) { segment++; acceptedTime = -1; }
-            Reliable = false; referencePitch = null; pendingCount = 0; volumeTime = -1; Rings.Clear();
+            Reliable = false; referencePitch = null; pendingCount = 0; volumeTime = -1; BeatRings.Clear(frame?.Sequence ?? 0);
         }
         if (dt > .25) angularVelocity = 0;
         var step = Math.Min(dt, .25); int steps = Math.Max(1, (int)Math.Ceiling(step * 120)); step /= steps;
