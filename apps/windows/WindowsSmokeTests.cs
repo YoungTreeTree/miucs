@@ -83,11 +83,13 @@ internal static class WindowsSmokeTests
         scene.Trace.Add(new TracePoint(-1, 110, 1, 0, 0));
         scene.Trace.Add(new TracePoint(-.1, 110, 1, 0, .2));
         scene.Update(sounds.Read(.1), keys.Read(.1), .1);
-        var growing = StaffNoteView.CreateTraceGeometry(scene).GetFlattenedPathGeometry();
-        if (growing.Figures.Count != 2) throw new InvalidOperationException("Staff join must grow from two endpoints");
+        // Inspect the original open stroke figures, without polygonal flattening.
+        var growing = PathGeometry.CreateFromGeometry(StaffNoteView.CreateTraceGeometry(scene));
+        if (growing.Figures.Count != 2)
+            throw new InvalidOperationException($"Staff join must grow from two endpoints; got {growing.Figures.Count} figures from {scene.Trace.Count} samples");
         scene.Update(sounds.Read(.21), keys.Read(.21), .11);
         var geometry = StaffNoteView.CreateTraceGeometry(scene);
-        if (geometry.GetFlattenedPathGeometry().Figures.Count != 1)
+        if (PathGeometry.CreateFromGeometry(geometry).Figures.Count != 1)
             throw new InvalidOperationException("Staff join must settle into one WPF figure");
         foreach (double scale in new[] { .8, 1.0, 2.0 })
         {
