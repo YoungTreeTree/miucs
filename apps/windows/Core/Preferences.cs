@@ -32,6 +32,7 @@ public sealed class Preferences
     private int transparency;
     public int Transparency { get => transparency; set => transparency = Math.Clamp(value, 0, 90); }
     public bool KeyboardEnabled { get; set; }
+    public bool TrayAnimationEnabled { get; set; } = true;
     public Dictionary<string, WindowFrame> Frames { get; set; } = new();
     public static string DefaultPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Miucs", "preferences.v1.json");
     public static Preferences Load(string path)

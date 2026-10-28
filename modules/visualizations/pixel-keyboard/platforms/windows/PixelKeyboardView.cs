@@ -18,7 +18,8 @@ public sealed class PixelKeyboardView : VisualizationView
     public override double LayoutMaxWidth => 1600;
     public PixelKeyboardScene Keyboard { get; } = new();
     public PixelTailScene Tail { get; } = new();
-    public PixelHeadScene Head { get; } = new();
+    public PixelHeadScene Head { get; }
+    private readonly bool ownsHead;
     private static readonly DrawingGroup[] TailFrames = BuildTailFrames();
     private static DrawingGroup[] BuildTailFrames()
     {
@@ -43,8 +44,9 @@ public sealed class PixelKeyboardView : VisualizationView
     private readonly DrawingGroup hardware;
     private readonly Dictionary<ushort, DrawingGroup> activeKeys = new();
     private readonly DrawingGroup paw;
-    public PixelKeyboardView()
+    public PixelKeyboardView(PixelHeadScene? sharedHead = null)
     {
+        Head = sharedHead ?? new PixelHeadScene(); ownsHead = sharedHead == null;
         RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.NearestNeighbor);
         hardware = new DrawingGroup(); using (var dc = hardware.Open()) DrawHardware(dc); hardware.Freeze();
         foreach (var key in PixelKeyboardScene.Keys)
@@ -60,11 +62,11 @@ public sealed class PixelKeyboardView : VisualizationView
                 { int n=PixelPawSprite.Rows[y][x]-'0'; if(n>0) dc.DrawRectangle(palette[n],null,new Rect(x*2+2,y*2+2,2,2)); }
         paw.Freeze();
     }
-    protected override void ResetInput() { Tail.Reset(); Head.Reset(); Keyboard.Reset(); }
+    protected override void ResetInput() { Tail.Reset(); if (ownsHead) Head.Reset(); Keyboard.Reset(); }
     public override void Update(AudioInput audio, KeyboardInput keyboard, double dt)
     {
         if (!Active || Disposed) return;
-        Keyboard.Update(keyboard,dt); Head.Update(keyboard,dt); Tail.Update(audio,dt); InvalidateVisual();
+        Keyboard.Update(keyboard,dt); if (ownsHead) Head.Update(keyboard,dt); Tail.Update(audio,dt); InvalidateVisual();
     }
     protected override void RenderScene(DrawingContext dc)
     {

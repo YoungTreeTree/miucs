@@ -18,6 +18,7 @@ internal static class WindowsSmokeTests
         VerifyLockGlyph(output);
         VerifyHoverLockWindow();
         VerifyStaffTraceGeometry();
+        VerifyTrayCat(output);
         foreach (var factory in new Func<VisualizationView>[] { () => new PencilFlightView(), () => new StaffNoteView(), () => new PixelKeyboardView() })
         {
             using var view = factory();
@@ -68,6 +69,59 @@ internal static class WindowsSmokeTests
         }
         File.WriteAllText(Path.Combine(output, "result.json"), "{\"nativeWpfOffscreen\":\"passed\",\"realLoopback\":\"not-run\",\"realKeyboard\":\"not-run\",\"desktopWindow\":\"not-run\",\"syntheticHoverWindow\":\"passed\"}\n");
     }
+    private static void VerifyTrayCat(string output)
+    {
+        double angle = 0;
+        using var tray = new System.Windows.Forms.NotifyIcon(); // Keep synthetic tests out of the real tray.
+        using var animation = new AnimatedTrayIcon(tray, () => angle);
+        var icons = new System.Drawing.Icon[TrayIconPose.FrameCount];
+        animation.SetRunning(true);
+        for (int pass = 0; pass < 20; pass++) for (int frame = 0; frame < icons.Length; frame++)
+        {
+            angle = TrayIconPose.Angle(frame); animation.Refresh();
+            if (animation.Frame != frame || tray.Icon == null) throw new InvalidOperationException("Tray pose selection failed");
+            if (pass == 0) icons[frame] = tray.Icon;
+            else if (!ReferenceEquals(icons[frame], tray.Icon)) throw new InvalidOperationException("Tray tick allocated a new icon");
+        }
+        foreach (int frame in new[] { 0, TrayIconPose.RestFrame, TrayIconPose.FrameCount - 1 })
+        {
+            using var bitmap = icons[frame].ToBitmap();
+            int visible = 0, transparent = 0;
+            for (int y = 0; y < bitmap.Height; y++) for (int x = 0; x < bitmap.Width; x++)
+            { if (bitmap.GetPixel(x, y).A > 0) visible++; else transparent++; }
+            if (visible < 20 || transparent < 10) throw new InvalidOperationException("Tray icon alpha/coverage failed");
+            bitmap.Save(Path.Combine(output, $"tray-cat-{frame:00}.png"), System.Drawing.Imaging.ImageFormat.Png);
+        }
+        animation.SetRunning(false);
+        angle = .2; animation.Refresh();
+        if (animation.Frame != TrayIconPose.RestFrame) throw new InvalidOperationException("Paused tray must stay upright");
+        animation.SetRunning(true);
+        if (animation.Frame != TrayIconPose.FromAngle(angle)) throw new InvalidOperationException("Tray resume must sample current pose");
+        animation.Dispose(); animation.Dispose();
+        if (tray.Icon != null) throw new InvalidOperationException("Disposed tray animator retained its icon");
+
+        var sharedHead = new PixelHeadScene();
+        using var view = new PixelKeyboardView(sharedHead);
+        var audio = new AudioChannel(); var keyboard = new KeyboardChannel();
+        Guid session = keyboard.BeginSession(KeyboardState.Running);
+        using var sounds = audio.Subscribe(); using var keys = keyboard.Subscribe();
+        view.Activate();
+        keyboard.Publish(session, 30, true, KeyboardModifiers.None, 0);
+        for (int tick = 0; tick < 20; tick++)
+        {
+            var input = keys.Read(tick / 60d);
+            sharedHead.Update(input, 1d / 60);
+            double before = sharedHead.Angle;
+            view.Update(sounds.Read(tick / 60d), input, 1d / 60);
+            if (!ReferenceEquals(sharedHead, view.Head) || view.Head.Angle != before)
+                throw new InvalidOperationException("Floating cat advanced the shared tray motion twice");
+        }
+        double preserved = sharedHead.Angle;
+        if (Math.Abs(preserved) < .001) throw new InvalidOperationException("Synthetic typing did not animate shared head");
+        view.Deactivate(); view.Activate();
+        if (sharedHead.Angle != preserved) throw new InvalidOperationException("Window hide/switch reset shared tray motion");
+    }
+
     private static void VerifyStaffTraceGeometry()
     {
         var scene = new StaffNoteScene();
