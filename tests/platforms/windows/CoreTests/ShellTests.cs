@@ -66,15 +66,18 @@ public static class ShellTests
             var defaults = Preferences.Load(path);
             Check(defaults.Transparency == 0, "existing installs keep original opacity");
             Check(!defaults.KeyboardEnabled, "keyboard capture is opt-in on first launch");
+            Check(defaults.TrayAnimationEnabled, "tray animation is enabled without enabling capture");
             Check(defaults.Visualization == "pencil-flight" && defaults.Color == "graphite", "stable first-launch defaults");
             Check(Preferences.Palette.Count == 5, "five shared colors");
             defaults.Visualization = "staff-note"; defaults.Color = "mist-blue"; defaults.KeyboardEnabled = true;
             defaults.Transparency = 60;
+            defaults.TrayAnimationEnabled = false;
             defaults.Frames["staff-note"] = new(-100, 70, 1000, 200);
             defaults.Frames["pencil-flight"] = new(100, 200, 500, 325);
             Check(defaults.Save(path), "preferences atomic save succeeds");
             Check(!File.Exists(path + ".tmp"), "no temporary preference file remains after save");
             var loaded = Preferences.Load(path);
+            Check(!loaded.TrayAnimationEnabled, "tray animation preference survives relaunch");
             Check(loaded.Transparency == 60, "global transparency survives relaunch");
             loaded.Transparency = 100;
             Check(loaded.Transparency == 90, "transparency retains at least ten percent visibility");
@@ -87,6 +90,7 @@ public static class ShellTests
             File.WriteAllText(path, "null");
             Check(!Preferences.Load(path).KeyboardEnabled, "null JSON recovers with keyboard disabled");
             File.WriteAllText(path, "{\"Transparency\":999,\"Color\":\"mist-blue\"}");
+            Check(Preferences.Load(path).TrayAnimationEnabled, "old preference files receive the tray animation default");
             Check(Preferences.Load(path).Transparency == 90 && Preferences.Load(path).Color == "mist-blue", "out of range saved transparency preserves other preferences");
             File.WriteAllText(path, "{\"Visualization\":\"unknown\",\"Color\":null,\"Frames\":null}");
             var unknown = Preferences.Load(path);

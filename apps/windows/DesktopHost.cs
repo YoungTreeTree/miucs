@@ -27,6 +27,10 @@ internal sealed class DesktopHost : IDisposable
     private readonly Border adjustment;
     private readonly TextBlock status;
     private readonly Forms.NotifyIcon tray;
+    private readonly AnimatedTrayIcon trayAnimation;
+    private readonly PixelHeadScene catHead = new();
+    private KeyboardSubscription headSubscription;
+    private double lastHeadTime;
     private readonly Forms.ContextMenuStrip menu = new();
     private readonly System.Windows.Threading.DispatcherTimer statusTimer;
     private VisualizationView view = null!;
@@ -47,6 +51,7 @@ internal sealed class DesktopHost : IDisposable
         this.app = app;
         capture = new LoopbackCapture(audio);
         keyboardCapture = new KeyboardCapture(keyboard);
+        headSubscription = keyboard.Subscribe(); lastHeadTime = Now;
         window = new Window
         {
             Title = "Miucs", WindowStyle = WindowStyle.None, AllowsTransparency = true,
@@ -71,12 +76,16 @@ internal sealed class DesktopHost : IDisposable
         new WindowInteropHelper(window).EnsureHandle();
         NativeWindow.SetInteractive(window, false);
         SwitchVisualization(preferences.Visualization);
-        tray = new Forms.NotifyIcon { Text = "Miucs", Icon = System.Drawing.SystemIcons.Application, ContextMenuStrip = menu, Visible = true };
+        tray = new Forms.NotifyIcon { Text = "Miucs", ContextMenuStrip = menu };
+        trayAnimation = new AnimatedTrayIcon(tray, () => AdvanceCatHead(Now));
+        tray.Visible = true;
+        UpdateTrayAnimation();
         tray.DoubleClick += (_, _) => Dispatch(() => SetVisible(!isVisible));
         menu.Opening += (_, _) => BuildMenu();
         SystemEvents.PowerModeChanged += OnPowerModeChanged;
         SystemEvents.SessionSwitch += OnSessionSwitch;
         SystemEvents.DisplaySettingsChanged += OnDisplayChanged;
+        SystemParameters.StaticPropertyChanged += OnSystemParametersChanged;
         capture.Start();
         if (preferences.KeyboardEnabled) keyboardCapture.Start();
         statusTimer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
@@ -102,7 +111,7 @@ internal sealed class DesktopHost : IDisposable
         {
             SaveFrame(); root.Children.Remove(view); view.Dispose();
         }
-        view = id switch { "staff-note" => new StaffNoteView(), "pixel-keyboard" => new PixelKeyboardView(), _ => new PencilFlightView() };
+        view = id switch { "staff-note" => new StaffNoteView(), "pixel-keyboard" => new PixelKeyboardView(catHead), _ => new PencilFlightView() };
         preferences.Visualization = id;
         ApplyColor();
         view.Opacity = 1 - preferences.Transparency / 100d;
@@ -160,8 +169,27 @@ internal sealed class DesktopHost : IDisposable
         double dt = Math.Max(0, now - lastTime); lastTime = now;
         var keys = keyboardSubscription.Read(now);
         var sound = audioSubscription.Read(now);
+        AdvanceCatHead(now);
         view.Update(sound, keys, dt);
     }
+    private double AdvanceCatHead(double now)
+    {
+        if (!suspended && !disposed && now > lastHeadTime)
+        {
+            catHead.Update(headSubscription.Read(now), now - lastHeadTime);
+            lastHeadTime = now;
+        }
+        return catHead.Angle;
+    }
+    private void ResetCatHead()
+    {
+        headSubscription.Dispose(); headSubscription = keyboard.Subscribe();
+        catHead.Reset(); lastHeadTime = Now;
+    }
+    private void UpdateTrayAnimation() => trayAnimation.SetRunning(
+        preferences.TrayAnimationEnabled && SystemParameters.ClientAreaAnimation && !suspended && !disposed);
+    private void OnSystemParametersChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    { if (e.PropertyName == nameof(SystemParameters.ClientAreaAnimation)) Dispatch(UpdateTrayAnimation); }
     private void SetVisible(bool value)
     {
         if (isVisible == value) return;
@@ -209,6 +237,11 @@ internal sealed class DesktopHost : IDisposable
         using (var keys = keyboard.Subscribe())
             menu.Items.Add(new Forms.ToolStripMenuItem("键盘状态：" + keys.Read(Now).State) { Enabled = false });
         Add(menu.Items, isVisible ? "隐藏画面" : "显示画面", () => SetVisible(!isVisible));
+        Add(menu.Items, "托盘猫摇头", () =>
+        {
+            preferences.TrayAnimationEnabled = !preferences.TrayAnimationEnabled;
+            UpdateTrayAnimation(); SavePreferences();
+        }, preferences.TrayAnimationEnabled);
         var modes = new Forms.ToolStripMenuItem("可视化"); menu.Items.Add(modes);
         Add(modes.DropDownItems, "铅笔飞鸟", () => SwitchVisualization("pencil-flight"), view.Id == "pencil-flight");
         Add(modes.DropDownItems, "五线谱音符", () => SwitchVisualization("staff-note"), view.Id == "staff-note");
@@ -237,6 +270,7 @@ internal sealed class DesktopHost : IDisposable
         {
             preferences.KeyboardEnabled = !preferences.KeyboardEnabled;
             if (preferences.KeyboardEnabled && !suspended) keyboardCapture.Start(); else keyboardCapture.Stop();
+            ResetCatHead();
             SavePreferences();
         }, preferences.KeyboardEnabled);
         menu.Items.Add(new Forms.ToolStripSeparator());
@@ -266,12 +300,14 @@ internal sealed class DesktopHost : IDisposable
         SetAdjusting(false);
         hoverLock.Reset();
         suspended = true; StopRendering(); capture.Suspend(); keyboardCapture.Suspend();
+        ResetCatHead(); UpdateTrayAnimation();
     }
     private void Resume()
     {
         if (!suspended) return;
         suspended = false; capture.Resume();
         if (preferences.KeyboardEnabled) keyboardCapture.Resume();
+        ResetCatHead(); UpdateTrayAnimation();
         StartRendering();
     }
     private void UpdateSuspension() { if (powerSuspended || sessionSuspended) Suspend(); else Resume(); }
@@ -285,7 +321,7 @@ internal sealed class DesktopHost : IDisposable
         if (e.Reason is SessionSwitchReason.SessionLock or SessionSwitchReason.SessionLogoff or SessionSwitchReason.RemoteDisconnect or SessionSwitchReason.ConsoleDisconnect) Dispatch(() => { sessionSuspended = true; UpdateSuspension(); });
         else if (e.Reason is SessionSwitchReason.SessionUnlock or SessionSwitchReason.SessionLogon or SessionSwitchReason.RemoteConnect or SessionSwitchReason.ConsoleConnect) Dispatch(() => { sessionSuspended = false; UpdateSuspension(); });
     }
-    private void OnDisplayChanged(object? sender, EventArgs e) => Dispatch(() => { hoverLock.Reset(); SetAdjusting(false); SetFrame(CurrentFrame()); SaveFrame(); SavePreferences(); });
+    private void OnDisplayChanged(object? sender, EventArgs e) => Dispatch(() => { trayAnimation.RefreshSize(); hoverLock.Reset(); SetAdjusting(false); SetFrame(CurrentFrame()); SaveFrame(); SavePreferences(); });
     public void Dispose()
     {
         if (disposed) return;
@@ -295,7 +331,9 @@ internal sealed class DesktopHost : IDisposable
         SystemEvents.PowerModeChanged -= OnPowerModeChanged;
         SystemEvents.SessionSwitch -= OnSessionSwitch;
         SystemEvents.DisplaySettingsChanged -= OnDisplayChanged;
+        SystemParameters.StaticPropertyChanged -= OnSystemParametersChanged;
+        headSubscription.Dispose();
         capture.Dispose(); keyboardCapture.Dispose(); view.Dispose();
-        tray.Visible = false; tray.Dispose(); menu.Dispose(); window.Close();
+        tray.Visible = false; trayAnimation.Dispose(); tray.Dispose(); menu.Dispose(); window.Close();
     }
 }
