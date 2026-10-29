@@ -6,7 +6,7 @@ p=argparse.ArgumentParser();p.add_argument('folder',type=pathlib.Path);a=p.parse
 worker=ROOT/('build/plugins/Release/miucs-plugin-worker.exe' if sys.platform=='win32' else 'build/plugins/miucs-plugin-worker')
 subprocess.run([str(worker),str(a.folder.resolve()),'--validate'],check=True,timeout=5)
 import json
-manifest=json.loads((a.folder/'manifest.json').read_text())
+manifest=json.loads((a.folder/'manifest.json').read_text(encoding="utf-8"))
 b=Bridge(a.folder)
 try:
     for view in manifest['visualizations']:

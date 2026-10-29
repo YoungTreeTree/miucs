@@ -59,7 +59,7 @@ if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--plugin',default=ROOT/'plugins/builtin');p.add_argument('--output',type=pathlib.Path,default=ROOT/'build/plugin-preview');p.add_argument('--frames',type=int,default=120);args=p.parse_args();args.output.mkdir(parents=True,exist_ok=True)
     bridge=Bridge(args.plugin)
     try:
-        manifest=json.loads((pathlib.Path(args.plugin)/'manifest.json').read_text())
+        manifest=json.loads((pathlib.Path(args.plugin)/'manifest.json').read_text(encoding="utf-8"))
         for view in manifest['visualizations']:
             output=view['id'];w=int(view['layout']['width']);h=int(view['layout']['height'])
             bridge.post('activate',{'id':output,'width':w,'height':h,'scale':1.})
