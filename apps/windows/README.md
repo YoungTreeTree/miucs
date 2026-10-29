@@ -65,7 +65,7 @@ dotnet publish apps/windows/Miucs.Windows.csproj -c Release -r win-x64 --self-co
 
 ## 已知边界
 
-1. 系统播放格式目前支持单/双声道 PCM16/24/32 或 Float32（含 WAVEFORMATEXTENSIBLE）。环绕声设备需在 Windows 播放设置切换到立体声；不偷偷将多声道当作双声道。托盘显示错误类别。
+1. 系统播放格式支持 PCM16/24/32 或 Float32（含 WAVEFORMATEXTENSIBLE）。环绕声按声道掩码混成分析用的立体声。回环使用设备最小缓冲。托盘显示错误类别。
 2. 回环受 Windows 音频系统限制，独占模式、受保护内容或特殊驱动不保证可捕获；不绕过保护。
 3. 混音主旋律是启发式估计，不是歌声分离或完整记谱；复杂混音仍可能选错音。
 4. 首版没有自动启动、自动升级、安装器或代码签名。只有用户主动运行时工作。
