@@ -26,7 +26,7 @@ for f in swift:
 subprocess.run([str(ROOT/'build/plugin-reference'),str(out/'input.json'),str(out/'reference.json')],check=True)
 reference=json.loads((out/'reference.json').read_text())
 worker=ROOT/'build/plugins/miucs-plugin-worker'
-with subprocess.Popen([str(worker),str(ROOT/'plugins/builtin')],stdin=subprocess.PIPE,stdout=subprocess.PIPE) as p:
+with subprocess.Popen([str(worker),str(ROOT/'plugins/staff-note')],stdin=subprocess.PIPE,stdout=subprocess.PIPE) as p:
     scene={};version=0;updates=[]
     def response():
         global scene,version
@@ -41,7 +41,7 @@ with subprocess.Popen([str(worker),str(ROOT/'plugins/builtin')],stdin=subprocess
     maximum={};timings=[]
     for i,(f,expected) in enumerate(zip(frames,reference)):
         start=time.perf_counter();send(p.stdin,{'op':'update','value':f,'ack':version});response();timings.append((time.perf_counter()-start)*1000)
-        actual={'head':scene['tray-head'].get('rotation',0),'y':scene['staff-note-body']['y'],'scale':scene['staff-note-body']['scaleX'],'opacity':scene['staff-note-body']['opacity'],'sway':scene['staff-note-sway']['rotation']}
+        actual={'y':scene['staff-note-body']['y'],'scale':scene['staff-note-body']['scaleX'],'opacity':scene['staff-note-body']['opacity'],'sway':scene['staff-note-sway']['rotation']}
         for field,value in actual.items():
             delta=abs(value-expected[field]);maximum[field]=max(maximum.get(field,0),delta)
             assert delta<1e-8,(i,field,value,expected[field])
@@ -62,16 +62,15 @@ with subprocess.Popen([str(worker),str(ROOT/'plugins/builtin')],stdin=subprocess
 
 # Isolate each output in a fresh worker so its deterministic RNG begins at the same seed.
 for output in ['pixel-keyboard','pencil-flight']:
-    with subprocess.Popen([str(worker),str(ROOT/'plugins/builtin')],stdin=subprocess.PIPE,stdout=subprocess.PIPE) as p:
+    with subprocess.Popen([str(worker),str(ROOT/'plugins'/output)],stdin=subprocess.PIPE,stdout=subprocess.PIPE) as p:
         scene={};version=0;response();send(p.stdin,{'op':'activate','value':{'id':output},'ack':version});response()
         largest=0
         for i,(f,expected) in enumerate(zip(frames,reference)):
             send(p.stdin,{'op':'update','value':f,'ack':version});response()
-            assert abs(scene['tray-head'].get('rotation',0)-expected['head'])<1e-8
             if output=='pixel-keyboard':
                 rect=scene['keyboard-tail']['sourceRect'];index=int(rect[1]/88)*16+int(rect[0]/96)
                 assert index==expected['tail'],(output,i,index,expected['tail'])
-                assert scene['keyboard-head'].get('rotation',0)==scene['tray-head'].get('rotation',0)
+                assert abs(scene['keyboard-head'].get('rotation',0)-expected['head'])<1e-8
             else:
                 for key in ['y','rotation','scaleX','scaleY']:
                     delta=abs(scene['flight-bird'][key]-expected['flight'][key]);largest=max(largest,delta)

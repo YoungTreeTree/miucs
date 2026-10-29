@@ -22,18 +22,29 @@ Windows, from PowerShell with the C++ build tools available:
 
 `MIUCS_PLUGINS=1` also selects the plugin path. Without either runtime flag, existing renderers are used. Plain builds remain usable without fetching Skia. Use `MIUCS_PLUGIN_DEV=1` for file-change reloads, and `MIUCS_FORCE_CPU=1` to exercise CPU fallback. The runtime reports its backend; CPU presentation is capped at 30 FPS. Filesystem plugins do not require application recompilation.
 
-The three built-in IDs (`pencil-flight`, `staff-note`, `pixel-keyboard`) and their window preference keys are unchanged. The built-in package owns the common cat head state and tray output. Its worker keeps running when another package supplies the floating visualization. Native capture and analysis remain platform implementations; the plugin modules have no capture controls.
+The three built-in IDs (`pencil-flight`, `staff-note`, `pixel-keyboard`) and their window preference keys are unchanged. Each is now an independent folder under `plugins/`, with its own manifest, source and assets. The **可视化** menu lists these plugins directly, including installed user plugins. The application owns the cat logo and tray animation; they do not load a Lua worker and keep working when a plugin fails or is reloaded. Native capture and analysis remain platform implementations; the plugin modules have no capture controls.
+
+## Package layout
+
+```text
+plugins/
+├── pixel-keyboard/   # pixel music keyboard
+├── pencil-flight/    # pencil bird
+└── staff-note/       # staff, notes and ripples
+```
+
+Each folder can be copied, updated and validated independently. No sibling folder is needed. `apps/assets` holds the application cat portrait and packaged icons; regenerate the `.icns` / `.ico` files on macOS with `python3 scripts/generate-app-icons.py`. The pixel keyboard has its own copy of the portrait for its UI.
 
 ## Author a package
 
 ```sh
 cp -R tools/plugins/template /path/to/my-plugin
-# Edit manifest IDs, main.lua, scene.lua and local assets.
+# Edit the manifest ID, main.lua, scene.lua and local assets.
 python3 tools/plugins/validate.py /path/to/my-plugin
 python3 tools/plugins/preview.py --plugin /path/to/my-plugin --output build/my-preview
 ```
 
-The validator starts the real isolated worker, checks all output entries with synthetic input, decodes resources, and runs lifecycle callbacks. The preview exports PNG files through the same Skia CPU renderer. It supports any manifest output list, including a tray entry. Both tools use only Python's standard library. See `contracts/plugins/README.md`, `manifest.schema.json` and `api.lua` for the protocol and editor definitions.
+The validator starts the real isolated worker, checks its single UI with synthetic input, decodes resources, and runs lifecycle callbacks. The preview exports PNG files through the same Skia CPU renderer. The manifest declares `id`, `name` and `layout` at the top level; the scene root uses the same `id`. Legacy `visualizations` arrays and `tray` entries are rejected. Both tools use only Python's standard library. See `contracts/plugins/README.md`, `manifest.schema.json` and `api.lua` for the protocol and editor definitions.
 
 Install by copying the complete folder into the platform user plugin directory and choosing the rescan menu action. Active instances survive a failed rescan/reload. Removing a folder removes its entry on rescan; the current already-loaded instance may remain until switched or reloaded. A changed manifest ID is a new package, not an update to the prior identity.
 
@@ -47,7 +58,7 @@ Install by copying the complete folder into the platform user plugin directory a
 | Metal / D3D12 + DirectComposition | `surface_mac.mm`, `surface_win.cpp` |
 | Platform feature adaptation, package lifecycle, reload | `modules/plugins/platforms/macos`, `modules/plugins/platforms/windows` |
 | Physical key names | `modules/keyboard/platforms/*/*PhysicalKeys*` |
-| Shared built-in animations and drawings | `plugins/builtin` |
+| Shared built-in animations and drawings | `plugins/pixel-keyboard`, `plugins/pencil-flight`, `plugins/staff-note` |
 | Template, synthetic fixture, validation and previews | `tools/plugins` |
 | Worker, transport, replay, native surface and reload tests | `tests/plugins`, `scripts/test-plugin*` |
 
@@ -60,13 +71,13 @@ sh scripts/build-plugins.sh
 sh scripts/test-plugins.sh
 zsh scripts/test-plugin-macos.sh
 python3 tools/plugins/fixture.py
-build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/builtin build/plugin-fixture.json
-MIUCS_FORCE_CPU=1 build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/builtin build/plugin-fixture.json
-build/plugins/plugin-benchmark plugins/builtin build/plugin-fixture.json
+build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/staff-note build/plugin-fixture.json
+MIUCS_FORCE_CPU=1 build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/staff-note build/plugin-fixture.json
+build/plugins/plugin-benchmark plugins build/plugin-fixture.json
 python3 tests/plugins/soak.py --seconds 1800
 ```
 
-On Windows the native probe and worker live under `build/plugins/Release` with `.exe` suffixes. `transport_test.py`, validator and preview select that build layout automatically. `.github/workflows/plugins.yml` builds both native paths and saves preview artifacts; adding a workflow does not mean it has run on the current unpushed branch.
+On Windows pass the parent `plugins` directory to the surface probe; it starts a separate worker for each UI. The native probe and worker live under `build/plugins/Release` with `.exe` suffixes. `transport_test.py`, validator and preview select that build layout automatically. `.github/workflows/plugins.yml` builds both native paths and saves preview artifacts; adding a workflow does not mean it has run on the current unpushed branch.
 
 The replay compiles production Swift simulations and checks 600 frames per output against Lua, including head/tail, flight position/scale/angle/score, staff motion, trace commands and ring geometry. Fixtures cover short pitch dropouts, silence, long frame intervals, separate input sessions and audio format changes. Host/worker tests cover bounded scene memory, node count, empty path patches, deterministic seeds, revision resync, bytecode, path escapes, corrupt resources, invalid binary packets, event coalescing and a loop that catches its Lua interrupt. Mac reload tests verify candidate failure preservation and viewport continuity.
 
@@ -81,7 +92,7 @@ Track measured local results in `docs/validation/plugin-runtime.md`. Do not remo
 - Shared fixture state/path agreement and reviewed screenshots on both platforms, including rings' full area and staff reconnection.
 - Isolated fixed-machine Release P95 script update and scene application each ≤ 2 ms; GPU completion separately measured, sustained drops < 1%, added input-to-display P95 ≤ one frame.
 - Thirty-minute sustained tests on each target, with repeated switching and reload, showing no sustained memory growth after cache warmup.
-- No animation timer when all outputs are disabled; 16 FPS tray-only cadence; hidden floating output paused; errors leave capture and menus available.
+- No plugin animation timer when the floating output is hidden; the application tray has its own 16 FPS cadence. Errors leave capture, the cat logo and menus available.
 
 The runtime's 50 ms CPU failure ceiling and watchdog are fault isolation limits, not relaxed performance acceptance criteria. Font rasterization and GPU antialiasing may differ slightly across platforms; no pixel-identical promise is made.
 

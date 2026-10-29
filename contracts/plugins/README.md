@@ -4,9 +4,9 @@ Miucs keeps platform capture and analysis unchanged. A package consumes immutabl
 
 ## Package and lifecycle
 
-Copy `tools/plugins/template` to a new folder and change **both** package and output IDs. `manifest.schema.json` describes metadata; the native validator additionally checks containment, unique IDs and `minimumWidth <= width <= maximumWidth`. The folder contains a UTF-8 JSON manifest, Lua source and any local assets. IDs may contain ASCII letters, digits, `.`, `_`, `-`, up to 128 bytes.
+Copy `tools/plugins/template` to a new folder and change the top-level `id` and the matching scene root ID. One folder is one UI: `id`, `name` and `layout` belong directly to the manifest, and the **可视化** menu is the plugin selector. `visualizations` arrays and `tray` declarations are rejected. `manifest.schema.json` describes metadata; the native validator additionally checks containment, unique IDs and `minimumWidth <= width <= maximumWidth`. The folder contains a UTF-8 JSON manifest, Lua source and any local assets. IDs may contain ASCII letters, digits, `.`, `_`, `-`, up to 128 bytes.
 
-`entry` returns a lifecycle table. All callbacks are optional. The host calls `create({api=1,seed=1})`, `activate(viewport)`, `update(frame)`, `resize(viewport)`, `appearanceChanged(appearance)`, `deactivate()` and `dispose()`. Cleanup must be idempotent. Normal close schedules a bounded dispose and teardown off the UI thread; a worker monitors its host process and exits if the host disappears. An abruptly killed worker cannot run cleanup; external resources remain owned by the host. One package has one worker, one active floating output and an optional tray output. The built-in package continues its tray output when another package is selected. `update` advances shared animation state once, regardless of how many outputs are drawn.
+`entry` returns a lifecycle table. All callbacks are optional. The host calls `create({api=1,seed=1})`, `activate(viewport)`, `update(frame)`, `resize(viewport)`, `appearanceChanged(appearance)`, `deactivate()` and `dispose()`. Cleanup must be idempotent. Normal close schedules a bounded dispose and teardown off the UI thread; a worker monitors its host process and exits if the host disappears. An abruptly killed worker cannot run cleanup; external resources remain owned by the host. One selected package has one worker and one floating output. Switching plugins disposes the previous worker. Hiding the output stops plugin updates; resuming uses fresh subscriptions. The cat logo and tray are application-owned and independent of all plugins.
 
 API definitions for Lua language servers are in `api.lua`. Add this directory to the editor's Lua workspace library; do not load that file from a plugin.
 
@@ -45,7 +45,7 @@ Lua exposes base/math/string/table/utf8, with dynamic loading, file access, prin
 - macOS user root: `~/Library/Application Support/Miucs/Plugins`.
 - Windows user root: `%LOCALAPPDATA%\Miucs\Plugins`.
 - Copy a package folder, then choose **重新扫描插件** / **重新扫描** in the menu.
-- Duplicate package/output IDs are errors. Built-ins are scanned first and cannot be overridden by user folders. Scanning does not execute scripts.
+- Duplicate plugin IDs are errors. Built-ins are scanned first and cannot be overridden by user folders. Scanning does not execute scripts.
 - **重新加载当前插件** starts a candidate worker, invokes lifecycle callbacks and verifies its first CPU-rendered frame. Only a successful candidate replaces the live worker; failure retains the old one. Window and appearance preferences stay in the host; animation state resets.
 - `MIUCS_PLUGIN_DEV=1` polls active package file metadata once a second for development reloads. No online installer/updater is involved.
 

@@ -9,13 +9,13 @@ import AppKit
         try FileManager.default.createDirectory(at:directory,withIntermediateDirectories:true)
         defer {try? FileManager.default.removeItem(at:directory)}
         let manifest="""
-        {"id":"tests.reload","name":"Reload","version":"1.0.0","api":1,"entry":"main.lua","inputs":[],"visualizations":[{"id":"test","name":"Test","layout":{"width":100,"height":100,"minimumWidth":10,"maximumWidth":200}}]}
+        {"id":"test","name":"Reload","version":"1.0.0","api":1,"entry":"main.lua","inputs":[],"layout":{"width":100,"height":100,"minimumWidth":10,"maximumWidth":200}}
         """
         try manifest.write(to:directory.appendingPathComponent("manifest.json"),atomically:true,encoding:.utf8)
         func source(_ text:String)throws {try text.write(to:directory.appendingPathComponent("main.lua"),atomically:true,encoding:.utf8)}
         func script(_ color:String)->String {"return {create=function() miucs.load{type='rect',id='test',width=100,height=100,fill='\(color)'} end,activate=function(v) assert(v.width==100 and v.height==100 and v.scale==2) end}"}
         try source(script("#ff0000"))
-        let package=PluginPackage(["id":"tests.reload","directory":directory.path]);defer{package.close()}
+        let package=PluginPackage(["id":"test","directory":directory.path]);defer{package.close()}
         func wait(_ condition:()->Bool)throws {
             let until=Date().addingTimeInterval(4)
             while !condition() {
@@ -37,6 +37,26 @@ import AppKit
         defer { api.destroySurface?(surface) }
         var pixels=[UInt8](repeating:0,count:16*16*4)
         precondition(api.pixels?(surface,16,16,&pixels,pixels.count)==1 && pixels[0]==255 && pixels[2]==0,"Replacement scene must render blue")
+        // Catalog scans do not create workers; each selection starts only its own package.
+        let host=PluginHost.shared, registry=VisualizationRegistry()
+        host.register(in:registry)
+        let ids=Set(["pencil-flight","staff-note","pixel-keyboard"])
+        precondition(ids.isSubset(of:Set(registry.descriptors.map(\.id))))
+        precondition(host.packages.isEmpty,"Tray must not eagerly launch a plugin")
+        let keys=KeyboardChannel()
+        let item=NSStatusBar.system.statusItem(withLength:NSStatusItem.variableLength)
+        let tray=AppTrayIcon(item:item,source:keys)
+        defer {tray.stop();NSStatusBar.system.removeStatusItem(item);host.stop()}
+        precondition(item.button?.image != nil,"Application logo exists without any plugin")
+        for id in ids.sorted() {
+            let selected=registry.makeSession(id:id)!
+            selected.activate(viewport:.desktop)
+            precondition(Set(host.packages.keys)==Set([id]),"Only selected plugin owns a worker")
+            selected.dispose()
+            precondition(host.packages.isEmpty,"Switching/disposal releases the old worker")
+            precondition(item.button?.image != nil,"Plugin disposal preserves application tray")
+        }
+        print("PASS independent plugin selection and application tray lifetime")
         print("PASS Mac plugin reload: syntax failure preserves live scene; successful candidate preserves viewport and swaps rendered output")
     }
 }

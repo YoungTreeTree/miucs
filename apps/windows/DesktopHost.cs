@@ -11,6 +11,7 @@ using Miucs.Keyboard;
 using Miucs.Visualizations;
 using Miucs.Plugins;
 using System.IO;
+using System.Linq;
 using Forms = System.Windows.Forms;
 
 namespace Miucs.Windows;
@@ -31,7 +32,6 @@ internal sealed class DesktopHost : IDisposable
     private readonly Forms.NotifyIcon tray;
     private readonly AnimatedTrayIcon trayAnimation;
     private readonly PluginHost? pluginHost;
-    private readonly PluginTrayIcon? pluginTray;
     private readonly PixelHeadScene catHead = new();
     private KeyboardSubscription headSubscription;
     private double lastHeadTime;
@@ -83,7 +83,6 @@ internal sealed class DesktopHost : IDisposable
         SwitchVisualization(preferences.Visualization is "staff-note" or "pixel-keyboard" or "pencil-flight" || pluginHost?.Views.ContainsKey(preferences.Visualization)==true ? preferences.Visualization : "pencil-flight");
         tray = new Forms.NotifyIcon { Text = "Miucs", ContextMenuStrip = menu };
         trayAnimation = new AnimatedTrayIcon(tray, () => AdvanceCatHead(Now));
-        if (pluginHost != null) { pluginTray = new PluginTrayIcon(tray); pluginHost.TrayFrame = pixels => { if(preferences.TrayAnimationEnabled && SystemParameters.ClientAreaAnimation && !suspended) pluginTray.Present(pixels); }; }
         tray.Visible = true;
         UpdateTrayAnimation();
         tray.DoubleClick += (_, _) => Dispatch(() => SetVisible(!isVisible));
@@ -108,8 +107,10 @@ internal sealed class DesktopHost : IDisposable
     }
     private void SwitchVisualization(string id)
     {
+        if (pluginHost != null && !pluginHost.Views.ContainsKey(id))
+            id=pluginHost.Views.Keys.FirstOrDefault() ?? "";
         if (view != null && view.Id == id) return;
-        if (id != "pencil-flight" && id != "staff-note" && id != "pixel-keyboard" && pluginHost?.Views.ContainsKey(id) != true) return;
+        if (id != "pencil-flight" && id != "staff-note" && id != "pixel-keyboard" && pluginHost == null) return;
         WindowFrame? previous = view == null ? null : CurrentFrame();
         hoverLock?.Reset();
         StopRendering();
@@ -117,8 +118,8 @@ internal sealed class DesktopHost : IDisposable
         {
             SaveFrame(); root.Children.Remove(view); view.Dispose();
         }
-        view = pluginHost?.Views.ContainsKey(id) == true ? new PluginView(pluginHost,id) : id switch { "staff-note" => new StaffNoteView(), "pixel-keyboard" => new PixelKeyboardView(catHead), _ => new PencilFlightView() };
-        preferences.Visualization = id;
+        view = pluginHost?.Views.ContainsKey(id) == true ? new PluginView(pluginHost,id) : pluginHost != null ? new EmptyPluginView() : id switch { "staff-note" => new StaffNoteView(), "pixel-keyboard" => new PixelKeyboardView(catHead), _ => new PencilFlightView() };
+        if (id.Length>0) preferences.Visualization = id;
         ApplyColor();
         view.Opacity = 1 - preferences.Transparency / 100d;
         root.Children.Insert(0, view);
@@ -137,7 +138,7 @@ internal sealed class DesktopHost : IDisposable
         window.Left = frame.X; window.Top = frame.Y; window.Width = frame.Width; window.Height = frame.Height;
         view.Width = frame.Width; view.Height = frame.Height;
     }
-    private void SaveFrame() { if (view != null && CurrentFrame().IsValid) preferences.Frames[view.Id] = CurrentFrame(); }
+    private void SaveFrame() { if (view != null && view.Id.Length>0 && CurrentFrame().IsValid) preferences.Frames[view.Id] = CurrentFrame(); }
     private void SavePreferences()
     {
         if (!preferences.Save(Preferences.DefaultPath) && tray != null)
@@ -196,8 +197,7 @@ internal sealed class DesktopHost : IDisposable
     private void UpdateTrayAnimation()
     {
         bool enabled=preferences.TrayAnimationEnabled && SystemParameters.ClientAreaAnimation && !suspended && !disposed;
-        trayAnimation.SetRunning(pluginHost == null && enabled);
-        pluginHost?.SetTrayEnabled(enabled);
+        trayAnimation.SetRunning(enabled);
     }
     private void OnSystemParametersChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     { if (e.PropertyName == nameof(SystemParameters.ClientAreaAnimation)) Dispatch(UpdateTrayAnimation); }
@@ -254,19 +254,21 @@ internal sealed class DesktopHost : IDisposable
             UpdateTrayAnimation(); SavePreferences();
         }, preferences.TrayAnimationEnabled);
         var modes = new Forms.ToolStripMenuItem("可视化"); menu.Items.Add(modes);
-        Add(modes.DropDownItems, "铅笔飞鸟", () => SwitchVisualization("pencil-flight"), view.Id == "pencil-flight");
-        Add(modes.DropDownItems, "五线谱音符", () => SwitchVisualization("staff-note"), view.Id == "staff-note");
-        Add(modes.DropDownItems, "像素音乐键盘", () => SwitchVisualization("pixel-keyboard"), view.Id == "pixel-keyboard");
+        if (pluginHost != null)
+        {
+            foreach (var plugin in pluginHost.Views.Values) { var id=plugin.Id;Add(modes.DropDownItems,plugin.Name,()=>SwitchVisualization(id),view.Id==id); }
+            Add(menu.Items,"重新扫描插件",()=>{pluginHost.Scan();if(view.Id.Length==0)SwitchVisualization(preferences.Visualization);});
+            Add(menu.Items,"重新加载当前插件",()=>pluginHost.ReloadActive());
+        }
+        else
+        {
+            Add(modes.DropDownItems, "铅笔飞鸟", () => SwitchVisualization("pencil-flight"), view.Id == "pencil-flight");
+            Add(modes.DropDownItems, "五线谱音符", () => SwitchVisualization("staff-note"), view.Id == "staff-note");
+            Add(modes.DropDownItems, "像素音乐键盘", () => SwitchVisualization("pixel-keyboard"), view.Id == "pixel-keyboard");
+        }
         var sizes = new Forms.ToolStripMenuItem("画面大小"); menu.Items.Add(sizes);
         foreach (int percent in new[] { 10, 80, 100, 125, 150, 200 })
             Add(sizes.DropDownItems, $"{percent}%", () => { SetFrame(CurrentFrame() with { Width = view.BaseWidth * percent / 100d }); SaveFrame(); SavePreferences(); });
-        if (pluginHost != null)
-        {
-            var plugins = new Forms.ToolStripMenuItem("文件夹插件"); menu.Items.Add(plugins);
-            foreach (var entry in pluginHost.Views.Values) { var id = entry.View.Id; Add(plugins.DropDownItems, entry.View.Name, () => SwitchVisualization(id), view.Id == id); }
-            Add(plugins.DropDownItems, "重新扫描", () => pluginHost.Scan());
-            Add(plugins.DropDownItems, "重新加载当前插件", () => pluginHost.ReloadActive());
-        }
         var colors = new Forms.ToolStripMenuItem("线条颜色"); menu.Items.Add(colors);
         foreach (var entry in Preferences.Palette)
             Add(colors.DropDownItems, entry.Value.Name, () => { preferences.Color = entry.Key; ApplyColor(); SavePreferences(); }, preferences.Color == entry.Key);
@@ -354,6 +356,6 @@ internal sealed class DesktopHost : IDisposable
         SystemParameters.StaticPropertyChanged -= OnSystemParametersChanged;
         headSubscription.Dispose();
         capture.Dispose(); keyboardCapture.Dispose(); view.Dispose();
-        tray.Visible = false; pluginHost?.Dispose(); pluginTray?.Dispose(); trayAnimation.Dispose(); tray.Dispose(); menu.Dispose(); window.Close();
+        tray.Visible = false; pluginHost?.Dispose(); trayAnimation.Dispose(); tray.Dispose(); menu.Dispose(); window.Close();
     }
 }

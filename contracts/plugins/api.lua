@@ -2,7 +2,7 @@
 -- Editor-only Lua language-server definitions. Do not require this file at runtime.
 
 ---@class MiucsViewport
----@field id string Output node id declared in manifest.visualizations
+---@field id string Plugin ID from manifest.id; also the scene root node ID
 ---@field width number Logical viewport width
 ---@field height number Logical viewport height
 ---@field scale number Backing pixels per logical viewport unit

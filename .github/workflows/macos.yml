@@ -1,9 +1,9 @@
 name: macOS
 on:
   push:
-    paths: ['apps/macos/**', 'modules/**/*.swift', 'modules/visualizations/pixel-keyboard/assets/**', 'build.sh', 'project.yml', 'tools/macos/**', 'tests/**/*.swift', 'scripts/*.sh', '.github/workflows/macos.yml']
+    paths: ['apps/assets/**', 'apps/macos/**', 'modules/**/*.swift', 'modules/visualizations/pixel-keyboard/assets/**', 'build.sh', 'project.yml', 'tools/macos/**', 'tests/**/*.swift', 'scripts/*.sh', '.github/workflows/macos.yml']
   pull_request:
-    paths: ['apps/macos/**', 'modules/**/*.swift', 'modules/visualizations/pixel-keyboard/assets/**', 'build.sh', 'project.yml', 'tools/macos/**', 'tests/**/*.swift', 'scripts/*.sh', '.github/workflows/macos.yml']
+    paths: ['apps/assets/**', 'apps/macos/**', 'modules/**/*.swift', 'modules/visualizations/pixel-keyboard/assets/**', 'build.sh', 'project.yml', 'tools/macos/**', 'tests/**/*.swift', 'scripts/*.sh', '.github/workflows/macos.yml']
   workflow_dispatch:
 permissions:
   contents: read

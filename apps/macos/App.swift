@@ -51,6 +51,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, Observ
     let appearanceStore = VisualizationAppearanceStore()
     private var pluginStatusItem: NSMenuItem?
     private var statusItem: NSStatusItem?
+    private var trayIcon: AppTrayIcon?
     private var panel: VisualizerPanel?
     private let engine = AudioEngine()
     private let keyboardEngine = KeyboardEngine()
@@ -118,10 +119,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, Observ
 
         appearanceStore.saveSelection()
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        item.button?.image = NSImage(
-            systemSymbolName: "waveform",
-            accessibilityDescription: "Miucs"
-        )
+        trayIcon = AppTrayIcon(item:item,source:keyboardEngine.channel)
         let menu = NSMenu();menu.delegate=self
         menu.addItem(
             NSMenuItem(title: "显示拾音器", action: #selector(showPanel), keyEquivalent: "s")
@@ -176,8 +174,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, Observ
         )
         item.menu = menu
         statusItem = item
-        PluginHost.shared.start(audio: engine.channel, keyboard: keyboardEngine.channel, status: item)
+        PluginHost.shared.start(audio: engine.channel, keyboard: keyboardEngine.channel)
 
+        createPanelIfNeeded()
+
+        Task { await engine.start() }
+        Task {
+            let key = "MiucsKeyboardPermissionRequested.v1"
+            let request = !UserDefaults.standard.bool(forKey: key)
+            UserDefaults.standard.set(true, forKey: key)
+            await keyboardEngine.start(requestAccess: request)
+        }
+    }
+
+    private func createPanelIfNeeded() {
+        guard panel == nil, !registry.descriptors.isEmpty else { return }
         let panel = VisualizerPanel(source: engine.channel, registry: registry, keyboardSource: keyboardEngine.channel)
         self.panel = panel
         appearanceSubscription = appearanceStore.$selection.sink { [weak self] ink in
@@ -195,13 +206,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, Observ
         updateSizeMenu()
         updateVisualizationMenu()
 
-        Task { await engine.start() }
-        Task {
-            let key = "MiucsKeyboardPermissionRequested.v1"
-            let request = !UserDefaults.standard.bool(forKey: key)
-            UserDefaults.standard.set(true, forKey: key)
-            await keyboardEngine.start(requestAccess: request)
-        }
     }
 
     func menuWillOpen(_ menu: NSMenu) {
@@ -210,12 +214,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, Observ
         pluginStatusItem?.toolTip=error
     }
     @objc private func rescanPlugins() {
+        objectWillChange.send()
         PluginHost.shared.register(in: registry)
         visualizationMenu?.removeAllItems()
         for descriptor in registry.descriptors {
             let item=NSMenuItem(title:descriptor.name,action:#selector(selectVisualization(_:)),keyEquivalent:"")
             item.target=self;item.representedObject=descriptor.id;visualizationMenu?.addItem(item)
         }
+        createPanelIfNeeded()
         updateVisualizationMenu()
     }
     @objc private func reloadPlugins() { PluginHost.shared.reloadActive() }
@@ -300,6 +306,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, Observ
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        trayIcon?.stop()
         PluginHost.shared.stop()
         keyboardEngine.stop()
         engine.stop()

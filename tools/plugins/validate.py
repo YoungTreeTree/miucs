@@ -9,13 +9,12 @@ import json
 manifest=json.loads((a.folder/'manifest.json').read_text(encoding="utf-8"))
 b=Bridge(a.folder)
 try:
-    for view in manifest['visualizations']:
+    for view in [manifest]:
         b.post('activate',dict(view['layout'],id=view['id'],scale=1))
         b.post('resize',dict(view['layout'],id=view['id'],scale=2))
         b.post('appearanceChanged',{'ink':'#4f7087','opacity':.9})
         for i in range(60):b.post('update',frame(i))
         b.render(view['id'],128,128);b.post('deactivate',{})
-    if 'tray' in manifest:b.render(manifest['tray'],32,32)
     b.post('dispose',{})
     print('Lifecycle, synthetic input and resource validation passed')
 finally:b.close()

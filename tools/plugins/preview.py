@@ -56,15 +56,15 @@ def png(path,bgra,w,h):
     path.write_bytes(b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('>IIBBBBB',w,h,8,6,0,0,0))+chunk(b'IDAT',zlib.compress(rows))+chunk(b'IEND',b''))
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--plugin',default=ROOT/'plugins/builtin');p.add_argument('--output',type=pathlib.Path,default=ROOT/'build/plugin-preview');p.add_argument('--frames',type=int,default=120);args=p.parse_args();args.output.mkdir(parents=True,exist_ok=True)
-    bridge=Bridge(args.plugin)
-    try:
-        manifest=json.loads((pathlib.Path(args.plugin)/'manifest.json').read_text(encoding="utf-8"))
-        for view in manifest['visualizations']:
-            output=view['id'];w=int(view['layout']['width']);h=int(view['layout']['height'])
+    p=argparse.ArgumentParser();p.add_argument('--plugin',type=pathlib.Path);p.add_argument('--output',type=pathlib.Path,default=ROOT/'build/plugin-preview');p.add_argument('--frames',type=int,default=120);args=p.parse_args();args.output.mkdir(parents=True,exist_ok=True)
+    folders=[args.plugin] if args.plugin else sorted(folder.parent for folder in (ROOT/'plugins').glob('*/manifest.json'))
+    for folder in folders:
+        manifest=json.loads((folder/'manifest.json').read_text(encoding="utf-8"))
+        bridge=Bridge(folder)
+        try:
+            output=manifest['id'];w=int(manifest['layout']['width']);h=int(manifest['layout']['height'])
             bridge.post('activate',{'id':output,'width':w,'height':h,'scale':1.})
             for i in range(args.frames):bridge.post('update',frame(i))
             png(args.output/(output+'.png'),bridge.render(output,w*2,h*2),w*2,h*2)
             print(output,'rendered',flush=True)
-        if 'tray' in manifest:png(args.output/'tray.png',bridge.render(manifest['tray'],64,64),64,64)
-    finally:bridge.close()
+        finally:bridge.close()

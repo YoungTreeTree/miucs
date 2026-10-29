@@ -5,20 +5,19 @@ import QuartzCore
 final class PluginPackage {
     let directory: String
     let id: String
-    let trayOutput: String?
     var handle: UnsafeMutableRawPointer?
     var activeID: String?
     private var viewport: [String:Any] = [:]
     var appearance: [String: Any] = ["ink": "#3d3d3d"]
-    var beforeReplace: (() -> Void)?
     var reloadError = ""
+    var isReloading: Bool { candidate != nil }
     private var candidate: UnsafeMutableRawPointer?
     private var reloadStarted = 0.0
     private var fingerprint = ""
     var views = NSHashTable<PluginCanvas>.weakObjects()
     private let api = PluginNative.shared
     init(_ metadata: [String: Any]) {
-        directory = metadata["directory"] as! String; id = metadata["id"] as! String; trayOutput = metadata["tray"] as? String
+        directory = metadata["directory"] as! String; id = metadata["id"] as! String
         handle = api.worker.withCString { worker in directory.withCString { root in api.open?(worker,root) } }
     }
     func post(_ op: String, _ value: [String: Any] = [:]) {
@@ -63,7 +62,7 @@ final class PluginPackage {
             api.close?(candidate);self.candidate=nil;return
         }
         guard (api.completed?(candidate) ?? 0)>=4 else { return }
-        let output = activeID ?? trayOutput
+        let output: String? = id
         if let output {
             guard let surface=output.withCString({ api.createSurface?(candidate,nil,$0) }) else { return }
             var pixels=[UInt8](repeating:0,count:16*16*4)
@@ -71,7 +70,6 @@ final class PluginPackage {
             api.destroySurface?(surface)
             if !valid { reloadError=api.failure(nil);api.close?(candidate);self.candidate=nil;return }
         }
-        beforeReplace?()
         for view in views.allObjects { view.releaseSurface() }
         let previous=handle;handle=candidate;self.candidate=nil
         if let previous { api.close?(previous) }
@@ -95,13 +93,10 @@ final class PluginHost {
     private var audio: FeatureSubscription?
     private var keyboard: KeyboardSubscription?
     private var timer: Timer?
-    private var last = 0.0, lastTray = 0.0
+    private var last = 0.0
     private var suspended = false
     private var suspensionReasons = Set<String>()
     private var registeredIDs = Set<String>()
-    private var statusItem: NSStatusItem?
-    private var traySurface: UnsafeMutableRawPointer?
-    private var trayOwner: PluginPackage?
     private var observers = [NSObjectProtocol]()
     private var lastScan = 0.0
     func register(in registry: VisualizationRegistry) {
@@ -110,14 +105,12 @@ final class PluginHost {
         let result = PluginNative.shared.scan()
         metadata = result["plugins"] as? [[String: Any]] ?? []
         errors = (result["errors"] as? [[String: Any]] ?? []).compactMap { $0["message"] as? String }
-        let nextIDs=Set(metadata.flatMap { ($0["visualizations"] as? [[String:Any]] ?? []).compactMap { $0["id"] as? String } })
-        for id in registeredIDs.subtracting(nextIDs) where !["pencil-flight","staff-note","pixel-keyboard"].contains(id) { registry.remove(id: id) };registeredIDs=nextIDs
+        let nextIDs=Set(metadata.compactMap { $0["id"] as? String })
+        for id in registeredIDs.subtracting(nextIDs) { registry.remove(id: id) };registeredIDs=nextIDs
         for package in metadata {
-            for view in package["visualizations"] as? [[String: Any]] ?? [] {
-                guard let id = view["id"] as? String, let name = view["name"] as? String, let l = view["layout"] as? [String: Double], let w = l["width"], let h = l["height"], let lo = l["minimumWidth"], let hi = l["maximumWidth"] else { continue }
-                let descriptor = VisualizationDescriptor(id: id, name: name, layout: VisualizationLayout(width: w,height: h,minimumWidth: lo,maximumWidth: hi))
-                registry.replace(descriptor) { PluginSession(descriptor: descriptor, package: self.package(package)) }
-            }
+            guard let id = package["id"] as? String, let name = package["name"] as? String, let l = package["layout"] as? [String: Double], let w = l["width"], let h = l["height"], let lo = l["minimumWidth"], let hi = l["maximumWidth"] else { continue }
+            let descriptor = VisualizationDescriptor(id: id, name: name, layout: VisualizationLayout(width: w,height: h,minimumWidth: lo,maximumWidth: hi))
+            registry.replace(descriptor) { PluginSession(descriptor: descriptor, package: self.package(package)) }
         }
     }
     func package(_ metadata: [String: Any]) -> PluginPackage {
@@ -125,17 +118,9 @@ final class PluginHost {
         if let existing = packages[id] { return existing }
         let result = PluginPackage(metadata); packages[id] = result; return result
     }
-    func start(audio: any AudioFeatureSource, keyboard: any KeyboardFeatureSource, status: NSStatusItem) {
+    func start(audio: any AudioFeatureSource, keyboard: any KeyboardFeatureSource) {
         guard Self.enabled, PluginNative.shared.available else { return }
-        audioSource = audio; keyboardSource = keyboard; self.audio = audio.subscribe(); self.keyboard = keyboard.subscribe(); statusItem = status
-        if let builtin = metadata.first(where: { $0["id"] as? String == "com.miucs.builtin" }) {
-            let package = package(builtin); trayOwner = package
-            package.beforeReplace = { [weak self] in
-                guard let self else { return }
-                if let surface=self.traySurface { PluginNative.shared.destroySurface?(surface) };self.traySurface=nil
-            }
-            if let output = package.trayOutput { traySurface = output.withCString { PluginNative.shared.createSurface?(package.handle,nil,$0) } }
-        }
+        audioSource = audio; keyboardSource = keyboard; self.audio = audio.subscribe(); self.keyboard = keyboard.subscribe()
         last = ProcessInfo.processInfo.systemUptime
         updateSchedule()
         for name in [NSWorkspace.willSleepNotification, NSWorkspace.sessionDidResignActiveNotification] {
@@ -154,18 +139,18 @@ final class PluginHost {
         }
     }
     func updateSchedule() {
-        timer?.invalidate(); timer=nil
-        guard !suspended else { return }
-        let active=packages.values.contains { $0.activeID != nil }
-        guard active || trayOwner != nil else { return }
-        timer=Timer(timeInterval: active ? 1.0/60 : 1.0/16, repeats:true) { [weak self] _ in MainActor.assumeIsolated { self?.tick() } }
+        let needed = !suspended && packages.values.contains { $0.activeID != nil || $0.isReloading }
+        guard needed else { timer?.invalidate();timer=nil;return }
+        guard timer == nil else { return }
+        last=ProcessInfo.processInfo.systemUptime
+        audio=audioSource?.subscribe();keyboard=keyboardSource?.subscribe()
+        timer=Timer(timeInterval: 1.0/60, repeats:true) { [weak self] _ in MainActor.assumeIsolated { self?.tick() } }
         RunLoop.main.add(timer!,forMode:.common)
     }
     private func tick() {
         guard !suspended else { return }
         let now = ProcessInfo.processInfo.systemUptime
-        let active = packages.values.contains { $0.activeID != nil }
-        guard now-last >= (active ? 1.0/60 : 1.0/16) * 0.85 else { return }
+        guard now-last >= 1.0/60 * 0.85 else { return }
         let dt = max(0,now-last); last = now
         var frame: [String: Any] = ["now":now,"deltaTime":dt]
         if let audio { frame["audio"] = PluginInput.audio(audio.read()) }
@@ -177,32 +162,21 @@ final class PluginHost {
             package.pollReload()
             if !package.reloadError.isEmpty, !errors.contains(package.reloadError) { errors.append(package.reloadError) }
         }
-        for package in packages.values where package.activeID != nil || package === trayOwner {
+        for package in packages.values where package.activeID != nil {
             package.post("update",frame)
             let error = PluginNative.shared.failure(package.handle)
             if !error.isEmpty, !errors.contains(error) { errors.append(error); fputs("Plugin: \(error)\n",stderr) }
         }
-        if now-lastTray >= 1.0/16 { lastTray=now; updateTray() }
-    }
-    private func updateTray() {
-        guard let owner=trayOwner, PluginNative.shared.ready?(owner.handle)==1 else { return }
-        if traySurface == nil, let output=owner.trayOutput { traySurface=output.withCString { PluginNative.shared.createSurface?(owner.handle,nil,$0) } }
-        guard let traySurface else { return }
-        var bytes = [UInt8](repeating:0,count:32*32*4)
-        guard PluginNative.shared.pixels?(traySurface,32,32,&bytes,bytes.count) == 1 else { return }
-        let provider = CGDataProvider(data: Data(bytes) as CFData)!
-        guard let image = CGImage(width:32,height:32,bitsPerComponent:8,bitsPerPixel:32,bytesPerRow:128,space:CGColorSpaceCreateDeviceRGB(),bitmapInfo:CGBitmapInfo(rawValue:CGImageAlphaInfo.premultipliedFirst.rawValue).union(.byteOrder32Little),provider:provider,decode:nil,shouldInterpolate:false,intent:.defaultIntent) else { return }
-        statusItem?.button?.image=NSImage(cgImage:image,size:NSSize(width:18,height:18))
+        updateSchedule()
     }
     func releaseUnused(_ package: PluginPackage) {
-        guard package !== trayOwner, package.activeID == nil else { return }
+        guard package.activeID == nil else { return }
         package.close();packages.removeValue(forKey:package.id)
     }
-    func reloadActive() { errors=[];for package in packages.values where package.activeID != nil || package === trayOwner { package.requestReload() } }
+    func reloadActive() { errors=[];for package in packages.values { package.requestReload() };updateSchedule() }
     func stop() {
         timer?.invalidate(); timer=nil
         for observer in observers { NSWorkspace.shared.notificationCenter.removeObserver(observer) }; observers=[]
-        if let traySurface { PluginNative.shared.destroySurface?(traySurface) }; traySurface=nil;trayOwner=nil
         for package in packages.values { package.close() }; packages=[:]
     }
 }

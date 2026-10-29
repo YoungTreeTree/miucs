@@ -21,4 +21,4 @@ for index in range(257):
                 if (x+1-cx)**2+(y+1-cy)**2<=r*r:
                     for dy in range(2):
                         for dx in range(2):pixels[((index//16*88+y+dy)*w+index%16*96+x+dx)*4+3]=255
-png(ROOT/'plugins/builtin/assets/tail-atlas.png',pixels,w,h)
+png(ROOT/'plugins/pixel-keyboard/assets/tail-atlas.png',pixels,w,h)

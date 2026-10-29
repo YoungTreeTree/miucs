@@ -1,9 +1,9 @@
 name: UI plugins
 on:
   push:
-    paths: ['modules/plugins/**', 'plugins/**', 'contracts/plugins/**', 'tools/plugins/**', 'tests/plugins/**', 'scripts/*plugin*', '.github/workflows/plugins.yml']
+    paths: ['apps/assets/**', 'modules/plugins/**', 'plugins/**', 'contracts/plugins/**', 'tools/plugins/**', 'tests/plugins/**', 'scripts/*plugin*', '.github/workflows/plugins.yml']
   pull_request:
-    paths: ['modules/plugins/**', 'plugins/**', 'contracts/plugins/**', 'tools/plugins/**', 'tests/plugins/**', 'scripts/*plugin*', '.github/workflows/plugins.yml']
+    paths: ['apps/assets/**', 'modules/plugins/**', 'plugins/**', 'contracts/plugins/**', 'tools/plugins/**', 'tests/plugins/**', 'scripts/*plugin*', '.github/workflows/plugins.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -20,9 +20,9 @@ jobs:
       - run: zsh scripts/test-plugin-macos.sh
       - run: |
           python3 tools/plugins/fixture.py
-          build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/builtin build/plugin-fixture.json
-          MIUCS_FORCE_CPU=1 build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/builtin build/plugin-fixture.json
-          build/plugins/plugin-benchmark plugins/builtin build/plugin-fixture.json > build/plugin-benchmark.json
+          build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/staff-note build/plugin-fixture.json
+          MIUCS_FORCE_CPU=1 build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/staff-note build/plugin-fixture.json
+          build/plugins/plugin-benchmark plugins build/plugin-fixture.json > build/plugin-benchmark.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -52,10 +52,10 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Template validation failed' }
           python tools/plugins/preview.py
           if ($LASTEXITCODE -ne 0) { throw 'CPU preview failed' }
-          build/plugins/Release/plugin-surface-probe.exe build/plugins/Release/miucs-plugin-worker.exe plugins/builtin build/plugin-fixture.json
+          build/plugins/Release/plugin-surface-probe.exe build/plugins/Release/miucs-plugin-worker.exe plugins build/plugin-fixture.json
           if ($LASTEXITCODE -ne 0) { throw 'Native surface failed' }
           $env:MIUCS_FORCE_CPU='1'
-          build/plugins/Release/plugin-surface-probe.exe build/plugins/Release/miucs-plugin-worker.exe plugins/builtin build/plugin-fixture.json
+          build/plugins/Release/plugin-surface-probe.exe build/plugins/Release/miucs-plugin-worker.exe plugins build/plugin-fixture.json
           if ($LASTEXITCODE -ne 0) { throw 'CPU fallback failed' }
       - uses: actions/upload-artifact@v4
         if: always()

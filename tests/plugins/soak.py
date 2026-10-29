@@ -15,15 +15,13 @@ start=time.monotonic();b=None;surface=None;index=0;samples=[];last_sample=0;gene
 try:
     while time.monotonic()-start<a.seconds:
         elapsed=time.monotonic()-start
-        # Create a fresh worker every five minutes, and switch entry every ten seconds.
+        # Switch isolated plugins every ten seconds; also replace the worker every five minutes.
         gen=int(elapsed//300)
-        if gen!=generation:
+        mode=['pixel-keyboard','staff-note','pencil-flight'][int(elapsed//10)%3]
+        if gen!=generation or mode!=active:
             if surface:b.lib.miucs_surface_destroy(surface);surface=None
             if b:b.close()
-            b=Bridge(ROOT/'plugins/builtin');generation=gen;active=None
-        mode=['pixel-keyboard','staff-note','pencil-flight'][int(elapsed//10)%3]
-        if mode!=active:
-            if surface:b.lib.miucs_surface_destroy(surface)
+            b=Bridge(ROOT/'plugins'/mode);generation=gen
             b.post('activate',{'id':mode});surface=b.lib.miucs_surface_create(b.handle,None,mode.encode());active=mode
         begin=time.monotonic();b.post('update',frame(index));pixels=c.create_string_buffer(800*460*4)
         if not b.lib.miucs_surface_pixels(surface,800,460,pixels,len(pixels)):raise RuntimeError(b.error())

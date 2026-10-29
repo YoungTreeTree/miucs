@@ -8,7 +8,7 @@ using Forms = System.Windows.Forms;
 
 namespace Miucs.Windows;
 
-/// <summary>Owns a bounded set of icons. Ticks only select a cached pose of the shared floating cat.</summary>
+/// <summary>Owns a bounded set of icons. Ticks select a cached pose of the application cat, independent of plugins.</summary>
 internal sealed class AnimatedTrayIcon : IDisposable
 {
     private readonly Forms.NotifyIcon tray;

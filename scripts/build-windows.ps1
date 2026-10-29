@@ -27,6 +27,7 @@ if ($Plugins) {
     Copy-Item (Join-Path $root 'build/plugins/Release/miucs_plugins.dll') $output
     Copy-Item (Join-Path $root 'build/plugins/Release/miucs-plugin-worker.exe') $output
     Copy-Item (Join-Path $root 'third_party/plugin-licenses') (Join-Path $output 'PluginLicenses') -Recurse -Force
+    if (Test-Path (Join-Path $output 'Plugins')) { Remove-Item (Join-Path $output 'Plugins') -Recurse -Force }
     Copy-Item (Join-Path $root 'plugins') (Join-Path $output 'Plugins') -Recurse -Force
 }
 Write-Host "Portable app: $output/Miucs.exe (copy the entire directory, not just the EXE)."

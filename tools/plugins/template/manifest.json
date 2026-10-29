@@ -1,11 +1,16 @@
 {
-  "id": "example.pulse",
-  "name": "Pulse example",
+  "id": "example-pulse",
+  "name": "Pulse",
   "version": "1.0.0",
   "api": 1,
   "entry": "main.lua",
-  "inputs": ["audio"],
-  "visualizations": [
-    {"id":"example-pulse","name":"Pulse","layout":{"width":240,"height":160,"minimumWidth":120,"maximumWidth":960}}
-  ]
+  "inputs": [
+    "audio"
+  ],
+  "layout": {
+    "width": 240,
+    "height": 160,
+    "minimumWidth": 120,
+    "maximumWidth": 960
+  }
 }

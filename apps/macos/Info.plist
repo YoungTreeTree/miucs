@@ -12,6 +12,8 @@
 	<string>com.miucs.app</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
+	<key>CFBundleIconFile</key>
+	<string>Miucs.icns</string>
 	<key>CFBundleName</key>
 	<string>Miucs</string>
 	<key>CFBundlePackageType</key>
