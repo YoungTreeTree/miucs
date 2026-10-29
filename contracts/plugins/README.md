@@ -1,5 +1,7 @@
 # UI plugin API v1
 
+For a step-by-step tutorial with a complete example, installation and reload instructions, see the [插件开发指南](../../docs/plugin-development.md).
+
 Miucs keeps platform capture and analysis unchanged. A package consumes immutable feature snapshots in a Lua 5.4 worker and publishes scene changes. The shared C++ host applies complete revisions and draws with the pinned Skia build. No capture implementation, OS window, PCM, text input, network or filesystem handle enters Lua.
 
 ## Package and lifecycle
@@ -49,4 +51,4 @@ Lua exposes base/math/string/table/utf8, with dynamic loading, file access, prin
 - **重新加载当前插件** starts a candidate worker, invokes lifecycle callbacks and verifies its first CPU-rendered frame. Only a successful candidate replaces the live worker; failure retains the old one. Window and appearance preferences stay in the host; animation state resets.
 - `MIUCS_PLUGIN_DEV=1` polls active package file metadata once a second for development reloads. No online installer/updater is involved.
 
-See `docs/plugin-migration.md` for build commands and acceptance status.
+See [plugin migration](../../docs/plugin-migration.md) for build commands and acceptance status.

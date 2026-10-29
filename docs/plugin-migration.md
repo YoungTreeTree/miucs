@@ -1,5 +1,7 @@
 # UI plugin migration
 
+To create your own plugin, start with the [插件开发指南](plugin-development.md). This document covers runtime migration, implementation details and acceptance status.
+
 This change adds a shared Lua + Skia implementation while retaining native renderers as an acceptance baseline. **The plugin path is opt-in until both platforms pass native presentation, latency, performance and sustained-memory acceptance.** The presence of the implementation or a successful build is not evidence that those release gates passed.
 
 ## Build and run
