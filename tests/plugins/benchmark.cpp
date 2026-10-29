@@ -6,7 +6,7 @@ int main(int argc,char**argv){try{
   auto frames=miucs::Json::parse(miucs::readFile(argv[2],32*1024*1024));
   miucs::Json reports=miucs::Json::array();
   for(auto id:{"pixel-keyboard","staff-note","pencil-flight"}) {
-    miucs::Runtime runtime(argv[1]);miucs::Scene host;host.apply(runtime.packet(0));
+    miucs::Runtime runtime(std::filesystem::path(argv[1])/id);miucs::Scene host;host.apply(runtime.packet(0));
     host.apply(runtime.handle({{"op","activate"},{"value",{{"id",id}}},{"ack",host.version}}));
     std::vector<double> update,apply;size_t bytes=0,memory=0;
     for(size_t i=0;i<frames.size();++i){

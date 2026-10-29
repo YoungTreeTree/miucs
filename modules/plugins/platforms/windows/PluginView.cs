@@ -14,7 +14,7 @@ internal sealed class PluginView : VisualizationView
     private readonly PluginPackage package;
     private readonly PluginHost host;
     private double lastWidth=-1,lastHeight=-1,lastDpi=-1;
-    private readonly PluginViewInfo info;
+    private readonly PluginInfo info;
     private HwndSource? native;
     private IntPtr surface;
     private double last;
@@ -25,7 +25,7 @@ internal sealed class PluginView : VisualizationView
     public override double LayoutMaxWidth=>info.Layout.MaximumWidth;
     internal PluginView(PluginHost host,string id)
     {
-        this.host=host;var entry=host.Views[id];info=entry.View;package=host.Package(entry.Package);
+        this.host=host;info=host.Views[id];package=host.Package(info);
         package.Post("appearanceChanged",new{ink=host.Ink,opacity=host.Opacity});
         Loaded+=(_,_)=>{package.Replacing-=Release;package.Replacing+=Release;EnsureWindow();};Unloaded+=(_,_)=>{Release();package.Replacing-=Release;};
     }

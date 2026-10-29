@@ -1,0 +1,17 @@
+{
+  "version": "1.0.0",
+  "api": 1,
+  "entry": "main.lua",
+  "id": "staff-note",
+  "name": "五线谱音符",
+  "inputs": [
+    "audio",
+    "keyboard"
+  ],
+  "layout": {
+    "width": 800,
+    "height": 160,
+    "minimumWidth": 80,
+    "maximumWidth": 1600
+  }
+}

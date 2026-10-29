@@ -1,0 +1,17 @@
+{
+  "version": "1.0.0",
+  "api": 1,
+  "entry": "main.lua",
+  "id": "pixel-keyboard",
+  "name": "像素音乐键盘",
+  "inputs": [
+    "audio",
+    "keyboard"
+  ],
+  "layout": {
+    "width": 800,
+    "height": 460,
+    "minimumWidth": 80,
+    "maximumWidth": 1600
+  }
+}

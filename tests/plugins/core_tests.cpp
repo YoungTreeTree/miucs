@@ -19,7 +19,20 @@ int main(int argc,char**argv){try{
   Json bad=resync;bad["nodes"][0]["parent"]=bad["nodes"][0]["id"];auto previous=scene.nodes;
   rejects([&]{scene.apply(bad);},"cycle denied");check(previous==scene.nodes,"atomic scene application");
   rejects([&]{validateNode({{"id","x"},{"type","path"},{"path",{{"C",1,2}}}});},"path arity");
+  auto list=catalog({root.parent_path()});check(list["errors"].empty()&&list["plugins"].size()==3,"three independent built-in plugins");
+  for(auto& item:list["plugins"]) {
+    auto id=item["id"].get<std::string>();Runtime single(root.parent_path()/id);
+    check(single.scene.nodes.contains(id),"plugin owns its named output");
+    check(!single.scene.nodes.contains("tray")&&!single.scene.nodes.contains("tray-head"),"application tray is not a plugin output");
+    for(auto other:{"pencil-flight","staff-note","pixel-keyboard"})
+      if(id!=other)check(!single.scene.nodes.contains(other),"plugin creates only its own UI");
+  }
   auto tmp=std::filesystem::temp_directory_path()/std::filesystem::path("miucs-plugin-tests-"+std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));std::filesystem::create_directory(tmp);
+  std::ofstream(tmp/"manifest.json")<<m.dump();
+  auto invalid=m;invalid["tray"]="tray";std::ofstream(tmp/"main.lua")<<"return {}";
+  std::ofstream(tmp/"manifest.json")<<invalid.dump();rejects([&]{manifest(tmp);},"plugins cannot own the app tray");
+  invalid=m;invalid["visualizations"]=Json::array();std::ofstream(tmp/"manifest.json")<<invalid.dump();
+  rejects([&]{manifest(tmp);},"multiple-output manifest rejected with migration error");
   std::ofstream(tmp/"manifest.json")<<m.dump();
   auto source=[&](const std::string& text){std::ofstream(tmp/"main.lua")<<text;};
   source("assert(io == nil and os == nil and debug == nil and package == nil and load == nil); return {}");{Runtime safe(tmp);++checks;}

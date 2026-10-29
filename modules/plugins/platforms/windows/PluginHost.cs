@@ -10,14 +10,14 @@ using Miucs.Audio;
 using Miucs.Keyboard;
 namespace Miucs.Plugins;
 internal sealed record PluginLayout(double Width,double Height,double MinimumWidth,double MaximumWidth);
-internal sealed record PluginViewInfo(string Id,string Name,PluginLayout Layout);
-internal sealed record PluginInfo(string Id,string Directory,string? Tray,PluginViewInfo[] Visualizations);
+internal sealed record PluginInfo(string Id,string Name,string Directory,PluginLayout Layout);
 internal sealed class PluginPackage : IDisposable
 {
     internal readonly PluginInfo Info;
     internal IntPtr Handle;
     internal string? ActiveId;
     internal event Action? Replacing;
+    internal bool IsReloading => candidate!=IntPtr.Zero;
     private IntPtr candidate;
     private long reloadStart;
     private object viewport=new Dictionary<string,object?>();
@@ -46,7 +46,7 @@ internal sealed class PluginPackage : IDisposable
         if(candidate==IntPtr.Zero)return;string error=PluginNative.Error(candidate);
         if(error.Length>0||Environment.TickCount64-reloadStart>3000){ReloadError=error.Length>0?error:"Plugin reload timed out";PluginNative.miucs_plugin_close(candidate);candidate=IntPtr.Zero;return;}
         if(PluginNative.miucs_plugin_completed(candidate)<4)return;
-        string output=ActiveId??Info.Tray??Info.Visualizations[0].Id;
+        string output=Info.Id;
         var surface=PluginNative.miucs_surface_create(candidate,IntPtr.Zero,output);var pixels=new byte[16*16*4];
         bool valid=surface!=IntPtr.Zero&&PluginNative.miucs_surface_pixels(surface,16,16,pixels,(nuint)pixels.Length)==1;
         if(surface!=IntPtr.Zero)PluginNative.miucs_surface_destroy(surface);
@@ -58,19 +58,15 @@ internal sealed class PluginPackage : IDisposable
 internal sealed class PluginHost : IDisposable
 {
     internal static bool Enabled => Environment.GetEnvironmentVariable("MIUCS_PLUGINS")=="1"||Array.IndexOf(Environment.GetCommandLineArgs(),"--plugins")>=0;
-    internal readonly Dictionary<string,(PluginInfo Package,PluginViewInfo View)> Views=new();
+    internal readonly Dictionary<string,PluginInfo> Views=new();
     private readonly Dictionary<string,PluginPackage> packages=new();
     private readonly AudioChannel audioSource;
     private readonly KeyboardChannel keyboardSource;
     private AudioSubscription audio;
     private KeyboardSubscription keyboard;
     private readonly DispatcherTimer timer;
-    private PluginPackage? trayOwner;
-    private IntPtr traySurface;
-    private double last,lastTray,lastScan;
+    private double last,lastScan;
     private bool suspended;
-    private bool trayEnabled=true;
-    internal Action<byte[]>? TrayFrame;
     internal string Error="";
     internal string Ink="#3d3d3d";
     internal double Opacity=1;
@@ -78,9 +74,7 @@ internal sealed class PluginHost : IDisposable
     internal PluginHost(AudioChannel a,KeyboardChannel k)
     {
         audioSource=a;keyboardSource=k;audio=a.Subscribe();keyboard=k.Subscribe();Scan();
-        var builtin=Views.Values.Select(v=>v.Package).FirstOrDefault(p=>p.Id=="com.miucs.builtin");
-        if(builtin?.Tray is string output){trayOwner=Package(builtin);trayOwner.Replacing+=()=>{if(traySurface!=IntPtr.Zero)PluginNative.miucs_surface_destroy(traySurface);traySurface=IntPtr.Zero;};traySurface=PluginNative.miucs_surface_create(trayOwner.Handle,IntPtr.Zero,output);}
-        last=Now;timer=new DispatcherTimer(DispatcherPriority.Background){Interval=TimeSpan.FromSeconds(1d/60)};timer.Tick+=Tick;timer.Start();
+        last=Now;timer=new DispatcherTimer(DispatcherPriority.Background){Interval=TimeSpan.FromSeconds(1d/60)};timer.Tick+=Tick;
     }
     internal void Scan()
     {
@@ -90,21 +84,20 @@ internal sealed class PluginHost : IDisposable
         using var json=JsonDocument.Parse(Encoding.UTF8.GetString(bytes,0,bytes.Length-1));
         var options=new JsonSerializerOptions{PropertyNameCaseInsensitive=true};Views.Clear();
         foreach(var p in json.RootElement.GetProperty("plugins").EnumerateArray())
-        {var info=p.Deserialize<PluginInfo>(options)!;foreach(var v in info.Visualizations)Views[v.Id]=(info,v);}
+        {var info=p.Deserialize<PluginInfo>(options)!;Views[info.Id]=info;}
         Error=string.Join("; ",json.RootElement.GetProperty("errors").EnumerateArray().Select(e=>e.ToString()));
     }
     internal PluginPackage Package(PluginInfo info)
     {if(packages.TryGetValue(info.Id,out var p))return p;p=new PluginPackage(info);packages[info.Id]=p;return p;}
-    internal void ReleaseUnused(PluginPackage package){if(package!=trayOwner&&package.ActiveId==null){package.Dispose();packages.Remove(package.Info.Id);}}
-    internal void ReloadActive(){Error="";foreach(var p in packages.Values.Where(p=>p.ActiveId!=null||p==trayOwner))p.Reload();}
+    internal void ReleaseUnused(PluginPackage package){if(package.ActiveId==null){package.Dispose();packages.Remove(package.Info.Id);}}
+    internal void ReloadActive(){Error="";foreach(var p in packages.Values)p.Reload();UpdateSchedule();}
     internal void Appearance(string ink,double opacity)
     {Ink=ink;Opacity=opacity;foreach(var p in packages.Values)p.Post("appearanceChanged",new {ink,opacity});}
-    internal void SetTrayEnabled(bool value){trayEnabled=value;UpdateSchedule();}
     internal void UpdateSchedule()
     {
-        bool active=packages.Values.Any(p=>p.ActiveId!=null);
-        if(suspended||(!active&&!trayEnabled)){timer.Stop();return;}
-        timer.Interval=TimeSpan.FromSeconds(active?1d/60:1d/16);
+        bool active=packages.Values.Any(p=>p.ActiveId!=null||p.IsReloading);
+        if(suspended||!active){timer.Stop();return;}
+        timer.Interval=TimeSpan.FromSeconds(1d/60);
         if(!timer.IsEnabled){last=Now;audio.Dispose();keyboard.Dispose();audio=audioSource.Subscribe();keyboard=keyboardSource.Subscribe();timer.Start();}
     }
     internal void Suspend(bool value)
@@ -114,15 +107,13 @@ internal sealed class PluginHost : IDisposable
     }
     private void Tick(object? sender,EventArgs args)
     {
-        if(suspended)return;double now=Now;bool active=packages.Values.Any(p=>p.ActiveId!=null);if(now-last<(active?1d/60:1d/16)*.85)return;
+        if(suspended)return;double now=Now;if(now-last<1d/60*.85)return;
         double dt=now-last;last=now;var frame=new{now,deltaTime=dt,audio=audio.Read(now),keyboard=keyboard.Read(now)};
         if(Environment.GetEnvironmentVariable("MIUCS_PLUGIN_DEV")=="1"&&now-lastScan>1){lastScan=now;foreach(var p in packages.Values)p.CheckFiles();}
         foreach(var p in packages.Values){p.PollReload();if(p.ReloadError.Length>0)Error=p.ReloadError;}
-        if(traySurface==IntPtr.Zero&&trayOwner?.Info.Tray is string output)traySurface=PluginNative.miucs_surface_create(trayOwner.Handle,IntPtr.Zero,output);
-        foreach(var p in packages.Values.Where(p=>p.ActiveId!=null||(p==trayOwner&&trayEnabled)))
+        foreach(var p in packages.Values.Where(p=>p.ActiveId!=null))
         {p.Post("update",frame);string error=PluginNative.Error(p.Handle);if(error.Length>0)Error=error;}
-        if(trayEnabled&&now-lastTray>=1d/16&&traySurface!=IntPtr.Zero&&PluginNative.miucs_plugin_ready(trayOwner!.Handle)==1)
-        {lastTray=now;var bytes=new byte[32*32*4];if(PluginNative.miucs_surface_pixels(traySurface,32,32,bytes,(nuint)bytes.Length)==1)TrayFrame?.Invoke(bytes);}
+        UpdateSchedule();
     }
-    public void Dispose(){timer.Stop();timer.Tick-=Tick;audio.Dispose();keyboard.Dispose();if(traySurface!=IntPtr.Zero)PluginNative.miucs_surface_destroy(traySurface);traySurface=IntPtr.Zero;foreach(var p in packages.Values)p.Dispose();packages.Clear();}
+    public void Dispose(){timer.Stop();timer.Tick-=Tick;audio.Dispose();keyboard.Dispose();foreach(var p in packages.Values)p.Dispose();packages.Clear();}
 }

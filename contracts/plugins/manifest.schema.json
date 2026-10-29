@@ -10,7 +10,7 @@
     "api",
     "entry",
     "inputs",
-    "visualizations"
+    "layout"
   ],
   "properties": {
     "id": {
@@ -39,61 +39,39 @@
         ]
       }
     },
-    "tray": {
-      "$ref": "#/$defs/id"
-    },
-    "visualizations": {
-      "type": "array",
-      "minItems": 1,
-      "maxItems": 32,
-      "items": {
-        "type": "object",
-        "required": [
-          "id",
-          "name",
-          "layout"
-        ],
-        "properties": {
-          "id": {
-            "$ref": "#/$defs/id"
-          },
-          "name": {
-            "type": "string"
-          },
-          "layout": {
-            "type": "object",
-            "required": [
-              "width",
-              "height",
-              "minimumWidth",
-              "maximumWidth"
-            ],
-            "properties": {
-              "width": {
-                "type": "number",
-                "exclusiveMinimum": 0,
-                "maximum": 4096
-              },
-              "height": {
-                "type": "number",
-                "exclusiveMinimum": 0,
-                "maximum": 4096
-              },
-              "minimumWidth": {
-                "type": "number",
-                "exclusiveMinimum": 0,
-                "maximum": 4096
-              },
-              "maximumWidth": {
-                "type": "number",
-                "exclusiveMinimum": 0,
-                "maximum": 4096
-              }
-            }
-          }
+    "layout": {
+      "type": "object",
+      "required": [
+        "width",
+        "height",
+        "minimumWidth",
+        "maximumWidth"
+      ],
+      "properties": {
+        "width": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 4096
+        },
+        "height": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 4096
+        },
+        "minimumWidth": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 4096
+        },
+        "maximumWidth": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 4096
         }
       }
-    }
+    },
+    "visualizations": false,
+    "tray": false
   },
   "$defs": {
     "id": {

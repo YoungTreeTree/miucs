@@ -11,14 +11,14 @@ int main(int argc,char**argv){@autoreleasepool {
   window.opaque=NO;window.backgroundColor=NSColor.clearColor;window.ignoresMouseEvents=YES;
   window.contentView.wantsLayer=YES;auto layer=[CAMetalLayer layer];layer.opaque=NO;window.contentView.layer=layer;
   [window orderFrontRegardless];
+  auto folder=std::filesystem::path(argv[2]);auto metadata=miucs::manifest(folder);std::string output=metadata["id"];
   void* plugin=miucs_plugin_open(argv[1],argv[2]);
   auto post=[&](const miucs::Json& message){auto b=miucs::encode(message);if(!miucs_plugin_post(plugin,b.data(),b.size()))throw std::runtime_error("post failed");};
   auto deadline=std::chrono::steady_clock::now()+std::chrono::seconds(3);
   while(!miucs_plugin_ready(plugin)&&std::chrono::steady_clock::now()<deadline)std::this_thread::sleep_for(std::chrono::milliseconds(2));
-  post({{"op","activate"},{"value",{{"id","pixel-keyboard"},{"width",500},{"height",320},{"scale",1}}}});
-  void* surface=miucs_surface_create(plugin,(__bridge void*)layer,"pixel-keyboard");
+  post({{"op","activate"},{"value",{{"id",output},{"width",500},{"height",320},{"scale",1}}}});
+  void* surface=miucs_surface_create(plugin,(__bridge void*)layer,output.c_str());
   auto fixtures=argc>3?miucs::Json::parse(miucs::readFile(argv[3],16*1024*1024)):miucs::Json::array();
-  if(!fixtures.empty()){miucs_surface_destroy(surface);post({{"op","activate"},{"value",{{"id","staff-note"}}}});surface=miucs_surface_create(plugin,(__bridge void*)layer,"staff-note");}
   int rendered=0;std::vector<double> timings;
   for(int i=0;i<180;++i){
     post({{"op","update"},{"value",fixtures.empty()?miucs::Json{{"now",i/60.0},{"deltaTime",1.0/60}}:fixtures[i%fixtures.size()]}});

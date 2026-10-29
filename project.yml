@@ -33,7 +33,9 @@ targets:
       - path: modules/visualizations/staff-note/platforms/macos
       - path: modules/visualizations/pixel-keyboard/core
       - path: modules/visualizations/pixel-keyboard/platforms/macos
-      - path: modules/visualizations/pixel-keyboard/assets/cat-head.png
+      - path: apps/assets/cat-head.png
+        buildPhase: resources
+      - path: apps/assets/Miucs.icns
         buildPhase: resources
       - path: tools/macos/AudioDiagnostics.swift
       - path: tools/macos/InputDiagnostics.swift
@@ -45,6 +47,7 @@ targets:
         PRODUCT_NAME: Miucs
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_LSUIElement: YES
+        INFOPLIST_KEY_CFBundleIconFile: Miucs.icns
         INFOPLIST_KEY_NSAudioCaptureUsageDescription: Miucs listens to system audio to draw the desktop visualizer.
         INFOPLIST_KEY_NSScreenCaptureUsageDescription: Miucs uses system audio capture to draw the desktop visualizer.
     entitlements:

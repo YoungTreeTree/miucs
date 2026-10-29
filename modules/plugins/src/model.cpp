@@ -38,23 +38,17 @@ Json manifest(const std::filesystem::path& root) {
   auto entry=m.at("entry").get<std::string>();
   if(std::filesystem::path(entry).extension()!=".lua") throw Error("Entry must be Lua source");
   contained(root,entry);
-  std::set<std::string> ids;
-  if(!m.at("visualizations").is_array() || m["visualizations"].empty() || m["visualizations"].size()>32) throw Error("Invalid visualization list");
-  for(auto& view:m["visualizations"]) {
-    auto id=view.at("id").get<std::string>();
-    if(!identifier(id) || !ids.insert(id).second || !view.at("name").is_string()) throw Error("Duplicate or invalid visualization id");
-    auto& l=view.at("layout");
-    double w=l.at("width"), h=l.at("height"), lo=l.at("minimumWidth"), hi=l.at("maximumWidth");
-    if(!(lo>0 && lo<=w && w<=hi && hi<=4096 && h>0 && h<=4096)) throw Error("Invalid layout");
-  }
+  if(m.contains("visualizations") || m.contains("tray")) throw Error("One UI per plugin: use top-level layout; tray belongs to the application");
+  auto& l=m.at("layout");
+  double w=l.at("width"), h=l.at("height"), lo=l.at("minimumWidth"), hi=l.at("maximumWidth");
+  if(!(lo>0 && lo<=w && w<=hi && hi<=4096 && h>0 && h<=4096)) throw Error("Invalid layout");
   if(!m.at("inputs").is_array() || m["inputs"].size()>2)throw Error("Invalid input capability list");
-  if(m.contains("tray") && !identifier(m["tray"].get<std::string>()))throw Error("Invalid tray output");
   for(auto& capability:m.at("inputs")) if(capability!="audio" && capability!="keyboard") throw Error("Unknown input capability");
   finite(m); return m;
 }
 Json catalog(const std::vector<std::filesystem::path>& roots) {
   Json result={{"plugins",Json::array()},{"errors",Json::array()}};
-  std::set<std::string> ids, views;
+  std::set<std::string> ids;
   for(auto& root:roots) {
     if(!std::filesystem::exists(root)) continue;
     std::vector<std::filesystem::path> folders;
@@ -64,8 +58,7 @@ Json catalog(const std::vector<std::filesystem::path>& roots) {
     for(auto& f:folders) try {
       auto m=manifest(f); auto id=m["id"].get<std::string>();
       if(ids.contains(id)) throw Error("Duplicate plugin id: "+id);
-      for(auto& v:m["visualizations"]) if(views.contains(v["id"])) throw Error("Duplicate visualization id");
-      ids.insert(id); for(auto& v:m["visualizations"]) views.insert(v["id"]);
+      ids.insert(id);
       auto path=std::filesystem::canonical(f).u8string();m["directory"]=std::string(path.begin(),path.end()); result["plugins"].push_back(m);
     } catch(const std::exception& e) {result["errors"].push_back({{"directory",f.string()},{"message",e.what()}});}
   } return result;

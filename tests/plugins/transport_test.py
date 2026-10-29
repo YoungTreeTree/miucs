@@ -5,7 +5,7 @@ from preview import Bridge, frame
 from wire import send,receive,pack
 worker=ROOT/'build/plugins/miucs-plugin-worker'
 if os.name=='nt':worker=ROOT/'build/plugins/Release/miucs-plugin-worker.exe'
-manifest={'id':'tests.safe','name':'Test','version':'1.0.0','api':1,'entry':'main.lua','inputs':[], 'visualizations':[{'id':'test','name':'Test','layout':{'width':100,'height':100,'minimumWidth':10,'maximumWidth':200}}]}
+manifest={'id':'test','name':'Test','version':'1.0.0','api':1,'entry':'main.lua','inputs':[], 'layout':{'width':100,'height':100,'minimumWidth':10,'maximumWidth':200}}
 checks=0
 def expect(value):
     global checks

@@ -100,4 +100,6 @@ flowchart LR
 
 ## Shared UI plugin migration
 
-The opt-in Lua/Skia path and its acceptance gates are documented in [plugin-migration.md](plugin-migration.md). Capture stays native. Folder packages, the stable input/scene boundary, isolated workers and platform presentation adapters live under `modules/plugins` and `plugins/builtin`. The old renderers remain the baseline until the cross-platform gates pass.
+The opt-in Lua/Skia path and its acceptance gates are documented in [plugin-migration.md](plugin-migration.md). Capture stays native. Folder packages, the stable input/scene boundary, isolated workers and platform presentation adapters live under `modules/plugins` and `plugins/{pixel-keyboard,pencil-flight,staff-note}`. The old renderers remain the baseline until the cross-platform gates pass.
+
+Each folder now supplies exactly one UI selected by the visualization menu. Application identity and the animated cat tray are shell-owned; plugin selection, failure and reload cannot replace the tray.

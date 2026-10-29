@@ -10,10 +10,11 @@ int main(int argc,char**argv){
   HWND window=CreateWindowExW(WS_EX_NOREDIRECTIONBITMAP|WS_EX_NOACTIVATE|WS_EX_TOOLWINDOW|WS_EX_TRANSPARENT,cls.lpszClassName,L"Miucs plugin probe",WS_POPUP,100,100,800,460,nullptr,nullptr,cls.hInstance,nullptr);
   ShowWindow(window,SW_SHOWNOACTIVATE);void* plugin=nullptr;void* surface=nullptr;int code=0;
   try {
-    plugin=miucs_plugin_open(argv[1],argv[2]);if(!plugin)throw miucs::Error("Cannot open worker");
     auto post=[&](const miucs::Json& m){auto b=miucs::encode(m);if(!miucs_plugin_post(plugin,b.data(),b.size()))throw miucs::Error("post failed");};
     auto fixture=miucs::Json::parse(miucs::readFile(argv[3],32*1024*1024));
     for(auto id:{"pixel-keyboard","staff-note","pencil-flight"}) {
+      auto folder=(std::filesystem::path(argv[2])/id).string();
+      plugin=miucs_plugin_open(argv[1],folder.c_str());if(!plugin)throw miucs::Error("Cannot open worker");
       post({{"op","activate"},{"value",{{"id",id},{"width",800},{"height",460},{"scale",1}}}});
       surface=miucs_surface_create(plugin,window,id);if(!surface)throw miucs::Error("Cannot create native surface");int rendered=0;
       for(size_t i=0;i<180;++i){
@@ -27,7 +28,7 @@ int main(int argc,char**argv){
       std::cout<<id<<": backend="<<miucs_surface_backend(surface)<<" frames="<<rendered<<" error="<<error<<'\n';
       if(rendered<30||error[0])throw miucs::Error("Insufficient frames or worker failure");
       if(std::getenv("MIUCS_FORCE_CPU")&&miucs_surface_backend(surface)!=0)throw miucs::Error("CPU fallback not selected");
-      miucs_surface_destroy(surface);surface=nullptr;
+      miucs_surface_destroy(surface);surface=nullptr;miucs_plugin_close(plugin);plugin=nullptr;
     }
   }catch(const std::exception& e){std::cerr<<e.what()<<'\n';code=1;}
   if(surface)miucs_surface_destroy(surface);if(plugin)miucs_plugin_close(plugin);DestroyWindow(window);CoUninitialize();return code;
