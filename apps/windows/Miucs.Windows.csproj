@@ -17,6 +17,7 @@
   <ItemGroup>
     <EmbeddedResource Include="../../modules/visualizations/pixel-keyboard/assets/cat-head.png" LogicalName="Miucs.PixelCatHead.png" />
     <Compile Include="../../modules/audio/platforms/windows/**/*.cs" />
+    <Compile Include="../../modules/plugins/platforms/windows/**/*.cs" />
     <Compile Include="../../modules/keyboard/platforms/windows/**/*.cs" />
     <Compile Include="../../modules/visualizations/**/platforms/windows/**/*.cs" />
   </ItemGroup>

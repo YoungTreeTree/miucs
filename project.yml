@@ -21,6 +21,7 @@ targets:
       - path: modules/audio/core
       - path: modules/audio/platforms/macos
       - path: modules/keyboard/core
+      - path: modules/plugins/platforms/macos
       - path: modules/keyboard/platforms/macos
       - path: modules/visualizations/api
         excludes:

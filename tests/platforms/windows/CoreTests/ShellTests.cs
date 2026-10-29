@@ -93,6 +93,7 @@ public static class ShellTests
             Check(Preferences.Load(path).TrayAnimationEnabled, "old preference files receive the tray animation default");
             Check(Preferences.Load(path).Transparency == 90 && Preferences.Load(path).Color == "mist-blue", "out of range saved transparency preserves other preferences");
             File.WriteAllText(path, "{\"Visualization\":\"unknown\",\"Color\":null,\"Frames\":null}");
+            Check(Preferences.Load(path, allowPluginIds: true).Visualization == "unknown", "plugin selection survives preferences load for catalog resolution");
             var unknown = Preferences.Load(path);
             Check(unknown.Visualization == "pencil-flight" && unknown.Color == "graphite" && unknown.Frames.Count == 0, "unknown IDs and null collections sanitized");
             File.WriteAllText(path, "{\"Frames\":{\"staff-note\":{\"X\":0,\"Y\":0,\"Width\":0,\"Height\":1},\"pencil-flight\":null}}");
