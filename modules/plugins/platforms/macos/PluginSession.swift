@@ -84,7 +84,12 @@ final class PluginPackage {
 @MainActor
 final class PluginHost {
     static let shared = PluginHost()
-    static var enabled: Bool { ProcessInfo.processInfo.environment["MIUCS_PLUGINS"] == "1" || CommandLine.arguments.contains("--plugins") }
+    static var enabled: Bool {
+        let flag = ProcessInfo.processInfo.environment["MIUCS_PLUGINS"]
+        if flag == "0" || CommandLine.arguments.contains("--no-plugins") { return false }
+        if flag == "1" || CommandLine.arguments.contains("--plugins") { return true }
+        return PluginNative.shared.available
+    }
     private(set) var metadata = [[String: Any]]()
     private(set) var packages = [String: PluginPackage]()
     private(set) var errors = [String]()

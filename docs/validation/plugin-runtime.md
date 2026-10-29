@@ -1,6 +1,6 @@
 # Plugin implementation validation — 2026-10-29
 
-The implementation is available behind `--plugins` / `MIUCS_PLUGINS=1`. Default rendering remains native until the cross-platform release gates pass.
+Builds that include the plugin runtime now start in plugin mode. `MIUCS_PLUGINS=0` or `--no-plugins` keeps the native renderers. Plain builds without the runtime library are unchanged.
 
 ## Completed locally
 

@@ -22,7 +22,7 @@ Windows, from PowerShell with the C++ build tools available:
 ./dist/windows/win-x64/Miucs.exe --plugins
 ```
 
-`MIUCS_PLUGINS=1` also selects the plugin path. Without either runtime flag, existing renderers are used. Plain builds remain usable without fetching Skia. Use `MIUCS_PLUGIN_DEV=1` for file-change reloads, and `MIUCS_FORCE_CPU=1` to exercise CPU fallback. The runtime reports its backend; CPU presentation is capped at 30 FPS. Filesystem plugins do not require application recompilation.
+A build that contains the plugin runtime starts in plugin mode. `MIUCS_PLUGINS=0` or `--no-plugins` keeps the existing renderers; `MIUCS_PLUGINS=1` or `--plugins` forces the plugin path. Plain builds remain usable without fetching Skia. Use `MIUCS_PLUGIN_DEV=1` for file-change reloads, and `MIUCS_FORCE_CPU=1` to exercise CPU fallback. The runtime reports its backend; CPU presentation is capped at 30 FPS. Filesystem plugins do not require application recompilation.
 
 The three built-in IDs (`pencil-flight`, `staff-note`, `pixel-keyboard`) and their window preference keys are unchanged. Each is now an independent folder under `plugins/`, with its own manifest, source and assets. The **可视化** menu lists these plugins directly, including installed user plugins. The application owns the cat logo and tray animation; they do not load a Lua worker and keep working when a plugin fails or is reloaded. Native capture and analysis remain platform implementations; the plugin modules have no capture controls.
 

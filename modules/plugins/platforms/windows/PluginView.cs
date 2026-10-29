@@ -18,6 +18,7 @@ internal sealed class PluginView : VisualizationView
     private HwndSource? native;
     private IntPtr surface;
     private double last;
+    private double gpuFrameInterval = 1d / 60;
     public override string Id=>info.Id;
     public override double BaseWidth=>info.Layout.Width;
     public override double BaseHeight=>info.Layout.Height;
@@ -35,6 +36,7 @@ internal sealed class PluginView : VisualizationView
         // Keep this popup unowned: owned popups are always above their owner and would cover WPF controls.
         var settings=new HwndSourceParameters("Miucs plugin surface") {Width=1,Height=1,WindowStyle=unchecked((int)0x80000000),ExtendedWindowStyle=0x00200000|0x08000000|0x00000080|0x00000020|0x00000008};
         native=new HwndSource(settings);native.AddHook(HitTest);surface=PluginNative.miucs_surface_create(package.Handle,native.Handle,Id);
+        var parentWindow=Window.GetWindow(this);if(parentWindow!=null)gpuFrameInterval=1d/Miucs.Windows.NativeWindow.RefreshHz(parentWindow);
         if(surface!=IntPtr.Zero&&PluginNative.miucs_surface_backend(surface)==0)System.Diagnostics.Trace.WriteLine($"Plugin {Id}: CPU fallback, 30 FPS limit");
     }
     private void Release(){if(surface!=IntPtr.Zero)PluginNative.miucs_surface_destroy(surface);surface=IntPtr.Zero;native?.Dispose();native=null;}
@@ -44,7 +46,7 @@ internal sealed class PluginView : VisualizationView
     {
         if(!Active||Disposed)return;EnsureWindow();if(native==null||surface==IntPtr.Zero)return;
         double now=System.Diagnostics.Stopwatch.GetTimestamp()/(double)System.Diagnostics.Stopwatch.Frequency;
-        double fps=PluginNative.miucs_surface_backend(surface)==1?60:30;if(now-last<1/fps*.85)return;last=now;
+        double interval=PluginNative.miucs_surface_backend(surface)==1?gpuFrameInterval:1d/30;if(now-last<interval*.85)return;last=now;
         var dpi=VisualTreeHelper.GetDpi(this);var position=PointToScreen(new Point(0,0));int w=Math.Max(1,(int)(ActualWidth*dpi.DpiScaleX)),h=Math.Max(1,(int)(ActualHeight*dpi.DpiScaleY));
         if(ActualWidth!=lastWidth||ActualHeight!=lastHeight||dpi.DpiScaleX!=lastDpi){lastWidth=ActualWidth;lastHeight=ActualHeight;lastDpi=dpi.DpiScaleX;package.Post("resize",new{id=Id,width=lastWidth,height=lastHeight,scale=lastDpi});}
         var parent=Window.GetWindow(this);if(parent==null)return;

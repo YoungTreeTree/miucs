@@ -6,7 +6,7 @@ Miucs 插件用 Lua 5.4 描述场景和动画，由共享的 Skia 渲染器绘�
 
 ## 1. 准备插件版应用
 
-插件模式仍为可选功能；普通构建或普通启动不会加载用户插件。已经有包含插件运行库的应用时，直接带 `--plugins` 启动即可。修改 Lua 或资源不需要重新构建应用。
+带有插件运行库的应用会默认进入插件模式。没有运行库时仍使用原来的绘制。`--no-plugins` 或 `MIUCS_PLUGINS=0` 可改回内置画面；`--plugins` 或 `MIUCS_PLUGINS=1` 会强制进入插件模式。修改 Lua 或资源不需要重新构建应用。
 
 ### macOS
 
@@ -14,7 +14,7 @@ Miucs 插件用 Lua 5.4 描述场景和动画，由共享的 Skia 渲染器绘�
 
 ```sh
 MIUCS_BUILD_PLUGINS=1 zsh build.sh
-open dist/Miucs.app --args --plugins
+open dist/Miucs.app
 ```
 
 ### Windows
@@ -23,10 +23,10 @@ open dist/Miucs.app --args --plugins
 
 ```powershell
 ./scripts/build-windows.ps1 -Plugins -Runtime win-x64
-./dist/windows/win-x64/Miucs.exe --plugins
+./dist/windows/win-x64/Miucs.exe
 ```
 
-首次构建会下载并校验 Lua、JSON 库和 Skia 依赖。启动前先退出已运行的 Miucs，避免继续使用未开启插件模式的进程。也可通过环境变量 `MIUCS_PLUGINS=1` 启用插件模式。
+首次构建会下载并校验 Lua、JSON 库和 Skia 依赖。启动前先退出已运行的 Miucs。构建产物里有插件运行库时，直接启动即进入插件模式。
 
 Windows 实机验收与插件性能验收尚未全部完成；状态和底层实现说明见[插件迁移记录](plugin-migration.md)。
 
@@ -188,12 +188,12 @@ Copy-Item build/my-pulse (Join-Path $pluginRoot 'my-pulse') -Recurse
 需要自动重载时，先退出应用，再启动：
 
 ```sh
-MIUCS_PLUGIN_DEV=1 dist/Miucs.app/Contents/MacOS/Miucs --plugins
+MIUCS_PLUGIN_DEV=1 dist/Miucs.app/Contents/MacOS/Miucs
 ```
 
 ```powershell
 $env:MIUCS_PLUGIN_DEV = '1'
-./dist/windows/win-x64/Miucs.exe --plugins
+./dist/windows/win-x64/Miucs.exe
 ```
 
 开发模式约每秒检查当前已加载插件的文件变更。修改名称或布局等 manifest 元数据后要重新扫描；若当前实例仍使用旧描述，切换到其他插件再切回来。修改 `id` 会被视为新插件，需要同步场景根节点和代码。编辑仓库中的副本不会自动更新安装目录。
@@ -244,7 +244,7 @@ end
 
 | 现象 | 检查项 |
 | --- | --- |
-| 没有重新扫描菜单 | 构建是否包含插件库，启动是否带 `--plugins` |
+| 没有重新扫描菜单 | 构建是否包含插件运行库；要内置画面时是否带了 `--no-plugins` |
 | 扫描后没有自己的插件 | 文件夹层级、manifest 格式、重复 ID；查看菜单插件错误 |
 | 菜单能选中但没有画面 | 根节点 ID 是否匹配 manifest，是否调用 `miucs.load`；先运行验证和预览 |
 | 改名后动画不动 | 模板 `activate` 中是否仍判断 `example-pulse` |

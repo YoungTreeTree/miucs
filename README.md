@@ -56,14 +56,14 @@ open dist/Miucs.app
 
 插件使用 **Lua 5.4 + Skia**，一个文件夹对应一个可视化。复制模板后，编写场景与动画，放入用户插件目录即可加载，无需重新编译应用。
 
-插件模式目前需要显式开启，普通构建仍使用原生绘制。macOS 首次构建插件版还需要 Python 3.10+、CMake 3.24+ 和 C++ 工具链，并会下载校验后的依赖：
+带有插件运行库时会默认进入插件模式；没有运行库的普通构建仍使用原生绘制。`--no-plugins` 或 `MIUCS_PLUGINS=0` 可改回原生画面。macOS 首次构建插件版还需要 Python 3.10+、CMake 3.24+ 和 C++ 工具链，并会下载校验后的依赖：
 
 ```sh
 MIUCS_BUILD_PLUGINS=1 zsh build.sh
-open dist/Miucs.app --args --plugins
+open dist/Miucs.app
 ```
 
-请先退出已运行的 Miucs，再按上述方式启动。
+请先退出已运行的 Miucs，再启动。
 
 插件版另带 **「牛来」**：金黄像素键盘与分趾牛蹄，上方牛来单板姿态由音乐拍点换刃、打字速率触发完整跳跃；没有输入时不循环播放。详见[牛来说明](plugins/niulai-keyboard/README.md)。
 

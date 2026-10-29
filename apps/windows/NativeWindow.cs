@@ -2,6 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
+using System.Windows.Media;
 
 namespace Miucs.Windows;
 
@@ -19,6 +20,12 @@ internal static class NativeWindow
 
     [StructLayout(LayoutKind.Sequential)] private struct CursorPoint { public int X, Y; }
     [DllImport("user32.dll")] private static extern bool GetCursorPos(out CursorPoint point);
+    [DllImport("dwmapi.dll")] private static extern int DwmExtendFrameIntoClientArea(IntPtr hwnd, ref Margins margins);
+    [DllImport("user32.dll")] private static extern IntPtr GetDC(IntPtr hwnd);
+    [DllImport("user32.dll")] private static extern int ReleaseDC(IntPtr hwnd, IntPtr dc);
+    [DllImport("gdi32.dll")] private static extern int GetDeviceCaps(IntPtr dc, int index);
+    [DllImport("dcomp.dll")] private static extern uint DCompositionWaitForCompositorClock(uint count, IntPtr[]? handles, uint timeout);
+    [StructLayout(LayoutKind.Sequential)] private struct Margins { public int Left, Right, Top, Bottom; }
 
     public static bool TryGetCursorPosition(out Point point)
     {
@@ -35,6 +42,32 @@ internal static class NativeWindow
 
     internal static bool IsClickThrough(Window window) =>
         (GetWindowLongPtr(new WindowInteropHelper(window).Handle, ExtendedStyle).ToInt64() & Transparent) != 0;
+
+    public static void UseHardwareTransparency(Window window)
+    {
+        var hwnd = new WindowInteropHelper(window).Handle;
+        var margins = new Margins { Left = -1, Right = -1, Top = -1, Bottom = -1 };
+        DwmExtendFrameIntoClientArea(hwnd, ref margins);
+        if (PresentationSource.FromVisual(window) is HwndSource source)
+            source.CompositionTarget.BackgroundColor = Colors.Transparent;
+    }
+
+    public static int RefreshHz(Window? window = null)
+    {
+        var hwnd = window == null ? IntPtr.Zero : new WindowInteropHelper(window).Handle;
+        var dc = GetDC(hwnd);
+        try
+        {
+            int hz = GetDeviceCaps(dc, 116);
+            return hz >= 30 && hz <= 500 ? hz : 60;
+        }
+        finally { ReleaseDC(hwnd, dc); }
+    }
+
+    public static void WaitForFrame()
+    {
+        DCompositionWaitForCompositorClock(0, null, 34);
+    }
 
     public static void SetInteractive(Window window, bool interactive)
     {

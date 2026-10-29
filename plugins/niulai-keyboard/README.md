@@ -2,7 +2,7 @@
 Miucs API v1 独立皮肤，同一包适用于启用 Lua 插件运行库的 macOS / Windows；不覆盖内置 pixel-keyboard。
 
 ## 启用 / 热加载
-本目录随插件版应用一起分发。macOS 使用 `MIUCS_BUILD_PLUGINS=1 zsh build.sh`，Windows 使用 `./scripts/build-windows.ps1 -Plugins`，然后用 `--plugins` 启动并在可视化菜单选择「牛来」。普通非插件构建不包含此模式。
+本目录随插件版应用一起分发。macOS 使用 `MIUCS_BUILD_PLUGINS=1 zsh build.sh`，Windows 使用 `./scripts/build-windows.ps1 -Plugins`，然后直接启动，在可视化菜单选择「牛来」。没有插件运行库的构建不包含此模式；`--no-plugins` 可临时改回内置画面。
 
 稳定 ID 为 `niulai-keyboard`。如果曾安装同 ID 用户插件，请备份后移出用户插件目录，避免与内置版本冲突；用户插件不能覆盖内置 ID。
 插件开发、用户目录与热加载方式见[插件开发指南](../../docs/plugin-development.md)。宿主负责悬浮锁、拖动、缩放和保存位置，插件不重写这些行为。
