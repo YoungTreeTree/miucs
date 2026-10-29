@@ -65,6 +65,8 @@ open dist/Miucs.app --args --plugins
 
 请先退出已运行的 Miucs，再按上述方式启动。
 
+插件版另带 **「牛来」**：金黄像素键盘与分趾牛蹄，上方牛来单板姿态由音乐拍点换刃、打字速率触发完整跳跃；没有输入时不循环播放。详见[牛来说明](plugins/niulai-keyboard/README.md)。
+
 **[插件开发指南 →](docs/plugin-development.md)**：包含完整示例、双端安装步骤、输入数据、热重载、验证预览和常见问题。
 
 ## 本地处理

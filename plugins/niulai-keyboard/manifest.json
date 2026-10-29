@@ -1,0 +1,17 @@
+{
+  "id": "niulai-keyboard",
+  "name": "牛来",
+  "version": "0.1.1",
+  "api": 1,
+  "entry": "main.lua",
+  "inputs": [
+    "audio",
+    "keyboard"
+  ],
+  "layout": {
+    "width": 800,
+    "height": 460,
+    "minimumWidth": 80,
+    "maximumWidth": 1600
+  }
+}
