@@ -11,6 +11,7 @@ enum BuiltInVisualizations {
         registry.register(PencilFlightSimulation.module) { MacPencilFlightSession(paletteStore: store) }
         registry.register(StaffNoteSimulation.module) { MacStaffNoteSession() }
         registry.register(MacPixelKeyboardSession.module) { MacPixelKeyboardSession() }
+        PluginHost.shared.register(in: registry)
         return registry
     }
 }

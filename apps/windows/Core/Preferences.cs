@@ -35,14 +35,14 @@ public sealed class Preferences
     public bool TrayAnimationEnabled { get; set; } = true;
     public Dictionary<string, WindowFrame> Frames { get; set; } = new();
     public static string DefaultPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Miucs", "preferences.v1.json");
-    public static Preferences Load(string path)
+    public static Preferences Load(string path, bool allowPluginIds = false)
     {
         try
         {
             var result = JsonSerializer.Deserialize<Preferences>(File.ReadAllText(path));
             if (result == null) return new();
             result.Frames ??= new();
-            result.Visualization = result.Visualization is "staff-note" or "pixel-keyboard" ? result.Visualization : "pencil-flight";
+            if (string.IsNullOrWhiteSpace(result.Visualization) || result.Visualization.Length > 128 || (!allowPluginIds && result.Visualization is not ("staff-note" or "pixel-keyboard" or "pencil-flight"))) result.Visualization = "pencil-flight";
             result.Color = Palette.ContainsKey(result.Color ?? "") ? result.Color! : "graphite";
             foreach (var key in new List<string>(result.Frames.Keys))
                 if (result.Frames[key] == null || !result.Frames[key].IsValid) result.Frames.Remove(key);

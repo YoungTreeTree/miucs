@@ -18,6 +18,7 @@ internal static class Program
             HoverLockTests.Run();
             PixelKeyboardTests.Run();
             TrayIconTests.Run();
+            PluginInputTests.Run();
             Console.WriteLine("PASS: all Windows portable core tests");
             return 0;
         }

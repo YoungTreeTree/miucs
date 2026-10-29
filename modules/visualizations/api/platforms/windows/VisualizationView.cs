@@ -31,7 +31,7 @@ public abstract class VisualizationView : FrameworkElement, IDisposable
     public virtual void Deactivate() { if (!Active) return; Active = false; ResetInput(); }
     protected abstract void ResetInput();
     public abstract void Update(AudioInput audio, KeyboardInput keyboard, double deltaTime);
-    public void Dispose() { if (Disposed) return; Deactivate(); Disposed = true; pens.Clear(); texts.Clear(); }
+    public virtual void Dispose() { if (Disposed) return; Deactivate(); Disposed = true; pens.Clear(); texts.Clear(); }
     protected override void OnRender(DrawingContext dc)
     {
         base.OnRender(dc);

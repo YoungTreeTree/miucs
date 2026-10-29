@@ -19,8 +19,9 @@ final class StaffNoteSimulation: VisualizationSession {
     private var onsetSequence: UInt64 = 0
     private var pendingKeyboard: KeyboardInput?
 
-    init(keyboardKeys: [UInt16: StaffKeyboardKey] = [:]) {
+    init(keyboardKeys: [UInt16: StaffKeyboardKey] = [:], beatSeed: UInt64? = nil) {
         keyboardStars = StaffKeyboardStars(keys: keyboardKeys)
+        if let beatSeed { beatRings = StaffBeatRings(seed: beatSeed) }
     }
 
     func activate(viewport: VisualizationViewport) {

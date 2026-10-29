@@ -9,6 +9,8 @@ using Microsoft.Win32;
 using Miucs.Audio;
 using Miucs.Keyboard;
 using Miucs.Visualizations;
+using Miucs.Plugins;
+using System.IO;
 using Forms = System.Windows.Forms;
 
 namespace Miucs.Windows;
@@ -16,7 +18,7 @@ namespace Miucs.Windows;
 internal sealed class DesktopHost : IDisposable
 {
     private readonly Application app;
-    private readonly Preferences preferences = Preferences.Load(Preferences.DefaultPath);
+    private readonly Preferences preferences = Preferences.Load(Preferences.DefaultPath, PluginHost.Enabled);
     private readonly AudioChannel audio = new();
     private readonly KeyboardChannel keyboard = new();
     private readonly LoopbackCapture capture;
@@ -28,6 +30,8 @@ internal sealed class DesktopHost : IDisposable
     private readonly TextBlock status;
     private readonly Forms.NotifyIcon tray;
     private readonly AnimatedTrayIcon trayAnimation;
+    private readonly PluginHost? pluginHost;
+    private readonly PluginTrayIcon? pluginTray;
     private readonly PixelHeadScene catHead = new();
     private KeyboardSubscription headSubscription;
     private double lastHeadTime;
@@ -52,6 +56,7 @@ internal sealed class DesktopHost : IDisposable
         capture = new LoopbackCapture(audio);
         keyboardCapture = new KeyboardCapture(keyboard);
         headSubscription = keyboard.Subscribe(); lastHeadTime = Now;
+        if (PluginHost.Enabled && File.Exists(Path.Combine(AppContext.BaseDirectory,"miucs_plugins.dll"))) pluginHost = new PluginHost(audio, keyboard);
         window = new Window
         {
             Title = "Miucs", WindowStyle = WindowStyle.None, AllowsTransparency = true,
@@ -75,9 +80,10 @@ internal sealed class DesktopHost : IDisposable
         window.SizeChanged += (_, _) => { if (view != null) { view.Width = window.Width; view.Height = window.Height; } };
         new WindowInteropHelper(window).EnsureHandle();
         NativeWindow.SetInteractive(window, false);
-        SwitchVisualization(preferences.Visualization);
+        SwitchVisualization(preferences.Visualization is "staff-note" or "pixel-keyboard" or "pencil-flight" || pluginHost?.Views.ContainsKey(preferences.Visualization)==true ? preferences.Visualization : "pencil-flight");
         tray = new Forms.NotifyIcon { Text = "Miucs", ContextMenuStrip = menu };
         trayAnimation = new AnimatedTrayIcon(tray, () => AdvanceCatHead(Now));
+        if (pluginHost != null) { pluginTray = new PluginTrayIcon(tray); pluginHost.TrayFrame = pixels => { if(preferences.TrayAnimationEnabled && SystemParameters.ClientAreaAnimation && !suspended) pluginTray.Present(pixels); }; }
         tray.Visible = true;
         UpdateTrayAnimation();
         tray.DoubleClick += (_, _) => Dispatch(() => SetVisible(!isVisible));
@@ -103,7 +109,7 @@ internal sealed class DesktopHost : IDisposable
     private void SwitchVisualization(string id)
     {
         if (view != null && view.Id == id) return;
-        if (id != "pencil-flight" && id != "staff-note" && id != "pixel-keyboard") return;
+        if (id != "pencil-flight" && id != "staff-note" && id != "pixel-keyboard" && pluginHost?.Views.ContainsKey(id) != true) return;
         WindowFrame? previous = view == null ? null : CurrentFrame();
         hoverLock?.Reset();
         StopRendering();
@@ -111,7 +117,7 @@ internal sealed class DesktopHost : IDisposable
         {
             SaveFrame(); root.Children.Remove(view); view.Dispose();
         }
-        view = id switch { "staff-note" => new StaffNoteView(), "pixel-keyboard" => new PixelKeyboardView(catHead), _ => new PencilFlightView() };
+        view = pluginHost?.Views.ContainsKey(id) == true ? new PluginView(pluginHost,id) : id switch { "staff-note" => new StaffNoteView(), "pixel-keyboard" => new PixelKeyboardView(catHead), _ => new PencilFlightView() };
         preferences.Visualization = id;
         ApplyColor();
         view.Opacity = 1 - preferences.Transparency / 100d;
@@ -141,6 +147,7 @@ internal sealed class DesktopHost : IDisposable
     {
         var p = Preferences.Palette[preferences.Color];
         view.ApplyAppearance(Color.FromRgb(p.R, p.G, p.B));
+        pluginHost?.Appearance($"#{p.R:X2}{p.G:X2}{p.B:X2}",1-preferences.Transparency/100d);
     }
     private void StartRendering()
     {
@@ -169,7 +176,7 @@ internal sealed class DesktopHost : IDisposable
         double dt = Math.Max(0, now - lastTime); lastTime = now;
         var keys = keyboardSubscription.Read(now);
         var sound = audioSubscription.Read(now);
-        AdvanceCatHead(now);
+        if (pluginHost == null) AdvanceCatHead(now);
         view.Update(sound, keys, dt);
     }
     private double AdvanceCatHead(double now)
@@ -186,8 +193,12 @@ internal sealed class DesktopHost : IDisposable
         headSubscription.Dispose(); headSubscription = keyboard.Subscribe();
         catHead.Reset(); lastHeadTime = Now;
     }
-    private void UpdateTrayAnimation() => trayAnimation.SetRunning(
-        preferences.TrayAnimationEnabled && SystemParameters.ClientAreaAnimation && !suspended && !disposed);
+    private void UpdateTrayAnimation()
+    {
+        bool enabled=preferences.TrayAnimationEnabled && SystemParameters.ClientAreaAnimation && !suspended && !disposed;
+        trayAnimation.SetRunning(pluginHost == null && enabled);
+        pluginHost?.SetTrayEnabled(enabled);
+    }
     private void OnSystemParametersChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     { if (e.PropertyName == nameof(SystemParameters.ClientAreaAnimation)) Dispatch(UpdateTrayAnimation); }
     private void SetVisible(bool value)
@@ -249,6 +260,13 @@ internal sealed class DesktopHost : IDisposable
         var sizes = new Forms.ToolStripMenuItem("画面大小"); menu.Items.Add(sizes);
         foreach (int percent in new[] { 10, 80, 100, 125, 150, 200 })
             Add(sizes.DropDownItems, $"{percent}%", () => { SetFrame(CurrentFrame() with { Width = view.BaseWidth * percent / 100d }); SaveFrame(); SavePreferences(); });
+        if (pluginHost != null)
+        {
+            var plugins = new Forms.ToolStripMenuItem("文件夹插件"); menu.Items.Add(plugins);
+            foreach (var entry in pluginHost.Views.Values) { var id = entry.View.Id; Add(plugins.DropDownItems, entry.View.Name, () => SwitchVisualization(id), view.Id == id); }
+            Add(plugins.DropDownItems, "重新扫描", () => pluginHost.Scan());
+            Add(plugins.DropDownItems, "重新加载当前插件", () => pluginHost.ReloadActive());
+        }
         var colors = new Forms.ToolStripMenuItem("线条颜色"); menu.Items.Add(colors);
         foreach (var entry in Preferences.Palette)
             Add(colors.DropDownItems, entry.Value.Name, () => { preferences.Color = entry.Key; ApplyColor(); SavePreferences(); }, preferences.Color == entry.Key);
@@ -260,6 +278,7 @@ internal sealed class DesktopHost : IDisposable
             {
                 preferences.Transparency = 100 - percent;
                 view.Opacity = 1 - preferences.Transparency / 100d;
+                ApplyColor();
                 SavePreferences();
             }, preferences.Transparency == 100 - percent);
         }
@@ -291,21 +310,22 @@ internal sealed class DesktopHost : IDisposable
             AudioState.Connecting => "正在连接音频", AudioState.Recovering => "正在恢复音频",
             AudioState.PermissionRequired => "音频访问受限", AudioState.Suspended => "已暂停", _ => "音频未连接"
         };
-        status.Text = input.State == AudioState.Running && input.Frame != null ? "" : lastStatus;
-        tray.Text = "Miucs · " + lastStatus;
+        if (pluginHost?.Error.Length > 0) lastStatus = "插件：" + pluginHost.Error;
+        status.Text = pluginHost?.Error.Length > 0 ? lastStatus : input.State == AudioState.Running && input.Frame != null ? "" : lastStatus;
+        tray.Text = ("Miucs · " + lastStatus)[..Math.Min(63,8+lastStatus.Length)];
     }
     private void Suspend()
     {
         if (suspended) return;
         SetAdjusting(false);
         hoverLock.Reset();
-        suspended = true; StopRendering(); capture.Suspend(); keyboardCapture.Suspend();
+        suspended = true; pluginHost?.Suspend(true); StopRendering(); capture.Suspend(); keyboardCapture.Suspend();
         ResetCatHead(); UpdateTrayAnimation();
     }
     private void Resume()
     {
         if (!suspended) return;
-        suspended = false; capture.Resume();
+        suspended = false; pluginHost?.Suspend(false); capture.Resume();
         if (preferences.KeyboardEnabled) keyboardCapture.Resume();
         ResetCatHead(); UpdateTrayAnimation();
         StartRendering();
@@ -334,6 +354,6 @@ internal sealed class DesktopHost : IDisposable
         SystemParameters.StaticPropertyChanged -= OnSystemParametersChanged;
         headSubscription.Dispose();
         capture.Dispose(); keyboardCapture.Dispose(); view.Dispose();
-        tray.Visible = false; trayAnimation.Dispose(); tray.Dispose(); menu.Dispose(); window.Close();
+        tray.Visible = false; pluginHost?.Dispose(); pluginTray?.Dispose(); trayAnimation.Dispose(); tray.Dispose(); menu.Dispose(); window.Close();
     }
 }

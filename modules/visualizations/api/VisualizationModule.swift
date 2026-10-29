@@ -52,6 +52,13 @@ final class VisualizationRegistry {
                      && layout.minimumWidth <= layout.width && layout.width <= layout.maximumWidth, "Invalid visualization layout")
         descriptors.append(descriptor); factories[descriptor.id] = makeSession
     }
+    /// Plugin preview replaces factories only; existing sessions remain alive until switched.
+    func replace(_ descriptor: VisualizationDescriptor, makeSession: @escaping () -> any VisualizationSession) {
+        if let index = descriptors.firstIndex(where: { $0.id == descriptor.id }) {
+            descriptors[index] = descriptor; factories[descriptor.id] = makeSession
+        } else { register(descriptor, makeSession: makeSession) }
+    }
+    func remove(id: String) { factories.removeValue(forKey:id); descriptors.removeAll { $0.id==id } }
     func descriptor(id: String) -> VisualizationDescriptor? { descriptors.first { $0.id == id } }
     func makeSession(id: String) -> (any VisualizationSession)? { factories[id]?() }
 }

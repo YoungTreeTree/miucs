@@ -47,8 +47,9 @@ private struct VisualizationColorCommand: View {
 }
 
 @MainActor
-final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
+final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, ObservableObject {
     let appearanceStore = VisualizationAppearanceStore()
+    private var pluginStatusItem: NSMenuItem?
     private var statusItem: NSStatusItem?
     private var panel: VisualizerPanel?
     private let engine = AudioEngine()
@@ -121,7 +122,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             systemSymbolName: "waveform",
             accessibilityDescription: "Miucs"
         )
-        let menu = NSMenu()
+        let menu = NSMenu();menu.delegate=self
         menu.addItem(
             NSMenuItem(title: "显示拾音器", action: #selector(showPanel), keyEquivalent: "s")
         )
@@ -152,6 +153,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         let visualizationItem = NSMenuItem(title: "可视化", action: nil, keyEquivalent: "")
         visualizationItem.submenu = visualizations; menu.addItem(visualizationItem)
         visualizationMenu = visualizations
+        if PluginHost.enabled {
+            let status=NSMenuItem(title:"插件运行中",action:nil,keyEquivalent:"");status.isEnabled=false;pluginStatusItem=status;menu.addItem(status)
+            let rescan=NSMenuItem(title:"重新扫描插件",action:#selector(rescanPlugins),keyEquivalent:"");rescan.target=self;menu.addItem(rescan)
+            let reload=NSMenuItem(title:"重新加载当前插件",action:#selector(reloadPlugins),keyEquivalent:"");reload.target=self;menu.addItem(reload)
+        }
         let colors = VisualizationColorMenu(store: appearanceStore)
         colorMenu = colors; menu.addItem(colors.item)
         let transparency = VisualizationTransparencyMenu(store: appearanceStore)
@@ -170,6 +176,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         )
         item.menu = menu
         statusItem = item
+        PluginHost.shared.start(audio: engine.channel, keyboard: keyboardEngine.channel, status: item)
 
         let panel = VisualizerPanel(source: engine.channel, registry: registry, keyboardSource: keyboardEngine.channel)
         self.panel = panel
@@ -197,6 +204,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         }
     }
 
+    func menuWillOpen(_ menu: NSMenu) {
+        let error=PluginHost.shared.errors.last
+        pluginStatusItem?.title=error.map { "插件：" + String($0.prefix(120)) } ?? "插件运行中"
+        pluginStatusItem?.toolTip=error
+    }
+    @objc private func rescanPlugins() {
+        PluginHost.shared.register(in: registry)
+        visualizationMenu?.removeAllItems()
+        for descriptor in registry.descriptors {
+            let item=NSMenuItem(title:descriptor.name,action:#selector(selectVisualization(_:)),keyEquivalent:"")
+            item.target=self;item.representedObject=descriptor.id;visualizationMenu?.addItem(item)
+        }
+        updateVisualizationMenu()
+    }
+    @objc private func reloadPlugins() { PluginHost.shared.reloadActive() }
     @objc private func showPanel() {
         panel?.orderFrontRegardless()
     }
@@ -278,6 +300,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        PluginHost.shared.stop()
         keyboardEngine.stop()
         engine.stop()
         panel?.saveDrawingFrame()
