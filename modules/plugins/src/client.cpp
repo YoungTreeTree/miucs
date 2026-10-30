@@ -78,7 +78,7 @@ Json Client::inspect(){
   for(auto& [id,node]:latest.nodes)nodes.push_back(*node);
   return {{"version",latest.version},{"nodes",std::move(nodes)},{"updateMs",updateMs},{"luaBytes",luaBytes},{"sceneBytes",latest.bytes},{"completed",completed.load()},{"error",failure}};
 }
-bool Client::snapshot(Scene& into){std::unique_lock lock(mutex,std::try_to_lock);if(!lock||!ready||into.version==latest.version)return false;into=latest;return true;}
+bool Client::snapshot(Scene& into){std::unique_lock lock(mutex,std::try_to_lock);if(!lock||!ready||(into.version==latest.version&&into.revision==latest.revision))return false;into=latest;return true;}
 static void mergeEvents(Json& next,const Json& old,const char* source,const char* field,size_t limit) {
   if(!next.contains(source)||!old.contains(source))return;
   auto& n=next[source];auto& o=old[source];if(n.value("sessionID","")!=o.value("sessionID",""))return;

@@ -24,7 +24,9 @@ int main(int argc,char**argv){try{
     check(unchanged.apply(initial),"full snapshot applied");
     Json noop={{"full",false},{"base",1},{"version",1},{"nodes",Json::array()},{"removed",Json::array()}};
     auto node=unchanged.nodes.at("root");auto cost=unchanged.bytes;
+    auto revision=unchanged.revision,treeRevision=unchanged.treeRevision;
     check(!unchanged.apply(noop)&&unchanged.nodes.at("root")==node&&unchanged.bytes==cost,"empty delta preserves scene");
+    check(unchanged.revision==revision&&unchanged.treeRevision==treeRevision,"idle scene preserves render caches");
     Json invalid=noop;invalid["base"]=0;
     rejects([&]{unchanged.apply(invalid);},"empty delta still validates base");
     invalid=noop;invalid["version"]="invalid";
@@ -35,9 +37,18 @@ int main(int argc,char**argv){try{
     rejects([&]{unchanged.apply(invalid);},"null is not a removal array");
     auto patch=noop;patch["nodes"]={{{"id","root"},{"width",200}}};
     check(unchanged.apply(patch)&&unchanged.nodes.at("root")->at("width")==200,"same-version nonempty delta is applied");
+    check(unchanged.revision>revision&&unchanged.treeRevision==treeRevision,"geometry changes invalidate pixels without rebuilding hierarchy");
+    revision=unchanged.revision;
     check(unchanged.apply(initial)&&unchanged.nodes.at("root")->at("width")==100,"same-version full resync is applied");
+    check(unchanged.revision>revision&&unchanged.treeRevision>treeRevision,"same-version full resync invalidates render caches");
+    for(auto property:{"z","order"}) {
+      treeRevision=unchanged.treeRevision;patch["nodes"]={{{"id","root"},{property,3}}};unchanged.apply(patch);
+      check(unchanged.treeRevision>treeRevision,"stacking changes invalidate hierarchy");
+    }
+    treeRevision=unchanged.treeRevision;
     auto removal=noop;removal["removed"]={"root"};
     check(unchanged.apply(removal)&&unchanged.nodes.empty()&&unchanged.bytes==0,"removal-only delta is applied");
+    check(unchanged.treeRevision>treeRevision,"removal invalidates hierarchy");
     unchanged.apply(initial);auto emptyFull=noop;emptyFull["full"]=true;
     check(unchanged.apply(emptyFull)&&unchanged.nodes.empty(),"empty full snapshot clears scene");
     auto advance=noop;advance["version"]=2;
