@@ -57,7 +57,7 @@
       "passed" : true
     },
     {
-      "name" : "All four modes inherit transparency while adjustment overlays remain opaque",
+      "name" : "All five modes inherit transparency while adjustment overlays remain opaque",
       "passed" : true
     },
     {

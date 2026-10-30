@@ -20,3 +20,6 @@ python3 "$root/tests/plugins/muffin_replay.py"
 
 python3 "$root/tools/plugins/validate.py" "$root/plugins/heiji-kazuha"
 python3 "$root/tests/plugins/heiji_kazuha_replay.py"
+
+python3 "$root/tools/plugins/validate.py" "$root/plugins/zelda-guardian"
+python3 "$root/tests/plugins/zelda_replay.py"

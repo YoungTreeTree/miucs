@@ -74,6 +74,10 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Heiji Kazuha lifecycle validation failed' }
           python tests/plugins/heiji_kazuha_replay.py
           if ($LASTEXITCODE -ne 0) { throw 'Heiji Kazuha input replay failed' }
+          python tools/plugins/validate.py plugins/zelda-guardian
+          if ($LASTEXITCODE -ne 0) { throw 'Zelda lifecycle validation failed' }
+          python tests/plugins/zelda_replay.py
+          if ($LASTEXITCODE -ne 0) { throw 'Zelda input replay failed' }
           python tools/plugins/preview.py
           if ($LASTEXITCODE -ne 0) { throw 'CPU preview failed' }
           build/plugins/Release/plugin-surface-probe.exe build/plugins/Release/miucs-plugin-worker.exe plugins build/plugin-fixture.json
