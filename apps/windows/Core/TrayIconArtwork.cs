@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Miucs.Windows;
 
-/// <summary>The bundled cat portrait, rotated around the same chin pivot as PixelKeyboardView.</summary>
+/// <summary>The bundled cat portrait, rotated around its chin pivot.</summary>
 public static class TrayIconArtwork
 {
     private static readonly int[] Sizes = { 16, 20, 24, 32, 40, 48, 64 };

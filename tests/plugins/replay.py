@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Compare Lua animation outputs with production Swift numerical reference, frame by frame."""
-import copy,json,pathlib,subprocess,sys,time,statistics
+"""Compare Lua animations with the frozen pre-removal numerical baseline, frame by frame."""
+import gzip,hashlib,json,pathlib,subprocess,sys,time,statistics
 ROOT=pathlib.Path(__file__).resolve().parents[2];sys.path.insert(0,str(ROOT/'tools/plugins'))
 from wire import send,receive
 from preview import frame
@@ -15,17 +15,12 @@ for i in range(320,350):frames[i]['keyboard'].update(state='recovering',events=[
 for i in range(430,600):frames[i]['audio']['sessionID']='audio-fixture-b';frames[i]['audio']['frame']['sessionID']='audio-fixture-b'
 for i in range(480,600):frames[i]['keyboard']['sessionID']='keys-fixture-b'
 for i in range(490,600):frames[i]['audio']['frame']['audio']['sampleRate']=44100
-swift=copy.deepcopy(frames)
-keys={'a':0,'f':3,'j':38,'space':49,'returnKey':36}
-for f in swift:
-    a=f['audio'];a['version']=1;a['sessionID']='00000000-0000-0000-0000-00000000000'+('3' if a['sessionID'].endswith('-b') else '1');a['frame']['sessionID']=a['sessionID'];a['frame']['version']=1
-    k=f['keyboard'];k.update(version=1,sessionID='00000000-0000-0000-0000-00000000000'+('4' if k['sessionID'].endswith('-b') else '2'),modifiers=0)
-    for e in k['events']:e['keyCode']=keys[e.pop('key')];e['modifiers']=0
-    for e in k['heldKeys']:e['keyCode']=keys[e.pop('key')]
-(out/'input.json').write_text(json.dumps(swift))
-subprocess.run([str(ROOT/'build/plugin-reference'),str(out/'input.json'),str(out/'reference.json')],check=True)
-reference=json.loads((out/'reference.json').read_text())
-worker=ROOT/'build/plugins/miucs-plugin-worker'
+fixture=json.loads(gzip.decompress((ROOT/'tests/plugins/reference.json.gz').read_bytes()))
+digest=hashlib.sha256(json.dumps(frames,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+assert digest==fixture['inputSHA256'], 'Replay input changed: review and update the baseline explicitly'
+reference=fixture['frames']
+assert len(reference)==len(frames), 'Reference must cover every input frame'
+worker=ROOT/('build/plugins/Release/miucs-plugin-worker.exe' if sys.platform=='win32' else 'build/plugins/miucs-plugin-worker')
 with subprocess.Popen([str(worker),str(ROOT/'plugins/staff-note')],stdin=subprocess.PIPE,stdout=subprocess.PIPE) as p:
     scene={};version=0;updates=[]
     def response():

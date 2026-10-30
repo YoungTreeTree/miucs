@@ -6,7 +6,7 @@ final class AppTrayIcon {
     private let item: NSStatusItem
     private let source: any KeyboardFeatureSource
     private var subscription: KeyboardSubscription
-    private var head = PixelHeadScene()
+    private var head = TrayHeadAnimation()
     private var timer: Timer?
     private var last = ProcessInfo.processInfo.systemUptime
     private var lastPose = Int.min

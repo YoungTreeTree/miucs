@@ -4,16 +4,16 @@ Miucs 插件用 Lua 5.4 描述场景和动画，由共享的 Skia 渲染器绘�
 
 一个插件文件夹对应一个可视化，名称直接显示在「可视化」菜单里。同一时间只运行选中的插件；菜单栏猫图标由应用独立管理。以下命令均从仓库根目录执行。
 
-## 1. 准备插件版应用
+## 1. 准备应用
 
-带有插件运行库的应用会默认进入插件模式。没有运行库时仍使用原来的绘制。`--no-plugins` 或 `MIUCS_PLUGINS=0` 可改回内置画面；`--plugins` 或 `MIUCS_PLUGINS=1` 会强制进入插件模式。修改 Lua 或资源不需要重新构建应用。
+插件是唯一的可视化运行方式。所有构建包含运行库和内置插件；修改 Lua 或资源不需要重新构建应用。
 
 ### macOS
 
 需要 macOS 14+ / Apple Silicon、Swift 6、C++ 工具链、Python 3.10+、CMake 3.24+；首次开发签名还需要 OpenSSL 3。
 
 ```sh
-MIUCS_BUILD_PLUGINS=1 zsh build.sh
+zsh build.sh
 open dist/Miucs.app
 ```
 
@@ -22,11 +22,11 @@ open dist/Miucs.app
 需要 .NET 8、Visual Studio C++ Build Tools、Python 3.10+ 和 CMake 3.24+。在可使用 C++ 工具链的 PowerShell 中执行：
 
 ```powershell
-./scripts/build-windows.ps1 -Plugins -Runtime win-x64
+./scripts/build-windows.ps1 -Runtime win-x64
 ./dist/windows/win-x64/Miucs.exe
 ```
 
-首次构建会下载并校验 Lua、JSON 库和 Skia 依赖。启动前先退出已运行的 Miucs。构建产物里有插件运行库时，直接启动即进入插件模式。
+首次构建会下载并校验 Lua、JSON 库和 Skia 依赖。更新后先退出已运行的 Miucs，再打开新版本。应用不再提供原生可视化或模式切换参数。
 
 Windows 实机验收与插件性能验收尚未全部完成；状态和底层实现说明见[插件迁移记录](plugin-migration.md)。
 
@@ -244,7 +244,7 @@ end
 
 | 现象 | 检查项 |
 | --- | --- |
-| 没有重新扫描菜单 | 构建是否包含插件运行库；要内置画面时是否带了 `--no-plugins` |
+| 没有重新扫描菜单 | 请确认运行的是更新后的完整应用 |
 | 扫描后没有自己的插件 | 文件夹层级、manifest 格式、重复 ID；查看菜单插件错误 |
 | 菜单能选中但没有画面 | 根节点 ID 是否匹配 manifest，是否调用 `miucs.load`；先运行验证和预览 |
 | 改名后动画不动 | 模板 `activate` 中是否仍判断 `example-pulse` |

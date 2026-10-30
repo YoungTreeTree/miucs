@@ -2,20 +2,20 @@ import AppKit
 import ImageIO
 import UniformTypeIdentifiers
 
-/// Compile with KeyboardInput.swift, KeyboardChannel.swift and PixelHeadScene.swift.
+/// Compile with KeyboardInput.swift, KeyboardChannel.swift and TrayHeadAnimation.swift.
 /// This previews the actual scene and original portrait, not the generated pose sheet.
 @main struct HeadPreview {
     @MainActor static func main() throws {
         _ = NSApplication.shared
         let root = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
         let folder = root.appendingPathComponent("docs/concepts/pixel-cat-head")
-        let asset = root.appendingPathComponent("modules/visualizations/pixel-keyboard/assets/cat-head.png")
+        let asset = root.appendingPathComponent("apps/assets/cat-head.png")
         let source = CGImageSourceCreateWithURL(asset as CFURL, nil)!
         let headImage = CGImageSourceCreateImageAtIndex(source, 0, nil)!
         let gifURL = folder.appendingPathComponent("typing-head-preview-v1.gif")
         let gif = CGImageDestinationCreateWithURL(gifURL as CFURL, UTType.gif.identifier as CFString, 150, nil)!
         CGImageDestinationSetProperties(gif, [kCGImagePropertyGIFDictionary:[kCGImagePropertyGIFLoopCount:0]] as CFDictionary)
-        var scenes = [PixelHeadScene(), PixelHeadScene(), PixelHeadScene()]
+        var scenes = [TrayHeadAnimation(), TrayHeadAnimation(), TrayHeadAnimation()]
         let sessions = [UUID(), UUID(), UUID()], rates = [1,2,4]
         var sequences = [UInt64](repeating: 0, count: 3)
         func label(_ text: String, center: Double, y: Double, size: Double, bold: Bool = false) {

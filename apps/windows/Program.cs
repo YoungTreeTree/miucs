@@ -17,8 +17,16 @@ internal static class Program
         using var instance = new Mutex(true, @"Local\Miucs.Windows", out bool first);
         if (!first) return 0;
         var app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
-        using var host = new DesktopHost(app);
-        app.Run();
-        return 0;
+        try
+        {
+            using var host = new DesktopHost(app);
+            app.Run();
+            return 0;
+        }
+        catch (Exception error)
+        {
+            MessageBox.Show(error.Message, "Miucs 启动失败", MessageBoxButton.OK, MessageBoxImage.Error);
+            return 1;
+        }
     }
 }

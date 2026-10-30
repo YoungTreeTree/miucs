@@ -73,78 +73,22 @@
       "passed" : true
     },
     {
-      "name" : "Changing transparency preserves music session, geometry and mouse passthrough",
+      "name" : "Appearance updates preserve session, geometry and click-through",
       "passed" : true
     },
     {
-      "name" : "A single ink reaches every flight part and its status text immediately",
+      "name" : "Switching applies the shared ink before activation",
       "passed" : true
     },
     {
-      "name" : "Recoloring keeps the same session, pitch, geometry, transparency and click-through",
-      "passed" : true
-    },
-    {
-      "name" : "Changing color does not drain pending onsets or restart audio",
-      "passed" : true
-    },
-    {
-      "name" : "A newly mounted module gets the shared ink before its first update",
-      "passed" : true
-    },
-    {
-      "name" : "Staff recoloring changes ink without touching melody or trace history",
-      "passed" : true
-    },
-    {
-      "name" : "Returning to flight retains the shared selection even if legacy colors changed",
-      "passed" : true
-    },
-    {
-      "name" : "Shared coloring uses no per-module palette window",
-      "passed" : true
-    },
-    {
-      "name" : "Transparency changes while hidden do not restart rendering",
-      "passed" : true
-    },
-    {
-      "name" : "Changing ink while hidden updates paint without activating rendering",
+      "name" : "Hidden appearance updates do not restart rendering",
       "passed" : true
     },
     {
       "name" : "Future modules receive the shared appearance before activation",
       "passed" : true
-    },
-    {
-      "name" : "Both production renderers produce distinct pixels for all five inks",
-      "passed" : true
-    },
-    {
-      "name" : "All five staff inks remain visible on light and dark backgrounds",
-      "passed" : true
-    },
-    {
-      "name" : "Color changes retain transparent margins",
-      "passed" : true
-    },
-    {
-      "name" : "Static pencil marks remain byte-stable in every ink",
-      "passed" : true
-    },
-    {
-      "name" : "Recoloring invalidates cached labels and returns to the exact original pixels",
-      "passed" : true
-    },
-    {
-      "name" : "A recolored retained view matches a fresh renderer including text",
-      "passed" : true
-    },
-    {
-      "name" : "Retained native layers recolor all five inks with stable transparent output",
-      "passed" : true
     }
   ],
   "failed" : 0,
-  "passed" : 36
+  "passed" : 22
 }

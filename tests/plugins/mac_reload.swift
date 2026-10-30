@@ -38,8 +38,7 @@ import AppKit
         var pixels=[UInt8](repeating:0,count:16*16*4)
         precondition(api.pixels?(surface,16,16,&pixels,pixels.count)==1 && pixels[0]==255 && pixels[2]==0,"Replacement scene must render blue")
         // Catalog scans do not create workers; each selection starts only its own package.
-        let host=PluginHost.shared, registry=VisualizationRegistry()
-        host.register(in:registry)
+        let host=PluginHost.shared, registry=PluginVisualizations.registry()
         let ids=Set(["pencil-flight","staff-note","pixel-keyboard"])
         precondition(ids.isSubset(of:Set(registry.descriptors.map(\.id))))
         precondition(host.packages.isEmpty,"Tray must not eagerly launch a plugin")
@@ -50,6 +49,7 @@ import AppKit
         precondition(item.button?.image != nil,"Application logo exists without any plugin")
         for id in ids.sorted() {
             let selected=registry.makeSession(id:id)!
+            precondition(selected is PluginSession,"Every catalog entry must use the plugin runtime")
             selected.activate(viewport:.desktop)
             precondition(Set(host.packages.keys)==Set([id]),"Only selected plugin owns a worker")
             selected.dispose()

@@ -1,9 +1,9 @@
 name: UI plugins
 on:
   push:
-    paths: ['apps/assets/**', 'modules/plugins/**', 'plugins/**', 'contracts/plugins/**', 'tools/plugins/**', 'tests/plugins/**', 'scripts/*plugin*', '.github/workflows/plugins.yml']
+    paths: ['apps/assets/**', 'apps/macos/**', 'apps/windows/**', 'modules/plugins/**', 'modules/visualizations/api/**', 'scripts/swift-sources.sh', 'plugins/**', 'contracts/plugins/**', 'tools/plugins/**', 'tests/plugins/**', 'scripts/*plugin*', '.github/workflows/plugins.yml']
   pull_request:
-    paths: ['apps/assets/**', 'modules/plugins/**', 'plugins/**', 'contracts/plugins/**', 'tools/plugins/**', 'tests/plugins/**', 'scripts/*plugin*', '.github/workflows/plugins.yml']
+    paths: ['apps/assets/**', 'apps/macos/**', 'apps/windows/**', 'modules/plugins/**', 'modules/visualizations/api/**', 'scripts/swift-sources.sh', 'plugins/**', 'contracts/plugins/**', 'tools/plugins/**', 'tests/plugins/**', 'scripts/*plugin*', '.github/workflows/plugins.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -44,7 +44,7 @@ jobs:
         with:
           dotnet-version: '8.0.x'
       - shell: pwsh
-        run: ./scripts/build-windows.ps1 -Plugins
+        run: ./scripts/build-windows.ps1
       - shell: pwsh
         run: |
           python tools/plugins/fixture.py

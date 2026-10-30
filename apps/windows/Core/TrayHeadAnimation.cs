@@ -1,9 +1,9 @@
 using System;
 using Miucs.Keyboard;
-namespace Miucs.Visualizations;
+namespace Miucs.Windows;
 
 /// <summary>Typing-driven portrait; audio cannot reset it. Only fresh physical presses arm motion.</summary>
-public sealed class PixelHeadScene
+public sealed class TrayHeadAnimation
 {
     public double Frequency { get; private set; }
     public double Amplitude { get; private set; }

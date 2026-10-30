@@ -2,7 +2,7 @@ import Foundation
 
 /// Typing controls the portrait independently of music. The channel's rate excludes
 /// OS repeats and modifiers; a fresh physical press must arm motion after any reset.
-struct PixelHeadScene {
+struct TrayHeadAnimation {
     private(set) var frequency = 0.0
     private(set) var amplitude = 0.0
     private(set) var phase = 0.0
@@ -13,7 +13,7 @@ struct PixelHeadScene {
     private var sinceInput = 100.0, sincePress = 100.0, rate = 0.0
     private var armed = false
 
-    mutating func reset() { self = PixelHeadScene() }
+    mutating func reset() { self = TrayHeadAnimation() }
 
     @discardableResult
     mutating func advance(seconds: Double, input: KeyboardInput?) -> Bool {

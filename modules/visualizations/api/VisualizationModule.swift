@@ -35,7 +35,7 @@ protocol VisualizationSession: AnyObject {
     func dispose()
 }
 
-// Simulations have no paint. Native drawing adapters implement this hook.
+// Platform sessions forward appearance and input through the plugin adapter.
 extension VisualizationSession {
     func applyAppearance(_ appearance: VisualizationAppearance) {}
     func receive(keyboard: KeyboardInput) {}

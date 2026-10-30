@@ -5,8 +5,7 @@ from pathlib import Path
 
 root = Path(__file__).resolve().parent.parent
 failures = []
-shared = [*root.glob("modules/audio/core/*.swift"), *root.glob("modules/keyboard/core/*.swift"), *root.glob("modules/visualizations/api/*.swift"),
-          *root.glob("modules/visualizations/*/core/*.swift")]
+shared = [*root.glob("modules/audio/core/*.swift"), *root.glob("modules/keyboard/core/*.swift"), *root.glob("modules/visualizations/api/*.swift")]
 native_names = r"\b(?:NSView|NSColor|NSWindow|CMSampleBuffer|SCStream|CGColor|CGPath|CGEvent|AudioEngine|KeyboardEngine|KeyboardEventTap|AccelerateSpectrumTransform|vDSP_\w+)\b"
 for path in shared:
     code = re.sub(r"//[^\n]*|/\*[\s\S]*?\*/", "", path.read_text())
@@ -37,8 +36,7 @@ for path in (root / "scripts").glob("*"):
 
 required = ["contracts/audio-features/frame.schema.json", "contracts/audio-features/input.schema.json",
             "contracts/visualization/README.md", "modules/audio/platforms/windows/README.md",
-            "modules/visualizations/pencil-flight/platforms/windows/README.md", "apps/windows/README.md",
-            "modules/visualizations/staff-note/platforms/windows/README.md",
+            "apps/windows/README.md",
             "CONTRIBUTING.md", "docs/architecture.md"]
 for name in required:
     path = root / name

@@ -1,4 +1,4 @@
-"""Build the documented reveal geometry from production Swift trace samples."""
+"""Build the documented reveal geometry from frozen trace samples."""
 def path(reference):
     points=reference['trace'];result=[];previous=None;segment=None
     live=points[-1] if points and reference['continuous'] else None
