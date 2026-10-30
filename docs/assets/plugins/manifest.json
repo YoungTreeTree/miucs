@@ -60,19 +60,6 @@
       "durationMs": 12000,
       "inputHash": "75ae93b86000e1e07cc05877ed27560f582611b02122e08ee9f0548b03df6c45",
       "inputFrames": 720
-    },
-    {
-      "id": "heiji-kazuha",
-      "name": "平次与和叶",
-      "version": "1.0.0",
-      "file": "heiji-kazuha.gif",
-      "width": 640,
-      "height": 368,
-      "samples": 192,
-      "encodedFrames": 170,
-      "durationMs": 12000,
-      "inputHash": "75ae93b86000e1e07cc05877ed27560f582611b02122e08ee9f0548b03df6c45",
-      "inputFrames": 720
     }
   ]
 }
