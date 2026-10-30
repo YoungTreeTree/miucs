@@ -3,6 +3,8 @@
 #include <set>
 #include <cmath>
 #include <regex>
+#include <algorithm>
+#include <string_view>
 namespace miucs {
 std::filesystem::path contained(const std::filesystem::path& root, const std::string& relative) {
   auto rel=std::filesystem::u8path(relative);
@@ -65,8 +67,12 @@ Json catalog(const std::vector<std::filesystem::path>& roots) {
 }
 void validateNode(const Json& n) {
   if(!n.is_object() || !identifier(n.at("id").get<std::string>())) throw Error("Invalid node id");
-  static const std::set<std::string> types={"group","path","image","text","rect","ellipse"};
-  if(!types.contains(n.at("type").get<std::string>())) throw Error("Unsupported node type");
+  // Client readers can finish packets during asynchronous close at process
+  // exit. A heap-owning static set may already have been destroyed by then.
+  // Literal views have no allocation or teardown dependency.
+  constexpr std::string_view types[]={"group","path","image","text","rect","ellipse"};
+  const auto& type=n.at("type").get_ref<const std::string&>();
+  if(std::find(std::begin(types),std::end(types),type)==std::end(types)) throw Error("Unsupported node type");
   validateProperties(n);
 }
 void validateProperties(const Json& n) {

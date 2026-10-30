@@ -5,3 +5,5 @@
 The fixture stores a SHA-256 of the canonical input JSON. Changing the input generator must explicitly update and review the reference; the test never accepts current plugin output automatically. For intentional animation changes, inspect the affected frames and update only the expected values with a documented reason. Historical simulations can be recovered from Git history when needed; they are not compiled or shipped.
 
 Run `sh scripts/build-plugins.sh`, then `sh scripts/test-plugins.sh`. macOS host selection, worker disposal and reload tests run with `zsh scripts/test-plugin-macos.sh`. Window and appearance tests use isolated preferences and are separate from real capture/device acceptance.
+
+`plugin-exit-validation` (CTest) holds a reader until process teardown, after any static destructors registered by the first node validation. It then validates all supported node types and checks rejection of an unsupported type. This reproduces the async-close/static-type-table use-after-free without relying on repeated runs or sleeps. Keep node validation independent of destructible process-wide storage.
