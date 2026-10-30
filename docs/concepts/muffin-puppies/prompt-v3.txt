@@ -1,0 +1,19 @@
+Tool: built-in image_gen
+Purpose: broken hand-drawn contour style revision; visual concept only.
+
+Use case: style-transfer / precise-object-edit.
+EDIT image 1, the existing Miucs keyboard concept board v2. Image 2 (actual game collaboration poster) and image 3 (user's mousepad photo) are authoritative INK STROKE references. The user specifically objects that ALL outlines, including the entire keyboard and cartoon characters, lack the original's intermittent broken-line quality. This edit must make that change plainly visible at normal viewing size, not merely claim to do it.
+
+Preserve the full layout, three characters and identities, jump/bubble mechanics, relative size, original mint/cream/beige/coral colors, keyboard rows and text, bottom storyboards. Subtitle change to “键盘互动皮肤 · 概念 03”. Do not redesign their identities or introduce extra decor.
+
+PRIMARY REQUIRED TRANSFORMATION: Replace EVERY continuous digitally smooth contour across the illustration with the same relaxed BROKEN HAND-DRAWN FELT-TIP INK system. Study the white dog's outer contour in images 2 and 3: individually drawn black stroke segments of varying lengths, round ink ends, subtly wobbly strokes, slightly uneven pressure, deliberate short visible gaps between SOME strokes. Long uneven segments mixed with a few short ones, NOT a regularly dashed selection border, NOT stitching, NOT dotted lines, NOT furry repeated scallops. Keep fills intact underneath the absent contour segments. A tiny gap should expose the uninterrupted fill edge, not cut a hole into the shape. Black edges have substantial width around 5-7px at 1536px artboard size; gaps mostly about 4-10px. About 12-20 percent of each large perimeter is uninked in irregular locations. Clearly broken but still cohesive contours, like confident quick hand drawing.
+
+Apply uniformly:
+1. BOTH nested monitor frame borders and its supports: hand-drawn slightly crooked straight strokes with irregular gaps across top/bottom/side runs, several visible breaks per long edge. No perfectly closed smooth rectangle.
+2. Keyboard outer silhouette and its mint inner edge: broken chunky ink. Simplify the polished bevel and gradients into flat shapes. Bottom long edge visibly made from 8-12 uneven hand-drawn stretches with little gaps, varied lengths, no neat dash pattern.
+3. EVERY SINGLE KEYCAP including number keys, letters, modifiers and spacebar: roughly hand-drawn rounded quadrilateral with 2-4 irregular small breaks per key outline, slight width variation. Spacebar has 5-7 breaks. Avoid thick regular double borders. Keep key legends clean and legible with existing layout; don't turn letters into arbitrary broken letters.
+4. All three main characters AND all lower storyboard characters: selective broken contours on ears/head/torso/limbs/hood/cape/tail. Most important the white Maltese must use broken strokes, not solid scalloped sheep wool. Dog faces must retain tiny dots and recognizable nose/mouth, don't fragment tiny facial marks. Muffin keeps huge coral red ear-shaped HOOD, yellow forehead tuft, long pale pointed cheek whiskers, key pendant and cream belly, use broken contour on large hood and body edges as well.
+5. White and beige keyboard paws, bubble wand, bubble rings and motion arrows should feel from same hand. Bubble rings have incomplete pastel arcs and simple white glints.
+Maintain clean flat solid color fills, minimize airbrush gradients, only tiny flat shadows. No extra paper grain, no pencil hatching, no sketch construction lines. The target is the specific playful intermittent ink contour seen in original Line Puppy artwork, applied to the complete keyboard skin.
+
+The result should immediately read as a consistently hand-drawn toy keyboard and characters, not smooth vector UI with rough animals pasted on. No added zoom panels; preserve concept board composition. This is the only required edit and must be emphatically visible.

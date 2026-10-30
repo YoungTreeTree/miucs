@@ -1,0 +1,49 @@
+Tool: built-in image_gen; transparent_background=true
+Output: plugins/muffin-puppies/assets/maltese-jump-v3.png, golden-jump-v3.png
+Reference: characters.png and initial per-dog jump sheet
+
+WHITE DOG FINAL PROMPT
+Create a polished 4 by 4 sprite animation sheet with EXACTLY SIXTEEN consecutive frames of the WHITE MALTESE dog from the LEFT of reference1. Reference2 supplies action ideas. Genuine transparent background. Keep character design and broken black outline.
+Each frame MUST include ONE small flat warm gray oval ground shadow. The ground shadow is the REGISTRATION ANCHOR under the dog. Ground shadow center must remain stationary throughout the jump in local frame space. The dog's height above its shadow must change naturally from frame to frame. At the apex there must be a clearly visible air gap of about ONE THIRD of the dog's standing body height between the FEET and the SHADOW. This jump MUST read from the images alone; do not draw all dogs standing on shadows. All animation will be played at fixed screen position.
+Keep original tiny dot eyes, T nose, smiling mouth, short limbs, white body and broken felt-tip contour. NOT sixteen unrelated expressions; ONE continuous weighted cheerful hop. Same head size, shape and face arrangement, body mass, line thickness and scale in every frame. Draw actual changing crouch, knees, arms, ears, follow-through, not a rigid floating sticker.
+Rows in reading order:
+01 standing neutral on shadow.
+02 knees bend; body compresses a little, feet on shadow.
+03 deep anticipatory squat, arms back; feet on shadow.
+04 push-off, extended legs and trailing ears; toes barely on shadow.
+05 ascending; feet clearly above shadow, legs trail.
+06 ascending higher; arms opening, ears following.
+07 near apex; soft tucked legs, ears float.
+08 apex; maximum large air gap above shadow; body relaxed.
+09 start descent, still nearly apex.
+10 falling toward shadow; legs reach down; ears float up.
+11 feet approaching shadow; preparing landing.
+12 first ground contact directly above shadow; knees bend.
+13 squishy landing with feet on shadow, soft body compression and ears dropping.
+14 rebound standing with feet on shadow.
+15 nearly settled, ears finishing follow-through.
+16 exact return to the SAME neutral stance as 01, feet on shadow.
+Large transparent separation between all frames. No cropping, overlaps, text, frame numbers or visible grid. Small characters within generous equal cells; no glossy gradients. Shadows flat desaturated gray, visibly separate oval shape under airborne frames, not black. Camera and ground are fixed; character movement is drawn relative to its shadow. Single transparent square sheet, exactly 4x4. Only WHITE dog, never golden dog or Muffin.
+
+GOLDEN DOG FINAL PROMPT
+Create a polished 4 by 4 sprite animation sheet with EXACTLY SIXTEEN consecutive frames of the TAN GOLDEN RETRIEVER dog with thin coral red collar from the MIDDLE of reference1. Reference2 supplies action ideas. Genuine transparent background. Keep character design and broken black outline.
+Each frame MUST include ONE small flat warm gray oval ground shadow. The ground shadow is the REGISTRATION ANCHOR under the dog. Ground shadow center must remain stationary throughout the jump in local frame space. The dog's height above its shadow must change naturally from frame to frame. At the apex there must be a clearly visible air gap of about ONE THIRD of the dog's standing body height between the FEET and the SHADOW. This jump MUST read from the images alone; do not draw all dogs standing on shadows. All animation will be played at fixed screen position.
+Keep original tiny dot eyes, T nose, smiling mouth, short limbs, smooth round head and small floppy ears, flat biscuit tan body and thin coral red collar in every frame and broken felt-tip contour. NOT sixteen unrelated expressions; ONE continuous weighted cheerful hop. Same head size, shape and face arrangement, body mass, line thickness and scale in every frame. Draw actual changing crouch, knees, arms, ears, follow-through, not a rigid floating sticker.
+Rows in reading order:
+01 standing neutral on shadow.
+02 knees bend; body compresses a little, feet on shadow.
+03 deep anticipatory squat, arms back; feet on shadow.
+04 push-off, extended legs and trailing ears; toes barely on shadow.
+05 ascending; feet clearly above shadow, legs trail.
+06 ascending higher; arms opening, ears following.
+07 near apex; soft tucked legs, ears float.
+08 apex; maximum large air gap above shadow; body relaxed.
+09 start descent, still nearly apex.
+10 falling toward shadow; legs reach down; ears float up.
+11 feet approaching shadow; preparing landing.
+12 first ground contact directly above shadow; knees bend.
+13 squishy landing with feet on shadow, soft body compression and ears dropping.
+14 rebound standing with feet on shadow.
+15 nearly settled, ears finishing follow-through.
+16 exact return to the SAME neutral stance as 01, feet on shadow.
+Large transparent separation between all frames. No cropping, overlaps, text, frame numbers or visible grid. Small characters within generous equal cells; no glossy gradients. Shadows flat desaturated gray, visibly separate oval shape under airborne frames, not black. Camera and ground are fixed; character movement is drawn relative to its shadow. Single transparent square sheet, exactly 4x4. Only TAN GOLDEN RETRIEVER dog, never white Maltese or Muffin.
