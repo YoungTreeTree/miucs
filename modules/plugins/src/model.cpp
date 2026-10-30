@@ -120,7 +120,15 @@ size_t patchedCost(size_t before,const Json& current,const Json& changes) {
 void Scene::put(const std::string& id,Json node,size_t cost) {
   size_t old=costs.contains(id)?costs.at(id):0;
   if(cost>MaxSceneBytes || bytes-old>MaxSceneBytes-cost)throw Error("Scene memory budget exceeded");
+  auto previous=nodes.find(id);
+  bool treeChanged=previous==nodes.end();
+  if(!treeChanged) {
+    const auto& before=*previous->second;
+    treeChanged=before.value("parent",std::string{})!=node.value("parent",std::string{}) ||
+      before.value("z",0.0)!=node.value("z",0.0) || before.value("order",0)!=node.value("order",0);
+  }
   nodes[id]=std::make_shared<const Json>(std::move(node));costs[id]=cost;bytes=bytes-old+cost;
+  ++revision;if(treeChanged)++treeRevision;
 }
 bool Scene::apply(const Json& p) {
   if(p.at("base").get<uint64_t>()!=version && !p.value("full",false)) throw Error("Scene revision mismatch");
@@ -131,7 +139,11 @@ bool Scene::apply(const Json& p) {
   if(!updates.is_array()||!removed.is_array())throw Error("Scene changes must be arrays");
   if(!p.value("full",false)&&nextVersion==version&&updates.empty()&&removed.empty())return false;
   Scene candidate=p.value("full",false)?Scene{}:*this;
-  for(auto& id:removed) {auto key=id.get<std::string>();candidate.bytes-=candidate.costs[key];candidate.costs.erase(key);candidate.nodes.erase(key);}
+  if(p.value("full",false)){candidate.revision=revision+1;candidate.treeRevision=treeRevision+1;}
+  for(auto& id:removed) {
+    auto key=id.get<std::string>();
+    if(candidate.nodes.erase(key)){candidate.bytes-=candidate.costs.at(key);candidate.costs.erase(key);++candidate.revision;++candidate.treeRevision;}
+  }
   for(auto& n:updates) {
     std::string id=n.at("id");Json value=n;size_t cost;
     if(!p.value("full",false) && candidate.nodes.contains(id)){
