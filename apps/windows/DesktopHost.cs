@@ -84,7 +84,7 @@ internal sealed class DesktopHost : IDisposable
         new WindowInteropHelper(window).EnsureHandle();
         NativeWindow.UseHardwareTransparency(window);
         NativeWindow.SetInteractive(window, false);
-        window.ContentRendered += (_, _) => NativeWindow.UseHardwareTransparency(window);
+        window.ContentRendered += (_, _) => { NativeWindow.UseHardwareTransparency(window); NativeWindow.SetInteractive(window, adjusting); };
         SwitchVisualization(preferences.Visualization);
         tray = new Forms.NotifyIcon { Text = "Miucs", ContextMenuStrip = menu };
         trayAnimation = new AnimatedTrayIcon(tray, () => AdvanceCatHead(Now));

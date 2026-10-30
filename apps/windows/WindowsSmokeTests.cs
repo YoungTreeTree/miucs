@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Windows;
 using System.Windows.Media;
+using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using Miucs.Audio;
 using Miucs.Keyboard;
@@ -17,6 +18,7 @@ internal static class WindowsSmokeTests
         Directory.CreateDirectory(output);
         VerifyLockGlyph(output);
         VerifyHoverLockWindow();
+        VerifyHardwareClickThrough();
         VerifyTrayCat(output);
         VerifyPluginRendering();
         File.WriteAllText(Path.Combine(output, "result.json"), "{\"pluginSurface\":\"passed\",\"realLoopback\":\"not-run\",\"realKeyboard\":\"not-run\",\"syntheticHoverWindow\":\"passed\"}\n");
@@ -113,6 +115,13 @@ internal static class WindowsSmokeTests
         }
     }
 
+
+    private static int HitAtCenter(Window window)
+    {
+        var point = window.PointToScreen(new Point(window.ActualWidth / 2, window.ActualHeight / 2));
+        return NativeWindow.HitTest(window, (int)Math.Round(point.X), (int)Math.Round(point.Y));
+    }
+
     private static void VerifyHoverLockWindow()
     {
         var owner = new Window
@@ -139,6 +148,7 @@ internal static class WindowsSmokeTests
             hover.Sample(3, true);
             Assert(hover.TargetWindow.IsVisible, "visible at 3 seconds");
             Assert(NativeWindow.IsClickThrough(owner), "revealing does not intercept canvas");
+            Assert(HitAtCenter(owner) == -1, "canvas hit test passes through");
             Assert(!NativeWindow.IsClickThrough(hover.TargetWindow), "only lock target interactive");
             Assert(hover.TargetWindow.ActualWidth >= 32 && hover.TargetWindow.ActualWidth <= 36 &&
                 hover.TargetWindow.ActualHeight >= 32 && hover.TargetWindow.ActualHeight <= 36,
@@ -157,6 +167,7 @@ internal static class WindowsSmokeTests
             hover.Sample(3.1, false);
             Assert(!hover.TargetWindow.IsVisible, "leave hides target");
             adjusting = true; NativeWindow.SetInteractive(owner, true); hover.SetLocked(false);
+            Assert(HitAtCenter(owner) == 1, "adjusting canvas accepts the pointer");
             Assert(hover.TargetWindow.IsVisible, "menu unlock immediately reveals target");
             hover.ClickForVerification(); hover.Sample(3.2, false);
             for (int i = 0; i < 30; i++) hover.Sample(4 + i * .1, true);
@@ -181,6 +192,38 @@ internal static class WindowsSmokeTests
             Assert(!hover.TargetWindow.IsVisible, "hidden owner never reveals target");
         }
         finally { hover?.Dispose(); owner.Close(); }
+    }
+
+    private static void VerifyHardwareClickThrough()
+    {
+        var window = new Window
+        {
+            Width = 180, Height = 120, Left = 40, Top = 40, WindowStyle = WindowStyle.None,
+            AllowsTransparency = false, Background = Brushes.Transparent, ShowActivated = false,
+            ShowInTaskbar = false
+        };
+        window.Show();
+        try
+        {
+            NativeWindow.UseHardwareTransparency(window);
+            NativeWindow.SetInteractive(window, false);
+            if (!NativeWindow.IsClickThrough(window) || !NativeWindow.IsLayered(window) || HitAtCenter(window) != -1)
+                throw new InvalidOperationException("Hardware canvas is not click-through: style=0x" + NativeWindow.ExStyle(new System.Windows.Interop.WindowInteropHelper(window).Handle).ToString("X"));
+            NativeWindow.SetInteractive(window, true);
+            if (NativeWindow.IsClickThrough(window) || !NativeWindow.IsLayered(window) || HitAtCenter(window) != 1)
+                throw new InvalidOperationException("Adjusting canvas lost layered input: style=0x" + NativeWindow.ExStyle(new System.Windows.Interop.WindowInteropHelper(window).Handle).ToString("X"));
+            var parameters = new HwndSourceParameters("Miucs click-through probe")
+            {
+                Width = 80, Height = 60, WindowStyle = unchecked((int)0x80000000),
+                ExtendedWindowStyle = 0x00200000 | 0x08000000 | 0x00000080 | 0x00000020 | 0x00000008
+            };
+            using var source = new HwndSource(parameters);
+            NativeWindow.PassThroughSurface(source);
+            long style = NativeWindow.ExStyle(source.Handle);
+            if ((style & 0x80000) == 0 || (style & 0x20) == 0 || (style & 0x200000) == 0 || NativeWindow.HitTestHandle(source.Handle, 1, 1) != -1)
+                throw new InvalidOperationException("Plugin surface click-through style lost: 0x" + style.ToString("X"));
+        }
+        finally { window.Close(); }
     }
 
     private static void Assert(bool result, string message)

@@ -34,8 +34,8 @@ internal sealed class PluginView : VisualizationView
     {
         if(native!=null||!IsLoaded)return;var parent=Window.GetWindow(this);if(parent==null)return;
         // Keep this popup unowned: owned popups are always above their owner and would cover WPF controls.
-        var settings=new HwndSourceParameters("Miucs plugin surface") {Width=1,Height=1,WindowStyle=unchecked((int)0x80000000),ExtendedWindowStyle=0x00200000|0x08000000|0x00000080|0x00000020|0x00000008};
-        native=new HwndSource(settings);native.AddHook(HitTest);surface=PluginNative.miucs_surface_create(package.Handle,native.Handle,Id);
+        var settings=new HwndSourceParameters("Miucs plugin surface") {Width=1,Height=1,WindowStyle=unchecked((int)0x80000000),ExtendedWindowStyle=0x00200000|0x08000000|0x00080000|0x00000080|0x00000020|0x00000008};
+        native=new HwndSource(settings);Miucs.Windows.NativeWindow.PassThroughSurface(native);surface=PluginNative.miucs_surface_create(package.Handle,native.Handle,Id);
         var parentWindow=Window.GetWindow(this);if(parentWindow!=null)gpuFrameInterval=1d/Miucs.Windows.NativeWindow.RefreshHz(parentWindow);
         if(surface!=IntPtr.Zero&&PluginNative.miucs_surface_backend(surface)==0)System.Diagnostics.Trace.WriteLine($"Plugin {Id}: CPU fallback, 30 FPS limit");
     }
@@ -54,8 +54,6 @@ internal sealed class PluginView : VisualizationView
         PluginNative.miucs_surface_draw(surface,(uint)w,(uint)h,dpi.DpiScaleX);
     }
     public override void Dispose(){if(Disposed)return;base.Dispose();Release();package.Replacing-=Release;host.ReleaseUnused(package);}
-    private static IntPtr HitTest(IntPtr window,int message,IntPtr wParam,IntPtr lParam,ref bool handled)
-    {if(message==0x0084){handled=true;return new IntPtr(-1);}return IntPtr.Zero;}
     protected override void RenderScene(DrawingContext context){}
     [DllImport("user32.dll")]private static extern bool SetWindowPos(IntPtr window,IntPtr after,int x,int y,int cx,int cy,uint flags);
     [DllImport("user32.dll")]private static extern bool ShowWindow(IntPtr window,int command);
