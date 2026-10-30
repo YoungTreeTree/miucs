@@ -8,6 +8,6 @@
 | 五线谱音符 | [查看](staff-note.md) |
 | 铅笔飞鸟 | [查看](sound-flight.md) |
 | 牛来 | [查看](../plugins/niulai-keyboard/README.md) |
-| 麦芬与线条小狗（开发中） | [查看](muffin-puppies.md) |
+| 麦芬与线条小狗 | [查看](../plugins/muffin-puppies/README.md) |
 
 导出于 2026-10-30，随机种子为 42。五个插件的公共输入 SHA-256 一致；尺寸、帧数和时长见[导出清单](assets/plugins/manifest.json)。重新生成的方法见[插件工作台](plugin-lab.md#所有皮肤的统一输入-gif)。
