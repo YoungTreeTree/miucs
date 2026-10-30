@@ -37,6 +37,19 @@ import AppKit
         defer { api.destroySurface?(surface) }
         var pixels=[UInt8](repeating:0,count:16*16*4)
         precondition(api.pixels?(surface,16,16,&pixels,pixels.count)==1 && pixels[0]==255 && pixels[2]==0,"Replacement scene must render blue")
+        // A plain CALayer selects CPU fallback. Reloads reuse this same parent layer.
+        let layer=CALayer();layer.bounds=CGRect(x:0,y:0,width:100,height:100)
+        for _ in 0..<10 {
+            let cpu="test".withCString {api.createSurface?(package.handle,Unmanaged.passUnretained(layer).toOpaque(),$0)}!
+            precondition(api.backend?(cpu)==0 && api.draw?(cpu,100,100,1)==1)
+            precondition(layer.sublayers?.count==1)
+            let child=layer.sublayers!.first!
+            precondition(child.contents != nil)
+            api.destroySurface?(cpu)
+            precondition(layer.sublayers?.isEmpty ?? true,"Disposal removes the old CPU layer")
+            precondition(child.superlayer==nil && child.contents==nil,"Disposal releases the last CPU frame")
+        }
+        print("PASS CPU surface disposal: 10 reload cycles retain no layers or frame contents")
         // Catalog scans do not create workers; each selection starts only its own package.
         let host=PluginHost.shared, registry=PluginVisualizations.registry()
         let ids=Set(["pencil-flight","staff-note","pixel-keyboard","niulai-keyboard","muffin-puppies","heiji-kazuha"])

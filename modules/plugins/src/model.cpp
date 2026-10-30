@@ -115,11 +115,17 @@ void Scene::put(const std::string& id,Json node,size_t cost) {
   if(cost>MaxSceneBytes || bytes-old>MaxSceneBytes-cost)throw Error("Scene memory budget exceeded");
   nodes[id]=std::make_shared<const Json>(std::move(node));costs[id]=cost;bytes=bytes-old+cost;
 }
-void Scene::apply(const Json& p) {
+bool Scene::apply(const Json& p) {
   if(p.at("base").get<uint64_t>()!=version && !p.value("full",false)) throw Error("Scene revision mismatch");
+  const auto nextVersion=p.at("version").get<uint64_t>();
+  const auto& updates=p.at("nodes");
+  static const Json empty=Json::array();
+  const auto& removed=p.contains("removed")?p.at("removed"):empty;
+  if(!updates.is_array()||!removed.is_array())throw Error("Scene changes must be arrays");
+  if(!p.value("full",false)&&nextVersion==version&&updates.empty()&&removed.empty())return false;
   Scene candidate=p.value("full",false)?Scene{}:*this;
-  for(auto& id:p.value("removed",Json::array())) {auto key=id.get<std::string>();candidate.bytes-=candidate.costs[key];candidate.costs.erase(key);candidate.nodes.erase(key);}
-  for(auto& n:p.at("nodes")) {
+  for(auto& id:removed) {auto key=id.get<std::string>();candidate.bytes-=candidate.costs[key];candidate.costs.erase(key);candidate.nodes.erase(key);}
+  for(auto& n:updates) {
     std::string id=n.at("id");Json value=n;size_t cost;
     if(!p.value("full",false) && candidate.nodes.contains(id)){
       validateProperties(n);
@@ -142,7 +148,7 @@ void Scene::apply(const Json& p) {
       parent=candidate.nodes.at(parent)->value("parent",std::string{});
     }
   }
-  candidate.version=p.at("version");*this=std::move(candidate);
+  candidate.version=nextVersion;*this=std::move(candidate);return true;
 }
 std::vector<uint8_t> encode(const Json& j) {auto b=Json::to_msgpack(j);if(b.size()>MaxPacket)throw Error("Packet too large");return b;}
 namespace {

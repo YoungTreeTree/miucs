@@ -117,10 +117,10 @@ void Client::run(){try{
     if(!packet.value("full",false) && packet.at("base").get<uint64_t>()!=current.version){
       expires=nowMs()+500;process->send({{"op","sync"}});continue;
     }
-    current.apply(packet);
+    bool changed=current.apply(packet);
     if(disposing){++completed;stopped=true;ready=false;wake.notify_all();break;}
     Json next;
-    {std::unique_lock lock(mutex);latest=current;updateMs=response.value("updateMs",0.0);luaBytes=response.value("luaBytes",size_t(0));ready=true;++completed;
+    {std::unique_lock lock(mutex);if(changed)latest=current;updateMs=response.value("updateMs",0.0);luaBytes=response.value("luaBytes",size_t(0));ready=true;++completed;
       wake.wait(lock,[this]{return stopped||!controls.empty()||!pending.is_null();});if(stopped)break;
       if(!controls.empty()){next=std::move(controls.front());controls.pop_front();}else{next=std::move(pending);pending=nullptr;}
     }
