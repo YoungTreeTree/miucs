@@ -26,3 +26,6 @@ python3 "$root/tests/plugins/zelda_replay.py"
 
 python3 "$root/tools/plugins/validate.py" "$root/plugins/yuru-camp"
 python3 "$root/tests/plugins/camp_replay.py"
+
+python3 "$root/tools/plugins/validate.py" "$root/plugins/inuyasha"
+python3 "$root/tests/plugins/inuyasha_replay.py"

@@ -82,6 +82,10 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Yuru Camp lifecycle validation failed' }
           python tests/plugins/camp_replay.py
           if ($LASTEXITCODE -ne 0) { throw 'Yuru Camp input replay failed' }
+          python tools/plugins/validate.py plugins/inuyasha
+          if ($LASTEXITCODE -ne 0) { throw 'Inuyasha lifecycle validation failed' }
+          python tests/plugins/inuyasha_replay.py
+          if ($LASTEXITCODE -ne 0) { throw 'Inuyasha input replay failed' }
           python tools/plugins/preview.py
           if ($LASTEXITCODE -ne 0) { throw 'CPU preview failed' }
           build/plugins/Release/plugin-surface-probe.exe build/plugins/Release/miucs-plugin-worker.exe plugins build/plugin-fixture.json
