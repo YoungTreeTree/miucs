@@ -12,7 +12,7 @@ int main(int argc,char**argv){
   try {
     auto post=[&](const miucs::Json& m){auto b=miucs::encode(m);if(!miucs_plugin_post(plugin,b.data(),b.size()))throw miucs::Error("post failed");};
     auto fixture=miucs::Json::parse(miucs::readFile(argv[3],32*1024*1024));
-    for(auto id:{"pixel-keyboard","staff-note","pencil-flight","niulai-keyboard","muffin-puppies"}) {
+    for(auto id:{"pixel-keyboard","staff-note","pencil-flight","niulai-keyboard","muffin-puppies","heiji-kazuha"}) {
       auto folder=(std::filesystem::path(argv[2])/id).string();
       plugin=miucs_plugin_open(argv[1],folder.c_str());if(!plugin)throw miucs::Error("Cannot open worker");
       post({{"op","activate"},{"value",{{"id",id},{"width",800},{"height",460},{"scale",1}}}});

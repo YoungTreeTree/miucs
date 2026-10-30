@@ -27,6 +27,8 @@ jobs:
           MIUCS_FORCE_CPU=1 build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/niulai-keyboard build/plugin-fixture.json
           build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/muffin-puppies build/plugin-fixture.json
           MIUCS_FORCE_CPU=1 build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/muffin-puppies build/plugin-fixture.json
+          build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/heiji-kazuha build/plugin-fixture.json
+          MIUCS_FORCE_CPU=1 build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/heiji-kazuha build/plugin-fixture.json
           build/plugins/plugin-benchmark plugins build/plugin-fixture.json > build/plugin-benchmark.json
       - uses: actions/upload-artifact@v4
         if: always()
@@ -68,6 +70,10 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Muffin lifecycle validation failed' }
           python tests/plugins/muffin_replay.py
           if ($LASTEXITCODE -ne 0) { throw 'Muffin input replay failed' }
+          python tools/plugins/validate.py plugins/heiji-kazuha
+          if ($LASTEXITCODE -ne 0) { throw 'Heiji Kazuha lifecycle validation failed' }
+          python tests/plugins/heiji_kazuha_replay.py
+          if ($LASTEXITCODE -ne 0) { throw 'Heiji Kazuha input replay failed' }
           python tools/plugins/preview.py
           if ($LASTEXITCODE -ne 0) { throw 'CPU preview failed' }
           build/plugins/Release/plugin-surface-probe.exe build/plugins/Release/miucs-plugin-worker.exe plugins build/plugin-fixture.json

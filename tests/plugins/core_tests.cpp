@@ -19,12 +19,12 @@ int main(int argc,char**argv){try{
   Json bad=resync;bad["nodes"][0]["parent"]=bad["nodes"][0]["id"];auto previous=scene.nodes;
   rejects([&]{scene.apply(bad);},"cycle denied");check(previous==scene.nodes,"atomic scene application");
   rejects([&]{validateNode({{"id","x"},{"type","path"},{"path",{{"C",1,2}}}});},"path arity");
-  auto list=catalog({root.parent_path()});check(list["errors"].empty()&&list["plugins"].size()==5,"five independent built-in plugins");
+  auto list=catalog({root.parent_path()});check(list["errors"].empty()&&list["plugins"].size()==6,"six independent built-in plugins");
   for(auto& item:list["plugins"]) {
     auto id=item["id"].get<std::string>();Runtime single(root.parent_path()/id);
     check(single.scene.nodes.contains(id),"plugin owns its named output");
     check(!single.scene.nodes.contains("tray")&&!single.scene.nodes.contains("tray-head"),"application tray is not a plugin output");
-    for(auto other:{"pencil-flight","staff-note","pixel-keyboard","niulai-keyboard","muffin-puppies"})
+    for(auto other:{"pencil-flight","staff-note","pixel-keyboard","niulai-keyboard","muffin-puppies","heiji-kazuha"})
       if(id!=other)check(!single.scene.nodes.contains(other),"plugin creates only its own UI");
   }
   auto tmp=std::filesystem::temp_directory_path()/std::filesystem::path("miucs-plugin-tests-"+std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));std::filesystem::create_directory(tmp);

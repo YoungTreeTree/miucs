@@ -39,7 +39,7 @@ import AppKit
         precondition(api.pixels?(surface,16,16,&pixels,pixels.count)==1 && pixels[0]==255 && pixels[2]==0,"Replacement scene must render blue")
         // Catalog scans do not create workers; each selection starts only its own package.
         let host=PluginHost.shared, registry=PluginVisualizations.registry()
-        let ids=Set(["pencil-flight","staff-note","pixel-keyboard"])
+        let ids=Set(["pencil-flight","staff-note","pixel-keyboard","niulai-keyboard","muffin-puppies","heiji-kazuha"])
         precondition(ids.isSubset(of:Set(registry.descriptors.map(\.id))))
         precondition(host.packages.isEmpty,"Tray must not eagerly launch a plugin")
         let keys=KeyboardChannel()
