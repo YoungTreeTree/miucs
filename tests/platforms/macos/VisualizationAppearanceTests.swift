@@ -79,7 +79,7 @@ enum VisualizationAppearanceTests {
         let channel = FeatureChannel(now: { 0 }), generation = UUID()
         channel.reset(sessionID: generation, state: .running)
         let registry = VisualizationRegistry()
-        for id in ["pixel-keyboard", "muffin-puppies", "niulai-keyboard", "heiji-kazuha", "zelda-guardian"] {
+        for id in ["pixel-keyboard", "muffin-puppies", "niulai-keyboard", "heiji-kazuha", "zelda-guardian", "yuru-camp"] {
             registry.register(VisualizationDescriptor(id: id, name: id)) { InkProbe(id: id) }
         }
         let panel = VisualizerPanel(source: channel, registry: registry, selectedID: "pixel-keyboard", preferences: preferences, persistsFrame: false)
@@ -89,12 +89,12 @@ enum VisualizationAppearanceTests {
         let host = panel.visualizationHost
         var opacitySurvivesSwitch = true
         store.setTransparency(70)
-        for id in ["muffin-puppies", "niulai-keyboard", "heiji-kazuha", "zelda-guardian", "pixel-keyboard"] {
+        for id in ["muffin-puppies", "niulai-keyboard", "heiji-kazuha", "zelda-guardian", "yuru-camp", "pixel-keyboard"] {
             _ = panel.selectVisualization(id: id)
             opacitySurvivesSwitch = opacitySurvivesSwitch && abs(Double(host.activeView!.alphaValue) - 0.3) < 0.001 &&
                 host.subviews.filter { $0 !== host.activeView }.allSatisfy { $0.alphaValue == 1 }
         }
-        check("All five modes inherit transparency while adjustment overlays remain opaque", opacitySurvivesSwitch && panel.alphaValue == 1)
+        check("All six modes inherit transparency while adjustment overlays remain opaque", opacitySurvivesSwitch && panel.alphaValue == 1)
         host.controller.resume()
         let session = host.controller.current as! InkProbe, initialFrame = panel.frame
         store.setTransparency(50)

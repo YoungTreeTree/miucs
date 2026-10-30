@@ -1,0 +1,9 @@
+{
+  "id": "yuru-camp",
+  "name": "摇曳露营",
+  "version": "1.0.0",
+  "api": 1,
+  "entry": "main.lua",
+  "inputs": ["audio", "keyboard"],
+  "layout": {"width": 800, "height": 460, "minimumWidth": 80, "maximumWidth": 1600}
+}

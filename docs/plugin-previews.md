@@ -9,7 +9,10 @@ GIF 使用同一组「音乐与打字」合成输入，正式 Lua worker 与 Ski
 | 牛来 | [查看](../plugins/niulai-keyboard/README.md) |
 | 平次与和叶 | [查看](../plugins/heiji-kazuha/README.md) |
 | 塞尔达 | [查看](../plugins/zelda-guardian/README.md) |
+| 摇曳露营 | [查看](../plugins/yuru-camp/README.md) |
 
 导出于 2026-10-30，随机种子为 42。四个插件使用相同公共输入；尺寸、帧数和时长见[导出清单](assets/plugins/manifest.json)。重新生成的方法见[插件工作台](plugin-lab.md#所有皮肤的统一输入-gif)。
 
 塞尔达提供[独立的 9 秒动画预览](concepts/zelda-guardian/runtime-preview.gif)，依次演示静止、仅键盘、仅音乐、同时输入和停止；未计入上述四插件的统一输入导出清单。
+
+摇曳露营提供[独立的 12 秒动画预览](concepts/yuru-camp/runtime-preview.gif)，依次展示抚子吃面、凛轻啜和节拍篝火；同样使用合成输入与实际渲染器。
