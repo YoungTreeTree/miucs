@@ -52,12 +52,13 @@ import AppKit
         print("PASS CPU surface disposal: 10 reload cycles retain no layers or frame contents")
         // Catalog scans do not create workers; each selection starts only its own package.
         let host=PluginHost.shared, registry=PluginVisualizations.registry()
-        let ids=Set(["pixel-keyboard","muffin-puppies","niulai-keyboard","heiji-kazuha","zelda-guardian","yuru-camp"])
+        let ids=Set(["pixel-keyboard","muffin-puppies","niulai-keyboard","heiji-kazuha","zelda-guardian","yuru-camp","inuyasha"])
         precondition(ids.isSubset(of:Set(registry.descriptors.map(\.id))))
         precondition(host.packages.isEmpty,"Tray must not eagerly launch a plugin")
         precondition(registry.descriptors.prefix(4).map(\.id)==["pixel-keyboard","muffin-puppies","niulai-keyboard","heiji-kazuha"])
         precondition(registry.descriptor(id:"pixel-keyboard")?.name=="奶牛猫")
         precondition(registry.descriptor(id:"yuru-camp")?.name=="摇曳露营")
+        precondition(registry.descriptor(id:"inuyasha")?.name=="犬夜叉")
         let suite="MiucsCuratedPlugins-"+UUID().uuidString
         let preferences=UserDefaults(suiteName:suite)!
         defer { preferences.removePersistentDomain(forName:suite) }

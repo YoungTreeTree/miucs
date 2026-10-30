@@ -17,7 +17,7 @@ try:
         elapsed=time.monotonic()-start
         # Switch isolated plugins every ten seconds; also replace the worker every five minutes.
         gen=int(elapsed//300)
-        mode=['pixel-keyboard','muffin-puppies','niulai-keyboard','heiji-kazuha','zelda-guardian','yuru-camp'][int(elapsed//10)%6]
+        mode=['pixel-keyboard','muffin-puppies','niulai-keyboard','heiji-kazuha','zelda-guardian','yuru-camp','inuyasha'][int(elapsed//10)%7]
         if gen!=generation or mode!=active:
             if surface:b.lib.miucs_surface_destroy(surface);surface=None
             if b:b.close()

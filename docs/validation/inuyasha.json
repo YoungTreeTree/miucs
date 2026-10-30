@@ -1,0 +1,17 @@
+{
+  "checks": 481,
+  "nodeCount": 521,
+  "drawnFrames": {
+    "inuyasha": 16,
+    "kagome": 12,
+    "shippo": 8,
+    "dust": 4
+  },
+  "scriptP95Ms": 0.032375,
+  "scriptMeanMs": 0.018350857723577235,
+  "fixedActorAnchors": true,
+  "constantPixelScale": true,
+  "noDialogueText": true,
+  "inputs": "synthetic, production Lua worker",
+  "nativeDesktopAcceptance": false
+}
