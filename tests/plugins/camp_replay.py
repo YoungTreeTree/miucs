@@ -174,4 +174,3 @@ try:
     (ROOT/'docs/validation/yuru-camp.json').write_text(json.dumps(report,indent=2)+'\n')
     print(json.dumps(report,indent=2))
 finally: h.close()
-
