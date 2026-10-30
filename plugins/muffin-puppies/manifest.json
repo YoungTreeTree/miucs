@@ -1,0 +1,9 @@
+{
+  "id": "muffin-puppies",
+  "name": "麦芬与线条小狗",
+  "version": "1.1.0",
+  "api": 1,
+  "entry": "main.lua",
+  "inputs": ["audio", "keyboard"],
+  "layout": {"width": 800, "height": 460, "minimumWidth": 80, "maximumWidth": 1600}
+}

@@ -84,3 +84,5 @@ open dist/Miucs.app
 - [外观设置](docs/appearance.md) · [验证记录](docs/validation/README.md)
 
 插件版另带 **「牛来」**，详见[牛来说明](plugins/niulai-keyboard/README.md)。
+
+插件版另带 **「麦芬与线条小狗」**，详见[麦芬皮肤说明](plugins/muffin-puppies/README.md)。皮肤采用断续手绘键盘，两只小狗随按键播放模型绘制的跳跃帧，麦芬随音乐节拍吹泡泡。
