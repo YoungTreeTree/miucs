@@ -265,3 +265,7 @@ Lua 不能直接访问网络、文件系统、原始 PCM 或输入文字。独�
 - [像素音乐键盘](../plugins/pixel-keyboard/)：物理按键、图集和像素动画。
 
 修改宿主或运行时的开发者可继续阅读[贡献指南](../CONTRIBUTING.md)和[插件迁移与验收记录](plugin-migration.md)。
+
+## 虚拟运行与测试环境
+
+运行 `python3 tools/plugins/lab.py serve --plugin plugins/staff-note` 打开本地插件实验台，可模拟音频、键盘、重连、权限和窗口生命周期，固定种子回放并导出截图与诊断。完整用法、场景格式及覆盖边界见 [插件实验台](plugin-lab.md)。

@@ -18,6 +18,8 @@ bool dimensions(uint32_t w,uint32_t h){return w>0&&h>0&&w<=8192&&h<=8192&&uint64
 extern "C" {
 uint32_t miucs_plugin_api_version(){return 1;}
 void* miucs_plugin_open(const char* worker,const char* directory){try{openError.clear();return new miucs::Client(worker,directory);}catch(const std::exception& e){openError=e.what();return nullptr;}}
+void* miucs_plugin_open_seeded(const char* worker,const char* directory,uint64_t seed){try{openError.clear();return new miucs::Client(worker,directory,seed);}catch(const std::exception& e){openError=e.what();return nullptr;}}
+size_t miucs_plugin_inspect(void* h,char* out,size_t cap){try{if(!h)return copy("{}",out,cap);return copy(static_cast<miucs::Client*>(h)->inspect().dump(),out,cap);}catch(const std::exception& e){openError=e.what();return 0;}}
 int miucs_plugin_post(void* h,const uint8_t* data,size_t n){try{if(!h)return 0;static_cast<miucs::Client*>(h)->post(miucs::decode(data,n));return 1;}catch(const std::exception& e){openError=e.what();return 0;}}
 int miucs_plugin_ready(void* h){return h&&static_cast<miucs::Client*>(h)->isReady();}
 uint64_t miucs_plugin_completed(void* h){return h?static_cast<miucs::Client*>(h)->completedCount():0;}

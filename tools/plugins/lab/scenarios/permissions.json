@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "name": "权限与不可用信号",
+  "seed": 42,
+  "fps": 60,
+  "duration": 12,
+  "initial": {
+    "audio": {
+      "state": "permissionRequired"
+    },
+    "keyboard": {
+      "state": "permissionRequired"
+    }
+  },
+  "events": [
+    {
+      "at": 2,
+      "type": "audio",
+      "value": {
+        "state": "connecting"
+      }
+    },
+    {
+      "at": 3,
+      "type": "audio",
+      "value": {
+        "state": "running"
+      }
+    },
+    {
+      "at": 4,
+      "type": "keyboard",
+      "value": {
+        "state": "running"
+      }
+    },
+    {
+      "at": 7,
+      "type": "audio",
+      "value": {
+        "state": "userStopped"
+      }
+    },
+    {
+      "at": 9,
+      "type": "keyboard",
+      "value": {
+        "state": "stopped"
+      }
+    }
+  ]
+}

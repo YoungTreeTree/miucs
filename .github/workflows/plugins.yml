@@ -15,6 +15,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - run: python -m pip install -r tools/plugins/requirements.txt
       - run: sh scripts/build-plugins.sh
       - run: sh scripts/test-plugins.sh
       - run: zsh scripts/test-plugin-macos.sh
@@ -40,6 +41,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - run: python -m pip install -r tools/plugins/requirements.txt
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
@@ -48,6 +50,10 @@ jobs:
       - shell: pwsh
         run: |
           python tools/plugins/fixture.py
+          python tests/plugins/gif_test.py
+          if ($LASTEXITCODE -ne 0) { throw 'GIF export tests failed' }
+          python tests/plugins/lab_test.py
+          if ($LASTEXITCODE -ne 0) { throw 'Plugin lab tests failed' }
           python tests/plugins/transport_test.py
           if ($LASTEXITCODE -ne 0) { throw 'Transport tests failed' }
           python tools/plugins/validate.py tools/plugins/template

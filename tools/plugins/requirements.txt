@@ -1,0 +1,2 @@
+# Optional for animated GIF export; the basic plugin lab uses only the standard library.
+Pillow>=10.4,<13

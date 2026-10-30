@@ -15,7 +15,7 @@ static int64_t nowMs(){return std::chrono::duration_cast<std::chrono::millisecon
 struct Client::Process {
 #ifdef _WIN32
   HANDLE input=nullptr,output=nullptr,child=nullptr;
-  Process(const std::string& worker,const std::string& root) {
+  Process(const std::string& worker,const std::string& root,uint64_t seed) {
     SECURITY_ATTRIBUTES sa{sizeof(sa),nullptr,TRUE};HANDLE inRead=nullptr,outWrite=nullptr;
     if(!CreatePipe(&inRead,&input,&sa,0))throw Error("Cannot create worker input pipe");
     if(!CreatePipe(&output,&outWrite,&sa,0)){CloseHandle(inRead);CloseHandle(input);input=nullptr;throw Error("Cannot create worker output pipe");}
@@ -23,7 +23,7 @@ struct Client::Process {
     STARTUPINFOW si{};si.cb=sizeof(si);si.dwFlags=STARTF_USESTDHANDLES;si.hStdInput=inRead;si.hStdOutput=outWrite;si.hStdError=GetStdHandle(STD_ERROR_HANDLE);
     auto exe=std::filesystem::u8path(worker).wstring(),folder=std::filesystem::u8path(root).wstring();
     if(exe.find(L'"')!=exe.npos||folder.find(L'"')!=folder.npos)throw Error("Invalid worker path");
-    std::wstring command=L"\""+exe+L"\" \""+folder+L"\" --parent-pid "+std::to_wstring(GetCurrentProcessId());PROCESS_INFORMATION pi{};
+    std::wstring command=L"\""+exe+L"\" \""+folder+L"\" --parent-pid "+std::to_wstring(GetCurrentProcessId())+L" --seed "+std::to_wstring(seed);PROCESS_INFORMATION pi{};
     BOOL ok=CreateProcessW(exe.c_str(),command.data(),nullptr,nullptr,TRUE,CREATE_NO_WINDOW,nullptr,nullptr,&si,&pi);
     CloseHandle(inRead);CloseHandle(outWrite);if(!ok){CloseHandle(input);CloseHandle(output);input=output=nullptr;throw Error("Cannot start plugin worker");}child=pi.hProcess;CloseHandle(pi.hThread);
   }
@@ -33,15 +33,15 @@ struct Client::Process {
   ~Process(){kill();if(child){WaitForSingleObject(child,1000);CloseHandle(child);}if(input)CloseHandle(input);if(output)CloseHandle(output);}
 #else
   int input=-1,output=-1;pid_t child=-1;
-  Process(const std::string& worker,const std::string& root) {
+  Process(const std::string& worker,const std::string& root,uint64_t seed) {
     int in[2],out[2];if(pipe(in)!=0)throw Error("Cannot create input pipe");
     if(pipe(out)!=0){close(in[0]);close(in[1]);throw Error("Cannot create output pipe");}
     for(int fd:{in[0],in[1],out[0],out[1]})fcntl(fd,F_SETFD,FD_CLOEXEC);
     posix_spawn_file_actions_t actions;posix_spawn_file_actions_init(&actions);
     posix_spawn_file_actions_adddup2(&actions,in[0],STDIN_FILENO);posix_spawn_file_actions_adddup2(&actions,out[1],STDOUT_FILENO);
     for(int fd:{in[0],in[1],out[0],out[1]})posix_spawn_file_actions_addclose(&actions,fd);
-    std::string parent=std::to_string(getpid());
-    char* args[]={const_cast<char*>(worker.c_str()),const_cast<char*>(root.c_str()),const_cast<char*>("--parent-pid"),parent.data(),nullptr};
+    std::string parent=std::to_string(getpid()),seedText=std::to_string(seed);
+    char* args[]={const_cast<char*>(worker.c_str()),const_cast<char*>(root.c_str()),const_cast<char*>("--parent-pid"),parent.data(),const_cast<char*>("--seed"),seedText.data(),nullptr};
     int code=posix_spawn(&child,worker.c_str(),&actions,nullptr,args,environ);posix_spawn_file_actions_destroy(&actions);
     close(in[0]);close(out[1]);if(code){close(in[1]);close(out[0]);throw Error("Cannot start plugin worker");}
     input=in[1];output=out[0];
@@ -60,8 +60,8 @@ struct Client::Process {
   void send(const Json& value){auto b=encode(value);uint32_t n=uint32_t(b.size());uint8_t h[]={uint8_t(n),uint8_t(n>>8),uint8_t(n>>16),uint8_t(n>>24)};writeAll(h,4);writeAll(b.data(),b.size());}
   void writeAll(const void* p,size_t n){auto* ptr=static_cast<const uint8_t*>(p);while(n){size_t k=write(ptr,n);if(!k)throw Error("Plugin worker disconnected");ptr+=k;n-=k;}}
 };
-Client::Client(const std::string& worker,const std::string& root):directory(std::filesystem::canonical(std::filesystem::u8path(root))) {
-  manifest(directory);process=std::make_unique<Process>(worker,root);expires=nowMs()+1500;
+Client::Client(const std::string& worker,const std::string& root,uint64_t seed):directory(std::filesystem::canonical(std::filesystem::u8path(root))) {
+  manifest(directory);process=std::make_unique<Process>(worker,root,seed);expires=nowMs()+1500;
   io=std::thread([this]{run();});
   watchdog=std::thread([this]{while(!stopped){int64_t limit=expires;if(limit&&nowMs()>limit){fail("Plugin worker exceeded deadline");process->kill();break;}std::this_thread::sleep_for(std::chrono::milliseconds(10));}});
 }
@@ -73,6 +73,11 @@ void Client::shutdown(){
 void Client::fail(const std::string& message){std::lock_guard lock(mutex);failure=message;ready=false;stopped=true;wake.notify_all();}
 void Client::rejectRender(const std::string& message){fail(message);process->kill();}
 std::string Client::error(){std::lock_guard lock(mutex);return failure;}
+Json Client::inspect(){
+  std::lock_guard lock(mutex);Json nodes=Json::array();
+  for(auto& [id,node]:latest.nodes)nodes.push_back(*node);
+  return {{"version",latest.version},{"nodes",std::move(nodes)},{"updateMs",updateMs},{"luaBytes",luaBytes},{"sceneBytes",latest.bytes},{"completed",completed.load()},{"error",failure}};
+}
 bool Client::snapshot(Scene& into){std::unique_lock lock(mutex,std::try_to_lock);if(!lock||!ready||into.version==latest.version)return false;into=latest;return true;}
 static void mergeEvents(Json& next,const Json& old,const char* source,const char* field,size_t limit) {
   if(!next.contains(source)||!old.contains(source))return;
@@ -115,7 +120,7 @@ void Client::run(){try{
     current.apply(packet);
     if(disposing){++completed;stopped=true;ready=false;wake.notify_all();break;}
     Json next;
-    {std::unique_lock lock(mutex);latest=current;ready=true;++completed;
+    {std::unique_lock lock(mutex);latest=current;updateMs=response.value("updateMs",0.0);luaBytes=response.value("luaBytes",size_t(0));ready=true;++completed;
       wake.wait(lock,[this]{return stopped||!controls.empty()||!pending.is_null();});if(stopped)break;
       if(!controls.empty()){next=std::move(controls.front());controls.pop_front();}else{next=std::move(pending);pending=nullptr;}
     }

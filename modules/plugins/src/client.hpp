@@ -15,6 +15,8 @@ class Client {
   std::deque<Json> controls;
   Json pending;
   Scene latest;
+  double updateMs=0;
+  size_t luaBytes=0;
   std::string failure;
   std::atomic<bool> stopped{false}, ready{false};
   std::atomic<int64_t> expires{0};
@@ -23,7 +25,7 @@ class Client {
   void fail(const std::string&);
 public:
   const std::filesystem::path directory;
-  Client(const std::string& worker,const std::string& root);
+  Client(const std::string& worker,const std::string& root,uint64_t seed=1);
   ~Client();
   void post(Json);
   void shutdown();
@@ -31,6 +33,7 @@ public:
   bool isReady()const{return ready;}
   uint64_t completedCount()const{return completed;}
   std::string error();
+  Json inspect();
   void rejectRender(const std::string&);
 };
 }
