@@ -1,5 +1,9 @@
 # 五线谱音符
 
+![五线谱音符：工作台合成音乐与打字输入预览](assets/plugins/staff-note.gif)
+
+工作台使用统一合成输入生成的 12 秒循环 GIF，无声。查看[全部插件预览](plugin-previews.md)。
+
 当前可视化由 `plugins/staff-note/` 中的 Lua 场景和 Skia 渲染实现。下文原生绘制性能与验收数据为迁移前的历史记录，旧工具已移除。当前回归入口为 `sh scripts/test-plugins.sh`、`zsh scripts/test-plugin-macos.sh` 和 `python3 tools/plugins/preview.py`。
 
 `staff-note` 是第二个内置可视化模块，菜单名为「五线谱音符」。它消费进程内特征通道，音高、起音、音量、节拍和键盘输入同时驱动画面。Windows 使用同一 Lua 插件，平台状态见 [Windows 说明](../apps/windows/README.md)。

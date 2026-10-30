@@ -1,4 +1,8 @@
 # 牛来
+
+![牛来：工作台合成音乐与打字输入预览](../../docs/assets/plugins/niulai-keyboard.gif)
+
+工作台使用统一合成输入生成的 12 秒循环 GIF，无声。查看[全部插件预览](../../docs/plugin-previews.md)。
 Miucs API v1 独立皮肤，同一包适用于启用 Lua 插件运行库的 macOS / Windows；不覆盖内置 pixel-keyboard。
 
 ## 启用 / 热加载
