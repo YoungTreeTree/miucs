@@ -1,0 +1,117 @@
+{
+  "version": 1,
+  "name": "频谱与音高边界",
+  "seed": 42,
+  "fps": 60,
+  "duration": 12,
+  "initial": {
+    "keyboard": {
+      "rate": 0
+    }
+  },
+  "events": [
+    {
+      "at": 1,
+      "type": "audio",
+      "value": {
+        "pitchHz": 110,
+        "pitchSweep": 0,
+        "lowEnergy": 0.5,
+        "midEnergy": 0.01,
+        "highEnergy": 0.001,
+        "bands": [
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1
+        ]
+      }
+    },
+    {
+      "at": 3,
+      "type": "audio",
+      "value": {
+        "pitchHz": 1760,
+        "highEnergy": 0.6,
+        "lowEnergy": 0.001,
+        "flatness": 0.8,
+        "centroidHz": 8000,
+        "bandwidthHz": 12000,
+        "bands": [
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8
+        ]
+      }
+    },
+    {
+      "at": 5,
+      "type": "audio",
+      "value": {
+        "melodic": false,
+        "confidence": 0.1
+      }
+    },
+    {
+      "at": 7,
+      "type": "audio",
+      "value": {
+        "melodic": true,
+        "confidence": 0.95,
+        "sampleRate": 44100,
+        "channelCount": 1
+      }
+    },
+    {
+      "at": 9,
+      "type": "onset",
+      "value": 1
+    },
+    {
+      "at": 10,
+      "type": "beat",
+      "value": 1
+    }
+  ]
+}

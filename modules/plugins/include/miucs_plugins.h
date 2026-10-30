@@ -17,6 +17,10 @@ extern "C" {
    Native surface is CAMetalLayer* on macOS and HWND on Windows. NULL enables CPU-only export. */
 MIUCS_API uint32_t miucs_plugin_api_version(void);
 MIUCS_API void* miucs_plugin_open(const char* worker, const char* directory);
+/* Optional development interfaces: fixed seed and an on-demand JSON diagnostic snapshot.
+   No inspection work occurs on the production frame path unless explicitly requested. */
+MIUCS_API void* miucs_plugin_open_seeded(const char* worker, const char* directory, uint64_t seed);
+MIUCS_API size_t miucs_plugin_inspect(void*, char* destination, size_t capacity);
 MIUCS_API int miucs_plugin_post(void*, const uint8_t* messagepack, size_t length);
 MIUCS_API int miucs_plugin_ready(void*);
 MIUCS_API uint64_t miucs_plugin_completed(void*);

@@ -11,3 +11,6 @@ python3 "$root/tools/plugins/validate.py" "$root/tools/plugins/template"
 
 python3 "$root/tools/plugins/validate.py" "$root/plugins/niulai-keyboard"
 python3 "$root/tests/plugins/niulai_replay.py"
+
+python3 "$root/tests/plugins/lab_test.py"
+python3 "$root/tests/plugins/gif_test.py"

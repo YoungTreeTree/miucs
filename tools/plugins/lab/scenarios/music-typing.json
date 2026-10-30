@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "name": "音乐与打字",
+  "seed": 42,
+  "fps": 60,
+  "duration": 12,
+  "initial": {},
+  "events": [
+    {
+      "at": 4,
+      "type": "audio",
+      "value": {
+        "bpm": 90,
+        "pitchHz": 220,
+        "rms": 0.18
+      }
+    },
+    {
+      "at": 7,
+      "type": "keyboard",
+      "value": {
+        "rate": 8
+      }
+    },
+    {
+      "at": 10,
+      "type": "keyboard",
+      "value": {
+        "rate": 0
+      }
+    }
+  ]
+}
