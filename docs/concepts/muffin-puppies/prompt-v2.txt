@@ -1,0 +1,28 @@
+Tool: built-in image_gen
+Purpose: character correction concept; not official art or production sprite sheet.
+References:
+https://www.taptap.cn/moment/533956514671493628
+https://m.ali213.net/news/240428/211813.html
+https://gnn.gamer.com.tw/detail.php?sn=260033
+
+Use case: identity-preserve / precise-object-edit.
+Edit image 1, a previously generated Miucs keyboard skin concept board. The user says ALL THREE character identities are wrong. Correct every occurrence of these characters, both the large UI and bottom action vignettes, faithfully using the actual game art in images 2, 3, 4. Preserve the keyboard/device layout, mint colors, off-white background, dimensions, action mapping and bubble wand mechanic of image 1. Change subtitle to “键盘互动皮肤 · 概念 02”.
+
+REFERENCE PRIORITY:
+Image 1: EDIT TARGET, layout only; its animal designs are WRONG and must be replaced, not used for identity.
+Image 2: official collaboration promotional art, strongest reference for both Line Puppy characters. Carefully match facial geometry, elongated simple body proportions, outlines, ears, tiny eyes, muzzle and nose. Ignore the human characters and scenery.
+Image 3: Muffin original character introduction sheet. Strongest reference for Muffin's head construction, hood, face, cream cheek whisker silhouette, hair tuft, pendant, body, tail and attitude.
+Image 4: official collaboration calendar. At the BOTTOM it depicts all three together in simplified line-art. Use those simplified official silhouettes to translate Muffin consistently into the same graphic world as dogs. Do not copy calendar text or grass.
+
+CORRECT DOG IDENTITIES:
+Draw white Maltese as in image 2: longer rounded rectangular integrated head/body, tiny widely separated black dot eyes, distinctive small black vertical nose stem joining the wide double-curved mouth. Ears are SMALL high-set irregular lateral rounded tabs, not long dangling spaniel ears. White outline formed by a few intermittent broken black irregular strokes, NOT continuous scalloped fluffy sheep/cloud perimeter. Slender simple long soft body, little rounded arms, wide-separated simple stubby legs. Body length matters. No gigantic head above a tiny plush body. No lavender fur shading or curly wool.
+Golden retriever: image 2's smooth, slightly oval round head, tiny black dot eyes and same distinct nose/mouth, small soft lateral drooping ears, plain uniform light biscuit beige fill, thin coral red collar, elongated soft simple body with little arms and legs. No detailed retriever anatomy, doggy muzzle patches, furry scallops or plush toy rendering.
+Their expression is the recognizable minimal Maltese IP face with plenty of blank space around tiny facial marks. In the main panel Maltese is airborne and golden retriever is standing upright on TWO legs, arms out. Both are bipedal, not four-legged. Match references closely rather than inventing cute substitutes.
+
+CORRECT MUFFIN IDENTITY:
+Muffin is NOT a generic orange cat with natural pointy ears and an ordinary scarf. Reproduce the oversized rust/coral RED FABRIC HOOD with two very large triangular ear-shaped lobes integrated with red hood sides framing the face. The ear lobes are RED, not orange cat ears with pink insides. Golden yellow forehead with distinct large upward swept flame-shaped tuft. Cream muzzle with TWO LONG POINTED CHEEK WHISKER TUFTS extending laterally on each side, extremely recognizable wide silhouette. Tiny pale eyebrows. Warm orange body, cream oval belly, red cape/hood fastened at neck, large gold old-fashioned KEY hanging from dark loop at chest. Slender yellow tail with pale/white tip. Body is small under the huge broad hooded head. Main Muffin at right sits and blows soap bubbles using a tiny ring wand held in a paw, preserve all distinctive hood and cheek details in this pose. Can use a restrained simplified half-lidded knowing eye shape inspired by image 3, not generic smiling cat face. Every lower Muffin vignette must have exactly these same features too.
+Use flat simple official collaboration-like ink drawing, not 3D realism. One small bubble at wand and a few drifting pastel bubbles. No giant cloud of bubbles.
+
+Layout unchanged from image 1: three in shallow upper display, physical keyboard below, action vignettes bottom. Correct the black-and-white cat paw accidentally left on left keys to a small ALL WHITE Maltese paw; right key paw is beige.
+Keep labels: “麦芬 × 线条小狗”; “按键起跳”; “轻轻落地”; “节拍吹泡泡”; footer “左侧按键 → 马尔济斯　右侧按键 → 小金毛　音乐节拍 → 麦芬”.
+No extra characters, costumes, bushes, grass, branding logos or UI. Highest priority is faithful identity to actual supplied game illustrations, not decorative polish. This is a revised fan design concept, not official game art.

@@ -62,6 +62,10 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Niulai lifecycle validation failed' }
           python tests/plugins/niulai_replay.py
           if ($LASTEXITCODE -ne 0) { throw 'Niulai input replay failed' }
+          python tools/plugins/validate.py plugins/muffin-puppies
+          if ($LASTEXITCODE -ne 0) { throw 'Muffin lifecycle validation failed' }
+          python tests/plugins/muffin_replay.py
+          if ($LASTEXITCODE -ne 0) { throw 'Muffin input replay failed' }
           python tools/plugins/preview.py
           if ($LASTEXITCODE -ne 0) { throw 'CPU preview failed' }
           build/plugins/Release/plugin-surface-probe.exe build/plugins/Release/miucs-plugin-worker.exe plugins build/plugin-fixture.json
