@@ -1,0 +1,23 @@
+Tool: built-in image_gen; transparent_background=true
+Reference: skin-concept-v1.png
+
+Use case: stylized-concept. Production sprite atlas of CAMPFIRE and TYPING MITTENS for the approved cozy Yuru Camp keyboard skin. Match reference's bold organic black contour, soft flat hand-colored cel shading, warm orange/coral and muted navy-blue. Draw NO people, keyboard, screen, scenery or text.
+
+One square transparent atlas with exactly FOUR columns and FOUR rows = SIXTEEN equal square cells. True transparent background. SMALL sprites in central 55% of each cell, HUGE transparent gutters at least 18% on all sides. Fixed scale and local anchors throughout. No grid, numbering, labels, logos, shadows outside individual cells or watermark.
+
+TOP TWO ROWS, frames1-8: one small camping campfire in a dark charcoal metal shallow bowl with crossed short legs, as seen between characters in reference. Bowl and legs EXACTLY stationary, same size and position in every frame, ground baseline at local y78%. Draw a gentle single fire flicker pulse in sequence:
+1 low quiet warm flame.
+2 flame gathers at center.
+3 center flame stretches up.
+4 bright tallest flame with one tiny close ember.
+5 flame leans gently to right, second lobe curls.
+6 flame settles and curls left.
+7 near idle smaller flame.
+8 EXACT same low quiet flame as frame1.
+Only flame shapes, orange/yellow layers and the one close ember change. No explosions, no sparks far outside cell. The low fire must remain visibly lit in idle. Dark bowl below flame must always be visible, not hidden by a huge fire.
+
+THIRD ROW, frames9-12: LEFT mitten hand ONLY, rounded CORAL RED knitted mitten, cream ribbed sleeve cuff, thumb on viewer RIGHT in ALL FOUR cells, fingers point upward, cuff at bottom. Same cuff anchor local x50%, y75%. Four press poses: relaxed hovering mitten; bends toward key; compressed mitten pressing invisible key; rebounds to relaxed stance. Mitten is one rounded finger pocket plus one thumb, NOT separated fingers.
+
+FOURTH ROW, frames13-16: RIGHT mitten hand ONLY, muted NAVY BLUE knitted mitten, cream ribbed sleeve cuff, thumb on viewer LEFT in ALL FOUR cells. Same four sequential press poses as row3. Same orientation within a row, do NOT mirror the last column. Keep sleeve cuffs identical size and place, no long arms or extra objects. No actual keycaps. Hands are near-overhead view as in reference, clear at 35px rendered size.
+
+No sprites may touch adjacent cells. Exactly eight fire poses, four coral left-mitten poses and four blue right-mitten poses.

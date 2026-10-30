@@ -23,3 +23,6 @@ python3 "$root/tests/plugins/heiji_kazuha_replay.py"
 
 python3 "$root/tools/plugins/validate.py" "$root/plugins/zelda-guardian"
 python3 "$root/tests/plugins/zelda_replay.py"
+
+python3 "$root/tools/plugins/validate.py" "$root/plugins/yuru-camp"
+python3 "$root/tests/plugins/camp_replay.py"
