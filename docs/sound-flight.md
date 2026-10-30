@@ -1,5 +1,9 @@
 # 铅笔音乐飞鸟：实现与验收
 
+![铅笔飞鸟：工作台合成音乐与打字输入预览](assets/plugins/pencil-flight.gif)
+
+工作台使用统一合成输入生成的 12 秒循环 GIF，无声。查看[全部插件预览](plugin-previews.md)。
+
 当前可视化由 `plugins/pencil-flight/` 中的 Lua 场景和 Skia 渲染实现。下文原生绘制性能与验收数据为迁移前的历史记录，旧工具已移除。当前回归入口为 `sh scripts/test-plugins.sh`、`zsh scripts/test-plugin-macos.sh` 和 `python3 tools/plugins/preview.py`。
 
 更新：2026-10-23。

@@ -1,0 +1,78 @@
+{
+  "scenario": "音乐与打字",
+  "seed": 42,
+  "seconds": 12,
+  "gifFPS": 16,
+  "maximumSide": 640,
+  "background": "#f6f4ef",
+  "inputHash": "75ae93b86000e1e07cc05877ed27560f582611b02122e08ee9f0548b03df6c45",
+  "inputFrames": 720,
+  "ignoredSwitchEvents": [],
+  "plugins": [
+    {
+      "id": "muffin-puppies",
+      "name": "麦芬与线条小狗",
+      "version": "1.0.0",
+      "file": "muffin-puppies.gif",
+      "width": 640,
+      "height": 368,
+      "samples": 192,
+      "encodedFrames": 168,
+      "durationMs": 12000,
+      "inputHash": "75ae93b86000e1e07cc05877ed27560f582611b02122e08ee9f0548b03df6c45",
+      "inputFrames": 720
+    },
+    {
+      "id": "niulai-keyboard",
+      "name": "牛来",
+      "version": "0.1.1",
+      "file": "niulai-keyboard.gif",
+      "width": 640,
+      "height": 368,
+      "samples": 192,
+      "encodedFrames": 192,
+      "durationMs": 12000,
+      "inputHash": "75ae93b86000e1e07cc05877ed27560f582611b02122e08ee9f0548b03df6c45",
+      "inputFrames": 720
+    },
+    {
+      "id": "pencil-flight",
+      "name": "铅笔飞鸟",
+      "version": "1.0.0",
+      "file": "pencil-flight.gif",
+      "width": 640,
+      "height": 416,
+      "samples": 192,
+      "encodedFrames": 192,
+      "durationMs": 12000,
+      "inputHash": "75ae93b86000e1e07cc05877ed27560f582611b02122e08ee9f0548b03df6c45",
+      "inputFrames": 720
+    },
+    {
+      "id": "pixel-keyboard",
+      "name": "像素音乐键盘",
+      "version": "1.0.0",
+      "file": "pixel-keyboard.gif",
+      "width": 640,
+      "height": 368,
+      "samples": 192,
+      "encodedFrames": 192,
+      "durationMs": 12000,
+      "inputHash": "75ae93b86000e1e07cc05877ed27560f582611b02122e08ee9f0548b03df6c45",
+      "inputFrames": 720
+    },
+    {
+      "id": "staff-note",
+      "name": "五线谱音符",
+      "version": "1.0.0",
+      "file": "staff-note.gif",
+      "width": 640,
+      "height": 128,
+      "samples": 192,
+      "encodedFrames": 192,
+      "durationMs": 12000,
+      "inputHash": "75ae93b86000e1e07cc05877ed27560f582611b02122e08ee9f0548b03df6c45",
+      "inputFrames": 720
+    }
+  ]
+}
