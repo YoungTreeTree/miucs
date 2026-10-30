@@ -1,5 +1,7 @@
 # 铅笔音乐飞鸟：实现与验收
 
+当前可视化由 `plugins/pencil-flight/` 中的 Lua 场景和 Skia 渲染实现。下文原生绘制性能与验收数据为迁移前的历史记录，旧工具已移除。当前回归入口为 `sh scripts/test-plugins.sh`、`zsh scripts/test-plugin-macos.sh` 和 `python3 tools/plugins/preview.py`。
+
 更新：2026-10-23。
 
 ## 使用
@@ -66,7 +68,7 @@
 
 `VisualizationAppearanceStore` 将全局颜色保存为一个版本化 ID；启动和切换模块时由外壳应用。颜色变化只更新 CGColor 与文字缓存，不重建飞行场景，笔迹路径缓存继续复用。首次升级按旧小鸟主色选择最近的预设，原始 `PencilPaletteStore` 配色数据保留。
 
-`zsh scripts/test-appearance.sh` 使用隔离偏好验证菜单点选、两种模式同步、颜色记忆、轨迹和事件保留，并输出合成预览至 `build/shared-color-preview/`。旧调色窗口与分部配色的测试仍由 `zsh scripts/test-palette.sh` 验证，用于旧格式兼容；正常应用入口采用轻量五色菜单。
+`zsh scripts/test-appearance.sh` 使用隔离偏好验证菜单点选、颜色记忆、迁移、会话切换与透明度。插件绘制通过 Skia 预览和运行库测试验证。
 
 ## 绘制性能
 
@@ -81,8 +83,6 @@
 本机 1000 点原生窗口的平均绘制提交时间约从 0.78 ms 降至 0.51 ms，绘制间隔的第 95 百分位从约 18.64 ms 降至 16.83 ms；恢复显示后的一秒记录到 60 帧。离屏结果中，400 点未见改善、800 点接近持平、1000 点平均绘制耗时降低约 27%，因此只将大尺寸绘制与原生提交开销的下降作为本轮测量结论。
 
 ```sh
-zsh scripts/measure-performance.sh
-zsh scripts/measure-performance.sh --cadence
 ```
 
 后一个命令短暂显示合成测试窗口，验证隐藏停止、再次显示恢复。探针不读取真实屏幕或系统声音，不改动用户保存的位置和大小。
@@ -113,12 +113,9 @@ ADC2004 评估采用分析窗中心时间、最近参考标注时间、50 音分
 
 ```sh
 zsh scripts/test-melody.sh
-zsh scripts/test-flight.sh
 zsh scripts/test-audio-recovery.sh
 zsh scripts/validate-audio.sh
 zsh build.sh
-dist/Miucs.app/Contents/MacOS/Miucs --verify-flight-window --output "$PWD/docs/validation/flight-window-tests.json"
-dist/Miucs.app/Contents/MacOS/Miucs --render-flight-preview --output "$PWD/build/flight-previews"
 ```
 
 实际播放验证会短暂播放低幅度测试音：

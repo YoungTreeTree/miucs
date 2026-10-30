@@ -32,9 +32,6 @@
 
 ```sh
 zsh scripts/test-beat-tracker.sh
-zsh scripts/test-staff-beats.sh
-zsh scripts/measure-performance.sh --staff-beats build/staff-beat-performance.json
-zsh scripts/measure-performance.sh --staff-beats-cadence build/staff-beat-cadence.json 800 15
 ```
 
 轻弧版本验证见[汇总](validation/staff-beat-arcs-validation.json)：29 项集成检查通过；主线程 CPU 更新与提交 p95 为 0.078～0.092ms。另测 [800 点透明窗口 6 秒刷新](validation/staff-beat-arcs-cadence-800.json)，平均约 60.00fps，有 2 次间隔超过 25ms，最长 26.34ms；同时运行每秒 20 次合成按键、节拍和音高缺口平滑补线。该短测不代表所有桌面负载均无掉帧。

@@ -1,8 +1,8 @@
 # Miucs for Windows · 首个原生实现（实机验收待完成）
 
-.NET 8 / WPF + Win32 + WASAPI，面向 Windows 10/11 x64；不依赖 macOS、Python、云音频服务、外部模型或第三方运行时包。ARM64 可从源码交叉发布，但当前交付与检查以 x64 为主。
+.NET 8 / WPF + Win32 + WASAPI，面向 Windows 10/11 x64；运行时不依赖 macOS、Python、云音频服务或外部模型；Lua/Skia 运行库随应用提供。ARM64 可从源码交叉发布，但当前交付与检查以 x64 为主。
 
-**实现与验证不是一回事：** 本轮在 Linux 云端实现、执行可移植测试并交叉构建 Windows 产物；没有访问用户电脑，也没有 Windows 桌面/声卡可实测。因此不是已验证稳定版。真实 WASAPI、全局键盘、透明穿透、多屏 DPI、休眠恢复仍须按 [验收表](../../docs/windows-acceptance.md) 在 Windows 上验证。WPF 画面保持音乐映射和透明铅笔风格，不承诺与 AppKit 像素级相同。
+**实现与验证不是一回事：** 本轮在 Linux 云端实现、执行可移植测试并交叉构建 Windows 产物；没有访问用户电脑，也没有 Windows 桌面/声卡可实测。因此不是已验证稳定版。真实 WASAPI、全局键盘、透明穿透、多屏 DPI、休眠恢复仍须按 [验收表](../../docs/windows-acceptance.md) 在 Windows 上验证。画面由共享 Lua/Skia 插件绘制，WPF 负责窗口和菜单。
 
 ## 直接运行
 
@@ -10,8 +10,8 @@
 
 启动后在通知区域寻找 Miucs 图标（可能位于折叠区）。默认显示飞鸟，捕获**当前默认多媒体播放设备**的系统混音，不使用麦克风。播放音乐后自动驱动画面。WASAPI 空闲设备可能没有 PCM；此时不伪造静音帧，也不因为没有音乐不断重连。
 
-- **可视化**：有插件运行库时默认加载插件菜单，包括铅笔飞鸟、五线谱音符、像素音乐键盘和牛来；没有运行库时仍使用内置画面。`--no-plugins` 可改回内置画面。切换不重启两路输入。
-- **托盘猫摇头**：所有模式统一显示同一只像素猫；与像素键盘浮窗共用猫头角度，开启键盘输入后随打字速度摇头，停下后回正。隐藏画面仍可响应，切换模式不换猫、不重启动作。可从菜单关闭托盘动画；锁屏/休眠或 Windows 关闭界面动画时保持静止。不会因此自动开启键盘监听。
+- **可视化**：仅加载插件目录中的画面；运行库缺失时显示启动错误。切换不重启两路输入。
+- **托盘猫摇头**：所有模式统一显示同一只像素猫；托盘动画独立于插件，开启键盘输入后随打字速度摇头，停下后回正。隐藏画面仍可响应，切换模式不换猫、不重启动作。可从菜单关闭托盘动画；锁屏/休眠或 Windows 关闭界面动画时保持静止。不会因此自动开启键盘监听。
 - **画面大小**：10%、80%、100%、125%、150%、200%；拖动缩放同样可以到基准宽度的 10%，并始终保留模块比例。
 - **线条颜色**：五种公共笔色，即时更新，不清空轨迹。
 - **调整位置与大小**：鼠标停留画面 3 秒后，点击中心偏上的手绘小锁解锁；拖动画面移动、右下角等比缩放，再点小锁恢复穿透。托盘入口仍可用。锁定时仅显示出来的小锁按钮接收点击，画面其余部分仍穿透；锁定时移出画面后重新计时。解锁可拖动时，小锁一直显示。
@@ -26,7 +26,7 @@
 
 ## 构建与测试
 
-安装官方 **.NET 8 SDK**。无需 Visual Studio；首次 restore 需要访问 NuGet 获取微软 Windows 目标框架/运行时包。
+安装官方 **.NET 8 SDK**、Python 3.10+、CMake 3.24+ 和 Visual Studio C++ 工具链；首次 restore 需要访问 NuGet 获取微软 Windows 目标框架/运行时包。
 
 ```powershell
 # 仓库根目录；先跑可移植测试，再生成自包含 x64 目录
@@ -45,7 +45,7 @@
 ./dist/windows/win-x64/Miucs.exe --smoke-test build/windows-smoke
 ```
 
-Linux 交叉发布：
+Linux/macOS 可交叉编译外壳以检查 C# 代码；完整分发包须在 Windows 执行上述构建脚本，打包 Lua/Skia 运行库：
 
 ```sh
 dotnet publish apps/windows/Miucs.Windows.csproj -c Release -r win-x64 --self-contained true -o dist/windows/win-x64
@@ -58,10 +58,10 @@ dotnet publish apps/windows/Miucs.Windows.csproj -c Release -r win-x64 --self-co
 - `modules/audio/platforms/windows/Core/`：纯 C# FFT、特征/混音主旋律/节拍和独立订阅通道；以 Swift 当前算法为移植依据，合成测试与独立 NumPy 对照验证。
 - `modules/audio/platforms/windows/Capture/`：WASAPI COM、PCM 格式解码、设备探测/退避恢复；不依赖可视化。
 - `modules/keyboard/platforms/windows/Core/`：物理键短事件/按住状态通道；`KeyboardCapture.cs` 负责只读全局钩子及安全桌面检查。
-- `modules/visualizations/*/platforms/windows/`：独立纯数据场景与 WPF 绘制。
+- `modules/plugins/platforms/windows/`：插件宿主和 Skia 展示；`plugins/` 保存共享 Lua 场景。
 - `apps/windows/`：入口、透明窗口、通知区菜单、同步刷新、偏好和输入组合。
 
-核心音频/键盘通道分别保留 64/128 个、250ms 内的短事件，使用独立订阅游标；重连换代并拒绝旧回调。线程与 UI 不逐帧传递 JSON。音乐和键盘独立工作，静音仍可触发星爆。显示刷新使用 WPF `CompositionTarget.Rendering`，长帧按完整时间淘汰历史。 主窗口改为 DWM 硬件合成透明像素，不再每帧用分层窗口做软件上传。插件的 GPU 画面跟随显示器刷新率，只有 CPU 回退仍限制为 30 FPS。
+核心音频/键盘通道分别保留 64/128 个、250ms 内的短事件，使用独立订阅游标；重连换代并拒绝旧回调。线程与 UI 不逐帧传递 JSON。音乐和键盘独立工作，静音仍可触发星爆。显示刷新使用 DWM 帧等待，长帧按完整时间淘汰历史。 主窗口改为 DWM 硬件合成透明像素，不再每帧用分层窗口做软件上传。插件的 GPU 画面跟随显示器刷新率，只有 CPU 回退仍限制为 30 FPS。
 
 ## 已知边界
 
@@ -72,3 +72,5 @@ dotnet publish apps/windows/Miucs.Windows.csproj -c Release -r win-x64 --self-co
 5. 真实多屏不同 DPI、通知区域恢复、驱动挂起和资源占用需要目标机器验收；不能根据交叉构建宣称全部通过。
 
 API 依据：[微软 WASAPI 回环](https://learn.microsoft.com/en-us/windows/win32/coreaudio/loopback-recording)、[WPF 窗口](https://learn.microsoft.com/dotnet/desktop/wpf/windows/)。
+
+所有构建必须包含 Lua/Skia 插件运行库和插件目录，不提供省略插件的构建选项。

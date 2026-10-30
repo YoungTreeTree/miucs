@@ -1,6 +1,6 @@
 # Plugin implementation validation — 2026-10-29
 
-Builds that include the plugin runtime now start in plugin mode. `MIUCS_PLUGINS=0` or `--no-plugins` keeps the native renderers. Plain builds without the runtime library are unchanged.
+Historical validation from 2026-10-29. As of 2026-10-30 all builds require the plugin runtime; native renderers and mode switches have been removed. The measurements below describe the implementation at the time of collection.
 
 ## Completed locally
 

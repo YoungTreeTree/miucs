@@ -20,6 +20,6 @@
     <Compile Include="../../modules/audio/platforms/windows/**/*.cs" />
     <Compile Include="../../modules/plugins/platforms/windows/**/*.cs" />
     <Compile Include="../../modules/keyboard/platforms/windows/**/*.cs" />
-    <Compile Include="../../modules/visualizations/**/platforms/windows/**/*.cs" />
+    <Compile Include="../../modules/visualizations/api/platforms/windows/**/*.cs" />
   </ItemGroup>
 </Project>

@@ -57,15 +57,6 @@ internal sealed class PluginPackage : IDisposable
 }
 internal sealed class PluginHost : IDisposable
 {
-    internal static bool Enabled {
-        get {
-            var flag = Environment.GetEnvironmentVariable("MIUCS_PLUGINS");
-            var args = Environment.GetCommandLineArgs();
-            if (flag == "0" || Array.IndexOf(args, "--no-plugins") >= 0) return false;
-            if (flag == "1" || Array.IndexOf(args, "--plugins") >= 0) return true;
-            return File.Exists(Path.Combine(AppContext.BaseDirectory, "miucs_plugins.dll"));
-        }
-    }
     internal readonly Dictionary<string,PluginInfo> Views=new();
     private readonly Dictionary<string,PluginPackage> packages=new();
     private readonly AudioChannel audioSource;

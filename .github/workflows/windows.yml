@@ -1,9 +1,9 @@
 name: Windows
 on:
   push:
-    paths: ['apps/assets/**', 'apps/windows/**', 'modules/**/platforms/windows/**', 'modules/visualizations/pixel-keyboard/assets/**', 'tests/platforms/windows/**', 'contracts/**', 'scripts/*windows*', '.github/workflows/windows.yml']
+    paths: ['apps/assets/**', 'apps/windows/**', 'modules/**/platforms/windows/**', 'plugins/**', 'tests/platforms/windows/**', 'contracts/**', 'scripts/*windows*', '.github/workflows/windows.yml']
   pull_request:
-    paths: ['apps/assets/**', 'apps/windows/**', 'modules/**/platforms/windows/**', 'modules/visualizations/pixel-keyboard/assets/**', 'tests/platforms/windows/**', 'contracts/**', 'scripts/*windows*', '.github/workflows/windows.yml']
+    paths: ['apps/assets/**', 'apps/windows/**', 'modules/**/platforms/windows/**', 'plugins/**', 'tests/platforms/windows/**', 'contracts/**', 'scripts/*windows*', '.github/workflows/windows.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -23,6 +23,9 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - shell: pwsh
         run: ./scripts/build-windows.ps1
       - shell: pwsh

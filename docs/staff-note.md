@@ -1,6 +1,8 @@
 # 五线谱音符
 
-`staff-note` 是第二个内置可视化模块，菜单名为「五线谱音符」。它消费进程内特征通道，音高、起音、音量、节拍和键盘输入同时驱动画面。Windows 仍处于规划状态，接入职责见[绘制入口](../modules/visualizations/staff-note/platforms/windows/README.md)。
+当前可视化由 `plugins/staff-note/` 中的 Lua 场景和 Skia 渲染实现。下文原生绘制性能与验收数据为迁移前的历史记录，旧工具已移除。当前回归入口为 `sh scripts/test-plugins.sh`、`zsh scripts/test-plugin-macos.sh` 和 `python3 tools/plugins/preview.py`。
+
+`staff-note` 是第二个内置可视化模块，菜单名为「五线谱音符」。它消费进程内特征通道，音高、起音、音量、节拍和键盘输入同时驱动画面。Windows 使用同一 Lua 插件，平台状态见 [Windows 说明](../apps/windows/README.md)。
 由混音主旋律驱动：歌声和主奏乐器都可被选择，保留可靠性与连续性判断。当前配对结果见[混音主旋律](predominant-mixture.md)。
 
 
@@ -91,7 +93,7 @@ macOS 的虚拟键码由 `MacStaffKeyboardLayout` 转成通用键位，不读取
 
 上一版只衔接 120ms / 5 半音以内的缺口，31 段回放仍有 270 段轨迹，未达到连续绘制的要求；该阶段记录保留在 [staff-neural-continuity.json](validation/staff-neural-continuity.json)。本次对相同缓存做 60Hz 刷新、120ms 模型延迟回放，31 段录音各保留一条连续历史线，原生矢量路径也各只有一个子路径。7884 个接受的音高点及时间戳与上一版逐点相同，变化仅在视觉连接方式。
 
-回放用持续未静音的伴奏状态隔离模型缺失，不能代替实际采集或刷新间隔测量。歌声休止和识别失败都会被视觉连线跨过；它表达连续音乐中的音高走势，不表示连线经过的每一刻都检测到了歌声，也不向音频通道发布推测音高。结果、输入和源码哈希见 [staff-session-continuity.json](validation/staff-session-continuity.json)，原生绘图对照见[上一版](validation/staff-session-continuity-before.png)和[连续版](validation/staff-session-continuity-after.png)。这属于旧人声版本的历史数据。当前 `zsh scripts/replay-staff-continuity.sh` 默认使用歌曲基准生成的 `build/pop-benchmark/current` 混音预测；也可将缓存目录作为第二个参数指定。
+回放用持续未静音的伴奏状态隔离模型缺失，不能代替实际采集或刷新间隔测量。歌声休止和识别失败都会被视觉连线跨过；它表达连续音乐中的音高走势，不表示连线经过的每一刻都检测到了歌声，也不向音频通道发布推测音高。结果、输入和源码哈希见 [staff-session-continuity.json](validation/staff-session-continuity.json)，原生绘图对照见[上一版](validation/staff-session-continuity-before.png)和[连续版](validation/staff-session-continuity-after.png)。这属于旧人声版本的历史数据。当前插件使用固定数值回放验证连续性。
 
 前一版范围与确认时间调整通过 161 项针对性检查，记录见 [staff-pitch-filter-validation.json](validation/staff-pitch-filter-validation.json)。上一版显示音区与短暂连接记录见 [staff-layout-continuity-validation.json](validation/staff-layout-continuity-validation.json)。恢复限制音域、保持有声轨迹连续并去除加线的记录见 [staff-contour-validation.json](validation/staff-contour-validation.json)。本次移除自动八度居中、固定谱位及保留轨迹连续性的回归与安装记录见 [staff-fixed-pitch-validation.json](validation/staff-fixed-pitch-validation.json)。
 
@@ -107,24 +109,17 @@ macOS 的虚拟键码由 `MacStaffKeyboardLayout` 转成通用键位，不读取
 
 音频看门狗在持续收到新 PCM 时直接判定采集健康；需要核对输出设备状态时，在后台执行 Core Audio 查询，返回后复核采集代次和取消状态。这样设备探测的同步系统调用不会阻塞界面刷新，旧探测结果也不会影响重连后的采集。
 
-原生刷新测量可指定窗口宽度和测量秒数，例如 `zsh scripts/measure-performance.sh --staff-cadence build/staff-cadence.json 640 15`。默认仍为 1000 点宽、测量 6 秒；先预热 1 秒，再记录刷新间隔、CPU 绘制或图层提交耗时、超过 25ms 的间隔及相邻两帧耗时，并验证隐藏停止刷新和恢复显示。CPU 耗时不包含 WindowServer 的实际显示耗时。测试使用合成特征和真实透明窗口，需保持桌面解锁、显示器唤醒；测量应与编译分开执行。
+历史原生刷新测量使用合成输入和透明测试窗口；相关探针已随旧绘制器移除。当前性能测量使用插件 benchmark 和 surface probe，见 [插件迁移记录](plugin-migration.md)。
 
 2026-10-23 对照测量中，640 点窗口的 15 秒刷新平均约 60fps，最长间隔从 61.29ms 降至 29.74ms；最终仍有 4 个超过 25ms 的间隔。1000 点窗口的 6 秒测量最长间隔从 49.69ms 降至 28.14ms。顺序测量受系统负载影响，不能据此保证所有场景无掉帧。各阶段数据、验证结果和对应源码哈希见 [staff-render-performance.json](validation/staff-render-performance.json)。
 
 ## 新增模块时的验证记录
 
 ```sh
-zsh scripts/test-staff-note.sh
-zsh scripts/test-staff-note-platform.sh
 zsh scripts/test-keyboard.sh
-zsh scripts/test-staff-keyboard.sh
 zsh scripts/test-contracts.sh
 zsh scripts/test-visualization-host.sh
 zsh build.sh
-dist/Miucs.app/Contents/MacOS/Miucs --render-staff-preview --output build/staff-note-preview
-zsh scripts/measure-performance.sh --staff-cadence build/staff-note-cadence.json
-zsh scripts/measure-performance.sh --staff-keyboard build/staff-keyboard-performance.json
-zsh scripts/measure-performance.sh --staff-keyboard-cadence build/staff-keyboard-cadence.json 800 15
 ```
 
 规则结果见 [staff-note-tests.json](validation/staff-note-tests.json)，原生布局与绘图结果见 [staff-note-platform-tests.json](validation/staff-note-platform-tests.json)。测试仅使用合成音高与独立偏好域。合成预览覆盖 600/800/1600 点、透明/浅色/深色背景、G2/C6 边界与待机，重复静帧按像素检查笔迹稳定。

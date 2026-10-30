@@ -14,13 +14,16 @@ final class VisualizationAppearanceStore: ObservableObject {
     private let preferences: UserDefaults
     var appearance: VisualizationAppearance { selection.appearance }
 
+    // Decode only the saved ink needed to migrate existing installations.
+    private struct PreviousPalette: Decodable { let bird: VisualizationColor }
+
     init(preferences: UserDefaults = .standard) {
         self.preferences = preferences
         transparency = min(90, max(0, preferences.object(forKey: Self.transparencyKey) as? Int ?? 0))
         if let raw = preferences.string(forKey: Self.preferencesKey) {
             selection = VisualizationInk(rawValue: raw) ?? .graphite
-        } else if let data = preferences.data(forKey: PencilPaletteStore.preferencesKey),
-                  let legacy = try? JSONDecoder().decode(PencilPalette.self, from: data) {
+        } else if let data = preferences.data(forKey: "MiucsPencilPalette.v1"),
+                  let legacy = try? JSONDecoder().decode(PreviousPalette.self, from: data) {
             selection = VisualizationInk.nearest(to: legacy.bird)
         } else { selection = .graphite }
     }

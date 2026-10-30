@@ -5,11 +5,11 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Miucs.Audio;
 using Miucs.Keyboard;
-using Miucs.Visualizations;
+using Miucs.Plugins;
 
 namespace Miucs.Windows;
 
-/// <summary>Native WPF rendering and isolated hover-window tests. Synthetic data only; never starts capture or changes user preferences.</summary>
+/// <summary>Plugin rendering and isolated hover-window tests. Synthetic data only; never starts capture or changes user preferences.</summary>
 internal static class WindowsSmokeTests
 {
     public static void Run(string output)
@@ -17,58 +17,41 @@ internal static class WindowsSmokeTests
         Directory.CreateDirectory(output);
         VerifyLockGlyph(output);
         VerifyHoverLockWindow();
-        VerifyStaffTraceGeometry();
-        VerifyStaffBeatRegion(output);
         VerifyTrayCat(output);
-        foreach (var factory in new Func<VisualizationView>[] { () => new PencilFlightView(), () => new StaffNoteView(), () => new PixelKeyboardView() })
+        VerifyPluginRendering();
+        File.WriteAllText(Path.Combine(output, "result.json"), "{\"pluginSurface\":\"passed\",\"realLoopback\":\"not-run\",\"realKeyboard\":\"not-run\",\"syntheticHoverWindow\":\"passed\"}\n");
+    }
+    private static void VerifyPluginRendering()
+    {
+        using var host = new PluginHost(new AudioChannel(), new KeyboardChannel());
+        foreach (string id in new[] { "pencil-flight", "staff-note", "pixel-keyboard" })
         {
-            using var view = factory();
-            var audio = new AudioChannel(); var keyboard = new KeyboardChannel();
-            Guid audioSession = audio.BeginSession(AudioState.Running), keySession = keyboard.BeginSession(KeyboardState.Running);
-            using var sounds = audio.Subscribe(); using var keys = keyboard.Subscribe();
+            if (!host.Views.ContainsKey(id)) throw new InvalidOperationException("Missing bundled plugin: " + id);
+            using var view = new PluginView(host, id);
             view.Width = view.BaseWidth; view.Height = view.BaseHeight;
             view.Measure(new Size(view.Width, view.Height)); view.Arrange(new Rect(0, 0, view.Width, view.Height));
-            view.ApplyAppearance(Color.FromRgb(0x3D, 0x3D, 0x3D)); view.Activate();
-            for (int i = 1; i <= 180; i++)
+            view.Activate();
+            var package = host.Package(host.Views[id]);
+            var deadline = DateTime.UtcNow.AddSeconds(5);
+            while (PluginNative.miucs_plugin_ready(package.Handle) != 1)
             {
-                double time = i / 60.0;
-                audio.Publish(audioSession, new AudioFeatures
-                {
-                    Time = time, SampleRate = 48000, ChannelCount = 2, Rms = .15, RmsDBFS = -16.48,
-                    Peak = .3, Envelope = .15 + .05 * Math.Sin(time * 2), IsSilent = false,
-                    MidEnergy = .02, LowEnergy = .01, HighEnergy = .001, BandwidthHz = 2500,
-                    SpectralFlux = i % 30 == 0 ? .5 : .01, IsOnset = i % 30 == 0
-                }, new MelodyFrame(time, 440 * Math.Pow(2, (i / 40 % 4) / 12.0), .95, true), time);
-                if (i % 12 == 0) keyboard.Publish(keySession, 0x1E, true, KeyboardModifiers.None, time);
-                if (i % 12 == 1) keyboard.Publish(keySession, 0x1E, false, KeyboardModifiers.None, time);
-                view.Update(sounds.Read(time), keys.Read(time), 1.0 / 60);
+                if (DateTime.UtcNow > deadline) throw new InvalidOperationException("Plugin startup timed out: " + id);
+                System.Threading.Thread.Sleep(10);
             }
-            view.UpdateLayout();
-            var image = new RenderTargetBitmap((int)view.Width, (int)view.Height, 96, 96, PixelFormats.Pbgra32);
-            image.Render(view);
-            var pixels = new byte[(int)view.Width * (int)view.Height * 4]; image.CopyPixels(pixels, (int)view.Width * 4, 0);
-            int drawn = 0, transparent = 0;
-            for (int i = 3; i < pixels.Length; i += 4) { if (pixels[i] > 0) drawn++; else transparent++; }
-            if (drawn < 100 || transparent < pixels.Length / (view.Id == "pixel-keyboard" ? 40 : 8)) throw new InvalidOperationException(view.Id + " failed transparent drawing coverage");
-            var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(image));
-            using (var file = File.Create(Path.Combine(output, view.Id + ".png"))) encoder.Save(file);
-            view.Deactivate(); view.Deactivate(); view.Activate();
-            view.ApplyAppearance(Color.FromRgb(0x4F, 0x70, 0x87));
-            foreach (double scale in new[] { .8, 2.0 })
+            var surface = PluginNative.miucs_surface_create(package.Handle, IntPtr.Zero, id);
+            if (surface == IntPtr.Zero) throw new InvalidOperationException(PluginNative.Error(IntPtr.Zero));
+            try
             {
-                view.Width = view.BaseWidth * scale; view.Height = view.BaseHeight * scale;
-                view.Measure(new Size(view.Width, view.Height)); view.Arrange(new Rect(0, 0, view.Width, view.Height)); view.UpdateLayout();
-                var colored = new RenderTargetBitmap((int)view.Width, (int)view.Height, 96, 96, PixelFormats.Pbgra32);
-                colored.Render(view);
-                var recolored = new byte[(int)view.Width * (int)view.Height * 4]; colored.CopyPixels(recolored, (int)view.Width * 4, 0);
-                int blue = 0;
-                for (int i = 0; i < recolored.Length; i += 4)
-                    if (recolored[i + 3] > 32 && recolored[i] > recolored[i + 2]) blue++;
-                if (blue < 100) throw new InvalidOperationException(view.Id + " color/resize/resume rendering failed");
+                var pixels = new byte[400 * 260 * 4];
+                if (PluginNative.miucs_surface_pixels(surface, 400, 260, pixels, (nuint)pixels.Length) != 1)
+                    throw new InvalidOperationException("Plugin render failed: " + id);
+                int visible = 0, transparent = 0;
+                for (int i = 3; i < pixels.Length; i += 4) { if (pixels[i] > 0) visible++; else transparent++; }
+                if (visible < 100 || transparent < 100) throw new InvalidOperationException("Plugin alpha coverage failed: " + id);
             }
-            view.Dispose(); view.Dispose();
+            finally { PluginNative.miucs_surface_destroy(surface); }
+            view.Deactivate(); view.Activate();
         }
-        File.WriteAllText(Path.Combine(output, "result.json"), "{\"nativeWpfOffscreen\":\"passed\",\"realLoopback\":\"not-run\",\"realKeyboard\":\"not-run\",\"desktopWindow\":\"not-run\",\"syntheticHoverWindow\":\"passed\"}\n");
     }
     private static void VerifyTrayCat(string output)
     {
@@ -101,117 +84,6 @@ internal static class WindowsSmokeTests
         animation.Dispose(); animation.Dispose();
         if (tray.Icon != null) throw new InvalidOperationException("Disposed tray animator retained its icon");
 
-        var sharedHead = new PixelHeadScene();
-        using var view = new PixelKeyboardView(sharedHead);
-        var audio = new AudioChannel(); var keyboard = new KeyboardChannel();
-        Guid session = keyboard.BeginSession(KeyboardState.Running);
-        using var sounds = audio.Subscribe(); using var keys = keyboard.Subscribe();
-        view.Activate();
-        keyboard.Publish(session, 30, true, KeyboardModifiers.None, 0);
-        for (int tick = 0; tick < 20; tick++)
-        {
-            var input = keys.Read(tick / 60d);
-            sharedHead.Update(input, 1d / 60);
-            double before = sharedHead.Angle;
-            view.Update(sounds.Read(tick / 60d), input, 1d / 60);
-            if (!ReferenceEquals(sharedHead, view.Head) || view.Head.Angle != before)
-                throw new InvalidOperationException("Floating cat advanced the shared tray motion twice");
-        }
-        double preserved = sharedHead.Angle;
-        if (Math.Abs(preserved) < .001) throw new InvalidOperationException("Synthetic typing did not animate shared head");
-        view.Deactivate(); view.Activate();
-        if (sharedHead.Angle != preserved) throw new InvalidOperationException("Window hide/switch reset shared tray motion");
-    }
-
-    private static void VerifyStaffBeatRegion(string output)
-    {
-        using var view = new StaffNoteView();
-        foreach (double scale in new[] { .75, 1.0, 2.0 })
-        {
-            foreach (bool edge in new[] { false, true })
-            {
-                var drawing = new DrawingVisual();
-                using (var dc = drawing.RenderOpen())
-                {
-                    dc.PushTransform(new ScaleTransform(scale, scale));
-                    view.DrawBeatRings(dc, new[] { new StaffBeatRing(280, edge ? 20 : 74, 32, 1) });
-                    dc.Pop();
-                }
-                int width = (int)(800 * scale), height = (int)(160 * scale);
-                var image = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Pbgra32);
-                image.Render(drawing);
-                var pixels = new byte[width * height * 4]; image.CopyPixels(pixels, width * 4, 0);
-                int Count(double top, double bottom)
-                {
-                    int count = 0;
-                    for (int y = (int)(top * scale); y < (int)(bottom * scale); y++)
-                        for (int x = (int)(240 * scale); x < (int)(320 * scale); x++)
-                            if (pixels[(y * width + x) * 4 + 3] > 16) count++;
-                    return count;
-                }
-                if (!edge && (Count(38, 54) < 5 || Count(94, 110) < 5))
-                    throw new InvalidOperationException("Staff waves are still clipped to the five-line band");
-                if (edge)
-                {
-                    int firstRowAlpha = 0;
-                    for (int x = (int)(240 * scale); x < (int)(320 * scale); x++)
-                        firstRowAlpha = Math.Max(firstRowAlpha, pixels[x * 4 + 3]);
-                    if (firstRowAlpha > 32 || Count(8, 16) < 5)
-                        throw new InvalidOperationException("Staff waves must fade only at the full canvas edge");
-                }
-                var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(image));
-                using var file = File.Create(Path.Combine(output, $"staff-beat-{(int)(scale * 100)}-{(edge ? "edge" : "full")}.png"));
-                encoder.Save(file);
-            }
-        }
-    }
-
-    private static void VerifyStaffTraceGeometry()
-    {
-        var scene = new StaffNoteScene();
-        var audio = new AudioChannel(); var keyboard = new KeyboardChannel();
-        Guid session = audio.BeginSession(AudioState.Running);
-        using var sounds = audio.Subscribe(); using var keys = keyboard.Subscribe();
-        audio.Publish(session, new AudioFeatures
-        {
-            Time = 0, SampleRate = 48000, ChannelCount = 2, Envelope = .2, IsSilent = false
-        }, null, 0);
-        scene.Update(sounds.Read(0), keys.Read(0), 0);
-        // A horizontal missing interval isolates native path joins from other decoration.
-        scene.Trace.Add(new TracePoint(-1, 110, 1, 0, 0));
-        scene.Trace.Add(new TracePoint(-.1, 110, 1, 0, .2));
-        scene.Update(sounds.Read(.1), keys.Read(.1), .1);
-        // Inspect the original open stroke figures, without polygonal flattening.
-        var growing = PathGeometry.CreateFromGeometry(StaffNoteView.CreateTraceGeometry(scene));
-        if (growing.Figures.Count != 2)
-            throw new InvalidOperationException($"Staff join must grow from two endpoints; got {growing.Figures.Count} figures from {scene.Trace.Count} samples");
-        scene.Update(sounds.Read(.21), keys.Read(.21), .11);
-        var geometry = StaffNoteView.CreateTraceGeometry(scene);
-        if (PathGeometry.CreateFromGeometry(geometry).Figures.Count != 1)
-            throw new InvalidOperationException("Staff join must settle into one WPF figure");
-        foreach (double scale in new[] { .8, 1.0, 2.0 })
-        {
-            var drawing = new DrawingVisual();
-            using (var dc = drawing.RenderOpen())
-            {
-                dc.PushTransform(new ScaleTransform(scale, scale));
-                dc.DrawGeometry(null, new Pen(Brushes.Black, 1.05), geometry);
-                dc.Pop();
-            }
-            int width = (int)(800 * scale), height = (int)(160 * scale);
-            var image = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Pbgra32);
-            image.Render(drawing);
-            var pixels = new byte[width * height * 4]; image.CopyPixels(pixels, width * 4, 0);
-            int left = (int)Math.Ceiling((640 - (scene.Elapsed + 1) * 70) * scale) + 1;
-            int right = (int)Math.Floor((640 - (scene.Elapsed + .1) * 70) * scale) - 1;
-            for (int x = left; x <= right; x++)
-            {
-                bool ink = false;
-                for (int y = (int)(108 * scale); y <= (int)(112 * scale); y++)
-                    ink |= pixels[(y * width + x) * 4 + 3] > 0;
-                if (!ink) throw new InvalidOperationException("Settled staff curve has a transparent column");
-            }
-        }
     }
 
     private static void VerifyLockGlyph(string output)

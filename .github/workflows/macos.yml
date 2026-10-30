@@ -1,9 +1,9 @@
 name: macOS
 on:
   push:
-    paths: ['apps/assets/**', 'apps/macos/**', 'modules/**/*.swift', 'modules/visualizations/pixel-keyboard/assets/**', 'build.sh', 'project.yml', 'tools/macos/**', 'tests/**/*.swift', 'scripts/*.sh', '.github/workflows/macos.yml']
+    paths: ['apps/assets/**', 'apps/macos/**', 'modules/**/*.swift', 'plugins/**', 'build.sh', 'project.yml', 'tools/macos/**', 'tests/**/*.swift', 'scripts/*.sh', '.github/workflows/macos.yml']
   pull_request:
-    paths: ['apps/assets/**', 'apps/macos/**', 'modules/**/*.swift', 'modules/visualizations/pixel-keyboard/assets/**', 'build.sh', 'project.yml', 'tools/macos/**', 'tests/**/*.swift', 'scripts/*.sh', '.github/workflows/macos.yml']
+    paths: ['apps/assets/**', 'apps/macos/**', 'modules/**/*.swift', 'plugins/**', 'build.sh', 'project.yml', 'tools/macos/**', 'tests/**/*.swift', 'scripts/*.sh', '.github/workflows/macos.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -14,11 +14,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: Native window, lifecycle and appearance regressions
         run: |
-          rm -f docs/validation/pixel-keyboard-tests.json docs/validation/visualization-host-tests.json docs/validation/visualization-appearance-tests.json docs/validation/staff-note-platform-tests.json
-          zsh scripts/test-pixel-keyboard.sh
+          rm -f docs/validation/visualization-host-tests.json docs/validation/visualization-appearance-tests.json
           zsh scripts/test-visualization-host.sh
           zsh scripts/test-appearance.sh
-          zsh scripts/test-staff-note-platform.sh
       - name: Compile complete application without personal signing identity
         shell: zsh {0}
         run: |
@@ -36,6 +34,3 @@ jobs:
           path: |
             docs/validation/visualization-host-tests.json
             docs/validation/visualization-appearance-tests.json
-            docs/validation/staff-note-platform-tests.json
-            docs/validation/pixel-keyboard-tests.json
-            build/pixel-keyboard-preview/

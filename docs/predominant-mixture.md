@@ -50,8 +50,6 @@
 zsh scripts/test-melody.sh
 zsh scripts/test-audio-pipeline.sh
 zsh scripts/test-audio-recovery.sh
-zsh scripts/test-staff-note.sh
-zsh scripts/test-staff-note-platform.sh
 python3 scripts/benchmark-pop-melody.py --output build/current-mixture-benchmark.json
 zsh build.sh
 ```

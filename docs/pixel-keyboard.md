@@ -15,9 +15,9 @@
 
 ## 实现与验证
 
-静态硬件与键帽/猫爪绘制内容预缓存。猫头复用原图，通过独立 `PixelHeadScene` 更新旋转变换，使用现有帧刷新，无新增计时器。尾巴以 2 点方块构成静止姿态及 4 档幅度 × 64 相位的预缓存矢量路径，macOS 仅在姿态索引变化时替换路径；Windows 使用对应的冻结 DrawingGroup。纯布局与动画计算不依赖平台 UI，复用现有屏幕刷新，不运行多余的五线谱模拟，不增加计时器。
+实现位于 `plugins/pixel-keyboard/`：`keyboard.lua`、`paw.lua`、`head.lua`、`tail.lua` 分别管理硬件、猫爪、猫头和尾巴。Skia 渲染共享场景，尾巴通过精灵图姿态索引更新。托盘猫头由外壳独立维护，不依赖插件 worker。
 
-运行 `zsh scripts/test-pixel-keyboard.sh`：检查布局、多键、长按/释放、修饰键、空格交替、过期/未知/重复事件、代次与生命周期；原生测试检查节拍和键盘并行、音频失联、重复/过期拍点、BPM、静音回正、尾根固定、屏幕留白、纯黑尾巴、三个尺寸、五种笔色与浅深背景，并生成合成 PNG/GIF。Windows `scripts/test-windows.sh` 包含对应状态测试和编译，WPF 原生 smoke 在 Windows runner 上运行。
+运行 `sh scripts/test-plugins.sh` 验证运行库、传输、输入生命周期及 600 帧动画参考，使用 `python3 tools/plugins/preview.py` 导出合成 PNG。macOS 宿主选择与热重载使用 `zsh scripts/test-plugin-macos.sh`，Windows 外壳与输入测试使用 `scripts/test-windows.sh`。
 
 合成演示直接喂入音频特征与物理键位事件，不代表真实音高识别评测，也不记录用户输入。当前机器只能执行 macOS 实机验证；Windows 原生效果仍须 Windows 实机或 CI 验收。
 

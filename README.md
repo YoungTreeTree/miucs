@@ -18,13 +18,13 @@
 | 五线谱音符 | 主旋律驱动音符与轨迹，节拍展开轻弧，按键散出星星 | [五线谱](docs/staff-note.md) |
 | 铅笔飞鸟 | 音高决定飞行高度，音量与起音带动振翅，管道自动避让 | [飞鸟](docs/sound-flight.md) |
 
-音频和键盘可以同时驱动画面，也能独立使用。每种模式分别记住位置和大小，切换时不重启输入采集。启用插件模式后，还可以添加自己编写的 Lua 可视化。
+音频和键盘可以同时驱动画面，也能独立使用。每种模式分别记住位置和大小，切换时不重启输入采集。仅使用 Lua/Skia 插件，也可以添加自己编写的 Lua 可视化。
 
 ## 构建与启动
 
 ### macOS
 
-需要 Apple Silicon、macOS 14+、支持 Swift 6 的 Xcode 或 Command Line Tools；首次创建本地开发签名需要 OpenSSL 3。在仓库根目录执行：
+需要 Apple Silicon、macOS 14+、支持 Swift 6 的 Xcode 或 Command Line Tools、Python 3.10+ 和 CMake 3.24+；首次创建本地开发签名需要 OpenSSL 3。在仓库根目录执行：
 
 ```sh
 zsh build.sh
@@ -56,16 +56,14 @@ open dist/Miucs.app
 
 插件使用 **Lua 5.4 + Skia**，一个文件夹对应一个可视化。复制模板后，编写场景与动画，放入用户插件目录即可加载，无需重新编译应用。
 
-带有插件运行库时会默认进入插件模式；没有运行库的普通构建仍使用原生绘制。`--no-plugins` 或 `MIUCS_PLUGINS=0` 可改回原生画面。macOS 首次构建插件版还需要 Python 3.10+、CMake 3.24+ 和 C++ 工具链，并会下载校验后的依赖：
+所有构建均包含插件运行库和内置插件。首次构建会下载并校验 Lua、JSON 库和 Skia 依赖：
 
 ```sh
-MIUCS_BUILD_PLUGINS=1 zsh build.sh
+zsh build.sh
 open dist/Miucs.app
 ```
 
-请先退出已运行的 Miucs，再启动。
-
-插件版另带 **「牛来」**：金黄像素键盘与分趾牛蹄，上方牛来单板姿态由音乐拍点换刃、打字速率触发完整跳跃；没有输入时不循环播放。详见[牛来说明](plugins/niulai-keyboard/README.md)。
+更新后请先退出已运行的 Miucs，再打开新版本。应用只支持插件可视化；运行库缺失时会显示错误。
 
 **[插件开发指南 →](docs/plugin-development.md)**：包含完整示例、双端安装步骤、输入数据、热重载、验证预览和常见问题。
 
@@ -82,3 +80,5 @@ open dist/Miucs.app
 - [架构与依赖边界](docs/architecture.md)
 - [音频数据](contracts/audio-features/README.md) · [键盘数据](contracts/keyboard-input/README.md)
 - [外观设置](docs/appearance.md) · [验证记录](docs/validation/README.md)
+
+插件版另带 **「牛来」**，详见[牛来说明](plugins/niulai-keyboard/README.md)。

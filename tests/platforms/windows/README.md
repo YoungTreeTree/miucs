@@ -1,5 +1,11 @@
-# Windows 平台测试预留
+# Windows 平台测试
 
-当前没有 Windows 实现，不能把本目录视为已通过的 Windows 测试。
+`CoreTests` 可在 macOS、Linux 和 Windows 运行，覆盖音频分析、PCM 解码、键盘通道、插件输入编码、窗口偏好、悬停锁及托盘动画：
 
-后续将真实采集/恢复、原生绘制、窗口透明/穿透、多屏位置恢复与刷新测试放在这里。数据互操作先使用 `contracts/audio-features/samples/`，音频算法使用已知合成信号和 `docs/validation/` 数值参考；通道需覆盖 64 事件容量、250ms 过期、峰值保留和代次隔离。语言与测试框架由实际实现决定。
+```sh
+dotnet run --project tests/platforms/windows/CoreTests/Miucs.CoreTests.csproj -c Release
+```
+
+Windows 完整构建后，运行 `Miucs.exe --smoke-test build/windows-smoke` 检查插件 Skia 像素输出、托盘和悬停锁。插件状态与传输测试位于 `tests/plugins/`。旧 WPF 可视化和对应场景测试已移除。
+
+可移植测试和交叉编译不能替代 Windows 原生执行。真实 WASAPI、键盘、透明穿透、多屏 DPI、休眠恢复及刷新验收见 [Windows 验收表](../../../docs/windows-acceptance.md)。

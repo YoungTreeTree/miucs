@@ -60,7 +60,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, Observ
     private var diagnostics: AudioDiagnostics?
     private var moveItem: NSMenuItem?
     private var sizeItem: NSMenuItem?
-    private let registry = BuiltInVisualizations.registry()
+    private let registry = PluginVisualizations.registry()
     var visualizationDescriptors: [VisualizationDescriptor] { registry.descriptors }
     private var visualizationMenu: NSMenu?
     private var colorMenu: VisualizationColorMenu?
@@ -70,36 +70,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, Observ
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
-
-        if CommandLine.arguments.contains("--verify-flight-window") {
-            let args = CommandLine.arguments
-            if let i = args.firstIndex(of: "--output"), i + 1 < args.count {
-                do { try FlightPreview.verifyWindow(to: URL(fileURLWithPath: args[i + 1])) }
-                catch { fputs("Window verification failed: \(error)\n", stderr) }
-            }
-            NSApp.terminate(nil)
-            return
-        }
-
-        if CommandLine.arguments.contains("--render-flight-preview") {
-            let args = CommandLine.arguments
-            if let i = args.firstIndex(of: "--output"), i + 1 < args.count {
-                do { try FlightPreview.render(to: URL(fileURLWithPath: args[i + 1])) }
-                catch { fputs("Flight preview failed: \(error)\n", stderr) }
-            }
-            NSApp.terminate(nil)
-            return
-        }
-
-        if CommandLine.arguments.contains("--render-staff-preview") {
-            let args = CommandLine.arguments
-            if let i = args.firstIndex(of: "--output"), i + 1 < args.count {
-                do { try StaffNotePreview.render(to: URL(fileURLWithPath: args[i + 1])) }
-                catch { fputs("Staff preview failed: \(error)\n", stderr) }
-            }
-            NSApp.terminate(nil)
-            return
-        }
 
         if CommandLine.arguments.contains("--diagnose-audio") || CommandLine.arguments.contains("--verify-audio-recovery") {
             let diagnostics = AudioDiagnostics(engine: engine)
@@ -145,17 +115,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, Observ
         for descriptor in registry.descriptors {
             let option = NSMenuItem(title: descriptor.name, action: #selector(selectVisualization(_:)), keyEquivalent: "")
             option.target = self; option.representedObject = descriptor.id
-            option.state = descriptor.id == BuiltInVisualizations.defaultID ? .on : .off
+            option.state = descriptor.id == PluginVisualizations.defaultID ? .on : .off
             visualizations.addItem(option)
         }
         let visualizationItem = NSMenuItem(title: "可视化", action: nil, keyEquivalent: "")
         visualizationItem.submenu = visualizations; menu.addItem(visualizationItem)
         visualizationMenu = visualizations
-        if PluginHost.enabled {
-            let status=NSMenuItem(title:"插件运行中",action:nil,keyEquivalent:"");status.isEnabled=false;pluginStatusItem=status;menu.addItem(status)
-            let rescan=NSMenuItem(title:"重新扫描插件",action:#selector(rescanPlugins),keyEquivalent:"");rescan.target=self;menu.addItem(rescan)
-            let reload=NSMenuItem(title:"重新加载当前插件",action:#selector(reloadPlugins),keyEquivalent:"");reload.target=self;menu.addItem(reload)
-        }
+        let status=NSMenuItem(title:"插件运行中",action:nil,keyEquivalent:"");status.isEnabled=false;pluginStatusItem=status;menu.addItem(status)
+        let rescan=NSMenuItem(title:"重新扫描插件",action:#selector(rescanPlugins),keyEquivalent:"");rescan.target=self;menu.addItem(rescan)
+        let reload=NSMenuItem(title:"重新加载当前插件",action:#selector(reloadPlugins),keyEquivalent:"");reload.target=self;menu.addItem(reload)
         let colors = VisualizationColorMenu(store: appearanceStore)
         colorMenu = colors; menu.addItem(colors.item)
         let transparency = VisualizationTransparencyMenu(store: appearanceStore)

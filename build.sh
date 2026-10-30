@@ -60,14 +60,12 @@ EOF
     -P miucs -A -T /usr/bin/codesign >/dev/null
 fi
 
-if [[ "${MIUCS_BUILD_PLUGINS:-0}" == "1" ]]; then
-  sh "$root/scripts/build-plugins.sh"
-  cp "$root/build/plugins/libmiucs_plugins.dylib" "$app/Contents/MacOS/"
-  cp "$root/build/plugins/miucs-plugin-worker" "$app/Contents/MacOS/"
-  cp -R "$root/plugins" "$app/Contents/Resources/Plugins"
-  cp -R "$root/third_party/plugin-licenses" "$app/Contents/Resources/PluginLicenses"
-  codesign --force --sign "Miucs Dev" "$app/Contents/MacOS/libmiucs_plugins.dylib"
-  codesign --force --sign "Miucs Dev" "$app/Contents/MacOS/miucs-plugin-worker"
-fi
+sh "$root/scripts/build-plugins.sh"
+cp "$root/build/plugins/libmiucs_plugins.dylib" "$app/Contents/MacOS/"
+cp "$root/build/plugins/miucs-plugin-worker" "$app/Contents/MacOS/"
+cp -R "$root/plugins" "$app/Contents/Resources/Plugins"
+cp -R "$root/third_party/plugin-licenses" "$app/Contents/Resources/PluginLicenses"
+codesign --force --sign "Miucs Dev" "$app/Contents/MacOS/libmiucs_plugins.dylib"
+codesign --force --sign "Miucs Dev" "$app/Contents/MacOS/miucs-plugin-worker"
 codesign --force --sign "Miucs Dev" "$app"
 echo "built $app"

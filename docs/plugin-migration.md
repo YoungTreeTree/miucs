@@ -2,7 +2,7 @@
 
 To create your own plugin, start with the [插件开发指南](plugin-development.md). This document covers runtime migration, implementation details and acceptance status.
 
-This change adds a shared Lua + Skia implementation while retaining native renderers as an acceptance baseline. **The plugin path is opt-in until both platforms pass native presentation, latency, performance and sustained-memory acceptance.** The presence of the implementation or a successful build is not evidence that those release gates passed.
+The shared Lua + Skia implementation is the only visualization runtime. Native visualization implementations and mode switches have been removed. Physical-machine, latency, performance and sustained-memory acceptance gates remain separate from this product decision.
 
 ## Build and run
 
@@ -11,18 +11,18 @@ Requirements: Python 3.10 with the current security updates (or 3.12), CMake 3.2
 macOS:
 
 ```sh
-MIUCS_BUILD_PLUGINS=1 zsh build.sh
-dist/Miucs.app/Contents/MacOS/Miucs --plugins
+zsh build.sh
+dist/Miucs.app/Contents/MacOS/Miucs
 ```
 
 Windows, from PowerShell with the C++ build tools available:
 
 ```powershell
-./scripts/build-windows.ps1 -Plugins -Runtime win-x64
-./dist/windows/win-x64/Miucs.exe --plugins
+./scripts/build-windows.ps1 -Runtime win-x64
+./dist/windows/win-x64/Miucs.exe
 ```
 
-A build that contains the plugin runtime starts in plugin mode. `MIUCS_PLUGINS=0` or `--no-plugins` keeps the existing renderers; `MIUCS_PLUGINS=1` or `--plugins` forces the plugin path. Plain builds remain usable without fetching Skia. Use `MIUCS_PLUGIN_DEV=1` for file-change reloads, and `MIUCS_FORCE_CPU=1` to exercise CPU fallback. The runtime reports its backend; CPU presentation is capped at 30 FPS. Filesystem plugins do not require application recompilation.
+All builds include the plugin runtime and bundled folders. A missing runtime is an error; there is no native visualization fallback or reduced build. Use `MIUCS_PLUGIN_DEV=1` for file-change reloads and `MIUCS_FORCE_CPU=1` to exercise the Skia CPU backend. CPU presentation is capped at 30 FPS.
 
 The three built-in IDs (`pencil-flight`, `staff-note`, `pixel-keyboard`) and their window preference keys are unchanged. Each is now an independent folder under `plugins/`, with its own manifest, source and assets. The **可视化** menu lists these plugins directly, including installed user plugins. The application owns the cat logo and tray animation; they do not load a Lua worker and keep working when a plugin fails or is reloaded. Native capture and analysis remain platform implementations; the plugin modules have no capture controls.
 
@@ -81,13 +81,13 @@ python3 tests/plugins/soak.py --seconds 1800
 
 On Windows pass the parent `plugins` directory to the surface probe; it starts a separate worker for each UI. The native probe and worker live under `build/plugins/Release` with `.exe` suffixes. `transport_test.py`, validator and preview select that build layout automatically. `.github/workflows/plugins.yml` builds both native paths and saves preview artifacts; adding a workflow does not mean it has run on the current unpushed branch.
 
-The replay compiles production Swift simulations and checks 600 frames per output against Lua, including head/tail, flight position/scale/angle/score, staff motion, trace commands and ring geometry. Fixtures cover short pitch dropouts, silence, long frame intervals, separate input sessions and audio format changes. Host/worker tests cover bounded scene memory, node count, empty path patches, deterministic seeds, revision resync, bytecode, path escapes, corrupt resources, invalid binary packets, event coalescing and a loop that catches its Lua interrupt. Mac reload tests verify candidate failure preservation and viewport continuity.
+The replay compiles frozen pre-removal simulations and checks 600 frames per output against Lua, including head/tail, flight position/scale/angle/score, staff motion, trace commands and ring geometry. Fixtures cover short pitch dropouts, silence, long frame intervals, separate input sessions and audio format changes. Host/worker tests cover bounded scene memory, node count, empty path patches, deterministic seeds, revision resync, bytecode, path escapes, corrupt resources, invalid binary packets, event coalescing and a loop that catches its Lua interrupt. Mac reload tests verify candidate failure preservation and viewport continuity.
 
 `plugin-benchmark` measures script wall time and binary decode + atomic scene application separately after warmup. `plugin-surface-probe` measures CPU time spent in native rendering/submission, **not GPU completion or input-to-photon latency**. The soak uses CPU raster export, switching and worker restarts; its pacing overruns are not a GPU dropped-frame result. Run performance acceptance on otherwise idle, fixed machines with the same Release build, size and DPI as the native baseline.
 
 ## Release gates
 
-Track measured local results in `docs/validation/plugin-runtime.md`. Do not remove the old Swift/C# drawing paths or enable plugins by default until all of these are signed off:
+Track measured local results in `docs/validation/plugin-runtime.md`. Plugins are the only runtime. Historical measurements and the frozen numerical fixture remain available for comparison; the removed native source can be recovered from Git history. The following gates still require validation:
 
 - Native Windows D3D12/DirectComposition transparency, resize/DPI, mouse passthrough, layered WPF interaction, suspend/resume and CPU fallback.
 - Native macOS transparency, backing-scale changes, mouse passthrough, hidden/resume, GPU loss and CPU fallback.

@@ -12,11 +12,8 @@ internal static class Program
             AudioTests.Run();
             KeyboardTests.Run();
             PcmDecoderTests.Run();
-            VisualizationTests.Run();
-            StaffBeatTests.Run();
             ShellTests.Run();
             HoverLockTests.Run();
-            PixelKeyboardTests.Run();
             TrayIconTests.Run();
             PluginInputTests.Run();
             Console.WriteLine("PASS: all Windows portable core tests");

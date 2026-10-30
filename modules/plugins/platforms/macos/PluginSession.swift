@@ -84,12 +84,6 @@ final class PluginPackage {
 @MainActor
 final class PluginHost {
     static let shared = PluginHost()
-    static var enabled: Bool {
-        let flag = ProcessInfo.processInfo.environment["MIUCS_PLUGINS"]
-        if flag == "0" || CommandLine.arguments.contains("--no-plugins") { return false }
-        if flag == "1" || CommandLine.arguments.contains("--plugins") { return true }
-        return PluginNative.shared.available
-    }
     private(set) var metadata = [[String: Any]]()
     private(set) var packages = [String: PluginPackage]()
     private(set) var errors = [String]()
@@ -105,8 +99,7 @@ final class PluginHost {
     private var observers = [NSObjectProtocol]()
     private var lastScan = 0.0
     func register(in registry: VisualizationRegistry) {
-        guard Self.enabled else { return }
-        guard PluginNative.shared.available else { errors=["插件运行库不可用；请使用 MIUCS_BUILD_PLUGINS=1 构建。"];return }
+        guard PluginNative.shared.available else { errors=["插件运行库不可用；请安装完整应用或重新运行 build.sh。"];return }
         let result = PluginNative.shared.scan()
         metadata = result["plugins"] as? [[String: Any]] ?? []
         errors = (result["errors"] as? [[String: Any]] ?? []).compactMap { $0["message"] as? String }
@@ -124,7 +117,7 @@ final class PluginHost {
         let result = PluginPackage(metadata); packages[id] = result; return result
     }
     func start(audio: any AudioFeatureSource, keyboard: any KeyboardFeatureSource) {
-        guard Self.enabled, PluginNative.shared.available else { return }
+        guard PluginNative.shared.available else { return }
         audioSource = audio; keyboardSource = keyboard; self.audio = audio.subscribe(); self.keyboard = keyboard.subscribe()
         last = ProcessInfo.processInfo.systemUptime
         updateSchedule()

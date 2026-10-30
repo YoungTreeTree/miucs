@@ -1,6 +1,6 @@
 # 输入与可视化分层
 
-Miucs 的输入侧包含并行的音频特征生产与键盘事件生产，可视化在同一帧消费两路数据。平台适配负责系统采集、数值后端、原生绘制；应用外壳把它们组合起来。macOS 为已实测平台；Windows 新增独立 .NET 8/WPF、WASAPI 与物理键监听实现，Linux 核心测试及交叉构建已验证，Windows 实机验收待完成。
+Miucs 的输入侧包含并行的音频特征生产与键盘事件生产，可视化在同一帧消费两路数据。平台适配负责系统采集、数值后端和插件画面展示；应用外壳把它们组合起来。macOS 为已实测平台；Windows 新增独立 .NET 8/WPF、WASAPI 与物理键监听实现，Linux 核心测试及交叉构建已验证，Windows 实机验收待完成。
 
 音高路径将原始混音直接送入 `MelodyAnalyzer`：频谱峰插值、有界局部白化、谐波显著度、音调性/支持度可靠性判断与相邻候选连续性。`AudioAnalysisPipeline` 将同一 PCM 直接交给主旋律和特征分析器，格式改变时重置音高历史；没有来源切换、模型推理或分离延迟补偿。`StreamOutput` 在后台准备 FFT 状态，实时音频队列只推进原生分析。旧的来源偏好不再读取。
 
@@ -12,10 +12,10 @@ flowchart LR
     Channel --> Session[当前可视化会话]
     Keyboard[平台键盘监听] --> Keys[键盘状态与事件通道]
     Keys --> Session
-    Session --> Drawing[平台原生绘制]
+    Session --> Drawing[Lua 场景与 Skia 绘制]
     Shell[应用外壳] --> Capture
     Shell --> Keyboard
-    Shell --> Registry[内置模块注册表]
+    Shell --> Registry[插件目录注册表]
     Registry --> Session
     Shell --> Clock[屏幕同步刷新]
     Clock --> Session
@@ -32,17 +32,15 @@ flowchart LR
 | `modules/keyboard/platforms/macos/` | 只读 CGEventTap、输入监控权限、安全输入及休眠恢复；依赖键盘核心 |
 | `modules/visualizations/api/` | 模块描述、会话、视口、通用 RGB 笔色、注册和消费调度；只用 Foundation |
 | `modules/visualizations/api/platforms/macos/` | 原生扩展协议、公共笔色到 AppKit 的转换 |
-| `modules/visualizations/pencil-flight/core/` | 特征映射、运动、管道、粒子、纯颜色数据和示例场景 |
-| `modules/visualizations/pencil-flight/platforms/macos/` | AppKit 绘图与旧版配色兼容 |
-| `modules/visualizations/staff-note/core/` | 固定高音谱位、音符运动、起音绕符头倾摆、有界旋律轨迹、独立键盘布局/星爆与拍点圆环状态 |
-| `modules/visualizations/staff-note/platforms/macos/` | 物理键码映射，透明五线谱、音符、轨迹与可复用星形及圆环图层池，接收公共笔色 |
+| `plugins/` | Lua 场景、动画和插件资源 |
+| `modules/plugins/` | 隔离 worker、输入传输、Skia 与平台展示 |
 | `apps/macos/` | 入口、菜单、透明窗口、显示刷新、位置偏好、模块组合注册 |
-| `tools/macos/` | 数值诊断、文件分析、离线示例导出和性能测量 |
+| `tools/macos/` | 输入诊断与音频文件分析 |
 | `tests/` | 契约、通用音频、场景规则与各平台集成验证 |
 
-通用 API 不出现原生视图、颜色或 Combine 类型；原生扩展单独归入 `platforms/`。音频核心不引用任何飞鸟或窗口对象。macOS 与 Windows 平台实现互不引用。`scripts/check-boundaries.py` 检查当前 Swift 源码的这些约束，`test-contracts.sh` 和 `test-flight.sh` 不链接 Apple UI、采集或 Accelerate 框架。
+通用 API 不出现原生视图、颜色或 Combine 类型；原生扩展单独归入 `platforms/`。音频核心不引用任何飞鸟或窗口对象。macOS 与 Windows 平台实现互不引用。`scripts/check-boundaries.py` 检查当前 Swift 源码的这些约束，`test-contracts.sh` 不链接 Apple UI、采集或 Accelerate 框架。
 
-这些目录是源码与依赖边界：macOS 由 `swiftc` 分组编译；Windows 由 `apps/windows/Miucs.Windows.csproj` 组合各 Windows 目录的 C# 源码。没有跨语言二进制 SDK 或动态插件加载。Windows 的数值、事件、场景和窗口偏好在独立可移植测试中验证，原生平台检查见 `docs/windows-acceptance.md`。
+这些目录是源码与依赖边界：macOS 由 `swiftc` 分组编译；Windows 由 `apps/windows/Miucs.Windows.csproj` 组合各 Windows 目录的 C# 源码。Lua 插件通过 C ABI 宿主桥接到隔离 worker，不加载第三方原生插件。Windows 的数值、事件、场景和窗口偏好在独立可移植测试中验证，原生平台检查见 `docs/windows-acceptance.md`。
 
 ## 音频生产与数值后端
 
@@ -68,38 +66,20 @@ flowchart LR
 
 ## 可视化与应用外壳
 
-`VisualizationRegistry` 保存稳定 ID、名称、`VisualizationLayout` 与创建新会话的工厂。布局包含基准宽高和宽度上下限，默认值兼容飞鸟。`VisualizationController` 仅管理当前会话、两路独立订阅和视口，不持有音频或键盘采集对象，因此切换不会中断输入。
+所有可视化来自 `plugins/` 和用户插件目录。Lua 负责特征映射、状态、动画和场景，`modules/plugins` 提供隔离 worker、消息传输、资源管理和 Skia 渲染。宿主不再包含原生可视化或备用模式。
 
-`KeyboardEngine` 与 `AudioEngine` 由应用外壳分别持有并同时启动。键盘采集在专用线程回调中将数字事件写入 `KeyboardChannel`，不读取字符、不逐键分发主线程任务。控制器每帧先传递 `receive(keyboard:)`，再执行音频 `update(input:deltaTime:)`；任一路未授权都不阻断另一路。五线谱在同帧推进独立的键盘星爆，飞鸟沿用默认空实现。权限、事件容量、时间语义与验证见[键盘输入契约](../contracts/keyboard-input/README.md)。
+macOS 的 `PluginVisualizations.registry()` 从插件清单创建描述符；`PluginSession` 把生命周期、视口和外观传给 worker，`PluginCanvas` 展示 Skia 画面。Windows 的 `PluginHost` 扫描相同插件格式，`PluginView` 展示画面；没有可用插件时保留空状态与重新扫描菜单。运行库缺失会报告错误，不切换到其他绘制器。
 
-`PencilFlightSimulation` 是通用飞鸟会话，`SoundFlightWorld` 管理场景规则。原生 `MacPencilFlightSession` 组合通用会话、`PencilFlightView` 和调色盘；绘制对象不再订阅音频、持有计时器或管理窗口。
+`VisualizationRegistry`、`VisualizationController` 和平台视图接口是应用内部的窗口适配层。扩展可视化应遵循 [插件契约](../contracts/plugins/README.md)，不向应用注册原生类。音频和键盘使用独立的代次、序号和权限；`PluginHost` 同帧打包两路快照与短事件，交给当前插件。
 
-`StaffNoteSimulation` 消费相同通道，`StaffPitch` 按自然音级映射真实谱位，`StaffPitchTracker` 按新音频时间戳过滤短暂异常并分级确认大跳。`StaffNoteScene` 分开管理确认后的准确谱位、平滑位置、绕符头中心的倾摆角度与最多 512 点/8 秒的轨迹，轨迹另做 25ms 轻度平滑。已停止末端连接的至少 80ms 缺口，在真实新点上附加独立的 `StaffTraceJoin` 展示时间；渲染器用同一条三次曲线的两个子段逐渐接拢，约 190～300ms 后成为完整曲线，复用既有轨迹图层和屏幕刷新。音量不进入谱位计算。`MacStaffNoteSession` 组合这一会话与 `StaffNoteView`，旋转仅作用于符干和符尾；没有依赖飞鸟核心；节拍使用通道中新增的可选 `audio.beat` / `beats` 字段。详细规则见 [五线谱音符](staff-note.md)。
+`plugins/pencil-flight`、`plugins/staff-note`、`plugins/pixel-keyboard` 分别维护飞鸟、音符和像素键盘的状态。新增插件只需提供清单、Lua 和资源。应用猫头图标及 `TrayHeadAnimation` 属于外壳，独立于当前插件；插件切换不影响托盘身份。
 
-`StaffKeyboardStars` 与音频场景分开计时，最多保存 16 次星爆、112 颗星。`MacStaffKeyboardLayout` 将虚拟键码映射到不依赖平台的 ANSI 主区布局；左右修饰键的按下状态由采集适配层解码。普通键长按使用屏幕刷新推进，忽略系统重复事件；权限/代次变化取消旧长按，完整帧间隔负责淘汰粒子，长帧不追赶积压。`StaffNoteView` 缓存一条五角星路径和 112 个原生图层槽，只更新位置、旋转、大小和透明度，层次位于轨迹之上、音乐标记之下。
+全局颜色与透明度由外壳保存。macOS 通过 `VisualizationAppearanceStore` 和 `PluginSession` 传递笔色，Windows 通过 `PluginHost.Appearance` 传递外观。变更外观不重建输入采集或清理动画。旧飞鸟配色仅保留最小读取迁移逻辑，旧调色盘与模型已移除。
 
-`StaffBeatRings` 独立消费拍点事件，每拍在随机落点生成两层轻弧主波，延迟 100～210ms 依次放出三道小弧线；主波中心固定，小弧线按预先保存的方向向外移动，整组在 890ms 内消失。最多保留四拍、复用二十个波纹槽，每槽三组双描边路径形成由浅至深的弧线端点，路径全部预缓存。落点与音符状态无关，只在新事件时采样，相邻落点横向至少相隔 120 点；描边宽度抵消半径缩放，上下边缘使用缓存渐变遮罩；不改变谱位、倾摆或缩放。长帧按实际时间淘汰，超过 150ms 的事件不补播。
+窗口负责透明、鼠标穿透、悬停锁、拖动和等比缩放。切换前保存旧位置与尺寸、暂停绘制，释放旧会话，再恢复目标插件视口并激活。隐藏和切换不停止音频采集。每个插件独立保存位置和大小，旧飞鸟窗口偏好键继续兼容，未知选择回退到可用插件。
 
-全局颜色由 `VisualizationAppearanceStore` 保存为一个预设 ID，菜单提供五种笔色。`VisualizationController` 把纯数据的 `VisualizationAppearance` 交给当前会话，并在切换后的激活前传给新会话。两种原生适配只负责将公共 RGB 转成实际笔触；颜色更新不新建会话、不重订阅特征，也不清理音高轨迹。旧 `PencilColor` 是公共 `VisualizationColor` 的兼容别名，旧配色数据用于首次迁移；正常应用入口使用统一菜单。详见[笔色说明](appearance.md)。
+## 构建与验证
 
-`VisualizationHostView` 管理屏幕同步刷新、当前原生视图和通用状态提示，以及拖动/缩放交互。`VisualizerPanel` 按模块布局保持比例，菜单预设、拖动缩放和提示使用同一逻辑坐标，不拉伸长条文字。切换时先保存旧窗口状态并暂停刷新，替换会话与视图，恢复新模块尺寸并传递视口，最后激活；音频持续运行。首次切换沿用左上角位置并限制到屏幕内。隐藏窗口切换时不启动刷新。
+macOS 的 `build.sh`、Xcode 工程和 Windows 的 `scripts/build-windows.ps1` 均打包运行库、worker、插件与许可证，不提供跳过插件的构建选项。Skia 的 CPU 展示后端仍支持无 GPU 环境，它属于同一插件运行时。
 
-各模块独立保存位置与尺寸，`MiucsSelectedVisualization.v1` 保存选择；未知 ID 回退飞鸟。新模块使用 `MiucsVisualizationFrame.v1.<id>` 与原生保存名 `MiucsVisualization.<id>`。隐藏窗口停止刷新而音频继续；切换会话关闭旧模块设置界面并取消其订阅。新增内置模块只需实现会话与平台适配、声明布局，再在 `BuiltInVisualizations` 注册，无须修改音频分析。
-
-兼容项保持 `com.miucs.app`、`Miucs Dev` 签名策略、`MiucsPencilFlight` 窗口保存名、`MiucsPencilFlightFrame` / `MiucsPencilFlightWidth` 以及原配色偏好。现有带宽距离、响度体积和气团效果均属于飞鸟核心。
-
-## 验证入口
-
-运行步骤见 [CONTRIBUTING.md](../CONTRIBUTING.md)。重点证据包括通道积压/峰值/事件过期、并发读写、重连隔离、模块切换与原生视图释放，以及原有数值、旋律、恢复、飞行、窗口、配色测试。合成导出器与性能工具继续调用生产绘制路径，公开资源不包含真实桌面或声音。
-
-原分层重构的回归、数值对照、原生刷新及真实采集记录见 [分层验收汇总](validation/architecture-validation.json)，其中源码哈希对应当时版本。新增五线谱的规则、布局、绘图与回归记录见 [五线谱验收说明](staff-note.md)。
-
-### 像素音乐键盘
-
-`MacPixelKeyboardSession` 组合独立的 `PixelKeyboardScene`、`PixelHeadScene` 与 `PixelTailScene`，不再嵌入五线谱模拟或绘制器。屏幕左侧保留 64×64 像素猫头，以键盘通道的敲击频率控制下巴支点旋转；新按下才启动、重复与修饰键不计速，音频代次不影响它。中间留白，右侧纯黑尾巴优先由可靠拍点驱动；节拍未锁定或失联时，对有效起音作短促响应，不放宽 BPM 识别门槛。尾巴横向伸展，预缓存静止姿态及 4 档幅度 × 64 相位的 2 点像素矢量路径，根部固定，弯曲滞后传递到尾尖，节拍平滑控制速度与起伏，静音或节拍失联后回正；同帧仅接受最新且未过期的事件，不积压动作。键盘拥有独立代次和事件游标，音频重连不重置猫爪。Windows 的 `PixelKeyboardView` 直接继承通用 `VisualizationView`，使用对应的独立尾巴状态与冻结绘图缓存。
-
-## Shared UI plugin migration
-
-The opt-in Lua/Skia path and its acceptance gates are documented in [plugin-migration.md](plugin-migration.md). Capture stays native. Folder packages, the stable input/scene boundary, isolated workers and platform presentation adapters live under `modules/plugins` and `plugins/{pixel-keyboard,pencil-flight,staff-note}`. The old renderers remain the baseline until the cross-platform gates pass.
-
-Each folder now supplies exactly one UI selected by the visualization menu. Application identity and the animated cat tray are shell-owned; plugin selection, failure and reload cannot replace the tray.
+运行步骤见 [贡献指南](../CONTRIBUTING.md)。当前检查包括输入契约、窗口生命周期、外观存储、插件选择与热重载、隔离传输、Skia 预览及固定数值回放。旧原生绘制报告是历史数据，不作为当前实现的通过证据。跨平台实机、延迟和长期内存验收见 [插件迁移记录](plugin-migration.md)。
