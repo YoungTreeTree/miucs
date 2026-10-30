@@ -52,7 +52,7 @@ import AppKit
         print("PASS CPU surface disposal: 10 reload cycles retain no layers or frame contents")
         // Catalog scans do not create workers; each selection starts only its own package.
         let host=PluginHost.shared, registry=PluginVisualizations.registry()
-        let ids=Set(["pencil-flight","staff-note","pixel-keyboard"])
+        let ids=Set(["pencil-flight","staff-note","pixel-keyboard","niulai-keyboard","muffin-puppies","heiji-kazuha"])
         precondition(ids.isSubset(of:Set(registry.descriptors.map(\.id))))
         precondition(host.packages.isEmpty,"Tray must not eagerly launch a plugin")
         let keys=KeyboardChannel()

@@ -44,7 +44,7 @@ int main(int argc,char**argv){try{
     check(unchanged.apply(advance)&&unchanged.version==2,"empty delta can advance version");
   }
   rejects([&]{validateNode({{"id","x"},{"type","path"},{"path",{{"C",1,2}}}});},"path arity");
-  const std::set<std::string> builtinIDs={"pencil-flight","staff-note","pixel-keyboard","niulai-keyboard","muffin-puppies"};
+  const std::set<std::string> builtinIDs={"pencil-flight","staff-note","pixel-keyboard","niulai-keyboard","muffin-puppies","heiji-kazuha"};
   auto list=catalog({root.parent_path()});std::set<std::string> actualIDs;
   for(auto& item:list["plugins"])actualIDs.insert(item.at("id").get<std::string>());
   check(list["errors"].empty()&&actualIDs==builtinIDs,"independent built-in plugins");

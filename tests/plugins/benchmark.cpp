@@ -5,7 +5,7 @@ int main(int argc,char**argv){try{
   if(argc<3)return 2;
   auto frames=miucs::Json::parse(miucs::readFile(argv[2],32*1024*1024));
   miucs::Json reports=miucs::Json::array();
-  for(auto id:{"pixel-keyboard","staff-note","pencil-flight","niulai-keyboard","muffin-puppies"}) {
+  for(auto id:{"pixel-keyboard","staff-note","pencil-flight","niulai-keyboard","muffin-puppies","heiji-kazuha"}) {
     miucs::Runtime runtime(std::filesystem::path(argv[1])/id);miucs::Scene host;host.apply(runtime.packet(0));
     host.apply(runtime.handle({{"op","activate"},{"value",{{"id",id}}},{"ack",host.version}}));
     std::vector<double> update,apply;size_t bytes=0,memory=0;

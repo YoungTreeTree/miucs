@@ -12,7 +12,7 @@
 
 ## 三种可视化
 
-[查看工作台生成的全部插件 GIF 预览](docs/plugin-previews.md)，包含「牛来」和「麦芬与线条小狗」。
+[查看工作台生成的全部插件 GIF 预览](docs/plugin-previews.md)，包含「牛来」「麦芬与线条小狗」和「平次与和叶」。
 
 | 模式 | 效果 | 详细说明 |
 | --- | --- | --- |
@@ -86,3 +86,5 @@ open dist/Miucs.app
 插件版另带 **「牛来」**，详见[牛来说明](plugins/niulai-keyboard/README.md)。
 
 插件版另带 **「麦芬与线条小狗」**，详见[麦芬皮肤说明](plugins/muffin-puppies/README.md)。皮肤采用断续手绘键盘，两只小狗随按键播放模型绘制的跳跃帧，麦芬随音乐节拍吹泡泡。
+
+插件版另带 **「平次与和叶」**，详见[皮肤说明与动态预览](plugins/heiji-kazuha/README.md)。像素平次随打字挥木剑，和服和叶随音乐节拍转圈，搭配靛蓝、奶油白与浅绿键盘。
