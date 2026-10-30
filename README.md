@@ -1,88 +1,60 @@
-# Miucs · 桌面音乐可视化
+# Miucs · 奶牛猫桌面伙伴
 
-**让音乐自己飞。**
+**打字时伸爪，听音乐时摇尾。**
 
-把音乐和打字变成桌面上的动画：随旋律飞行的小鸟、随节奏摆动的音符，以及跟着按键敲击的像素猫。画面透明、默认鼠标穿透，不抢键盘焦点。
+奶牛猫是 Miucs 的默认桌面伙伴：黑白猫爪跟随按键，猫头随打字轻晃，尾巴响应音乐节拍。画面透明、默认鼠标穿透，不抢键盘焦点。
 
 `macOS 14+ · Apple Silicon · Swift 6` · `Windows 10/11 · 实机待验`
 
-![像素猫键盘：双爪跟随按键，猫头随打字摇动，尾巴随音乐摆动](docs/assets/miucs-pixel-keyboard.gif)
+![奶牛猫：猫爪跟随打字，猫头与尾巴响应输入](docs/assets/plugins/pixel-keyboard.gif)
 
-> 合成输入驱动原生绘制器生成的演示，未录制真实输入或桌面；GIF 无声。
+> 预览使用合成音乐与按键输入，经正式 Lua/Skia 绘制器生成；GIF 无声，不是桌面录屏。
 
-## 三种可视化
+## 四个桌面伙伴
 
-[查看工作台生成的全部插件 GIF 预览](docs/plugin-previews.md)，包含「牛来」和「麦芬与线条小狗」。
-
-| 模式 | 效果 | 详细说明 |
+| 插件 | 效果 | 详细说明 |
 | --- | --- | --- |
-| 像素音乐键盘 | 猫爪敲击真实物理键位，猫头随打字速度摇动，尾巴响应音乐节拍 | [像素键盘](docs/pixel-keyboard.md) |
-| 五线谱音符 | 主旋律驱动音符与轨迹，节拍展开轻弧，按键散出星星 | [五线谱](docs/staff-note.md) |
-| 铅笔飞鸟 | 音高决定飞行高度，音量与起音带动振翅，管道自动避让 | [飞鸟](docs/sound-flight.md) |
+| **奶牛猫 · 默认主打** | 黑白猫爪敲键、猫头轻晃、尾巴随节拍摆动 | [奶牛猫](docs/pixel-keyboard.md) |
+| 麦芬 | 两只线条小狗随打字跳跃，麦芬随节拍吹泡泡 | [麦芬](plugins/muffin-puppies/README.md) |
+| 牛来 | 牛蹄响应按键，上方角色随音乐和打字运动 | [牛来](plugins/niulai-keyboard/README.md) |
+| 平次与和叶 | 平次随打字挥木剑，和叶随节拍转身 | [平次与和叶](plugins/heiji-kazuha/README.md) |
 
-音频和键盘可以同时驱动画面，也能独立使用。每种模式分别记住位置和大小，切换时不重启输入采集。仅使用 Lua/Skia 插件，也可以添加自己编写的 Lua 可视化。
+[查看四个插件的动态预览](docs/plugin-previews.md)。首次启动默认选择奶牛猫；之后记住你的选择。每个插件分别保存位置和大小，切换不重启输入采集。
 
 ## 构建与启动
 
 ### macOS
 
-需要 Apple Silicon、macOS 14+、支持 Swift 6 的 Xcode 或 Command Line Tools、Python 3.10+ 和 CMake 3.24+；首次创建本地开发签名需要 OpenSSL 3。在仓库根目录执行：
+需要 Apple Silicon、macOS 14+、Swift 6、Python 3.10+、CMake 3.24+；首次本地开发签名需要 OpenSSL 3。
 
 ```sh
 zsh build.sh
 open dist/Miucs.app
 ```
 
-首次运行按提示授权系统音频捕获；需要打字效果时，授予「输入监控」权限。菜单中的「键盘监听」可查看状态。休眠唤醒或音频中断后会自动重连，也可手动选择「重新连接音频」。
+首次运行按提示授权系统音频捕获；要让猫爪响应打字，授予「输入监控」权限。音频和键盘可以同时使用，也能独立运行。系统休眠或音频中断后自动恢复，也可在菜单选择「重新连接音频」。更新后先退出旧版，再打开新构建。
 
 ### Windows
 
-已有 .NET 8/WPF、WASAPI 实现，实机采集、绘制及多屏验收尚未完成。构建步骤见 [Windows README](apps/windows/README.md)，支持边界见 [验收表](docs/windows-acceptance.md)。
+提供 .NET 8/WPF、WASAPI 实现。构建方法见 [Windows README](apps/windows/README.md)，实机验证范围见 [验收表](docs/windows-acceptance.md)。
 
 ## 常用操作
 
-从菜单栏或托盘打开菜单：
+- **可视化**：切换四个桌面伙伴，奶牛猫排在首位。
+- **显示 / 隐藏画面**：控制浮窗显示。
+- **画面大小、不透明度**：等比缩放，调整 10%～100% 不透明度。
+- **调整位置与大小**：拖动画面或右下角缩放，完成后恢复鼠标穿透；也可悬停 3 秒点击小锁。
+- **托盘猫摇头**：应用自己的猫图标，独立于当前插件。
 
-| 操作 | 用途 |
-| --- | --- |
-| 可视化 | 切换当前画面 |
-| 显示 / 隐藏拾音器 | 控制悬浮画面的显示 |
-| 画面大小 | 调整缩放比例 |
-| 线条颜色 | 选择五种笔色；像素键盘保留固定配色 |
-| 画面不透明度 | 10%～100%，即时生效并自动保存 |
-| 调整位置与大小… | 拖动画面移动、拖动右下角缩放，完成后恢复鼠标穿透 |
+## 插件与隐私
 
-也可以将鼠标停留在画面上 3 秒，点击出现的小锁来解锁或锁定。菜单栏猫图标属于应用本身，不随可视化插件切换。
+应用内置四个 Lua 5.4/Skia 插件，也可安装自己编写的插件。首次构建自动下载并校验运行库依赖。开发和调试见 [插件开发指南](docs/plugin-development.md) 与 [插件工作台](docs/plugin-lab.md)。
 
-## 自己制作插件
-
-插件使用 **Lua 5.4 + Skia**，一个文件夹对应一个可视化。复制模板后，编写场景与动画，放入用户插件目录即可加载，无需重新编译应用。
-
-所有构建均包含插件运行库和内置插件。首次构建会下载并校验 Lua、JSON 库和 Skia 依赖：
-
-```sh
-zsh build.sh
-open dist/Miucs.app
-```
-
-更新后请先退出已运行的 Miucs，再打开新版本。应用只支持插件可视化；运行库缺失时会显示错误。
-
-**[插件开发指南 →](docs/plugin-development.md)**：包含完整示例、双端安装步骤、输入数据、热重载、验证预览和常见问题。
-
-## 本地处理
-
-系统音频在本机分析，不依赖网络服务或外部模型；应用不保存真实音频、屏幕画面或输入文字。键盘效果使用物理键位，不受输入法影响。
-
-主旋律是对混音中突出音高的近似估计，复杂伴奏可能影响结果；音符用于可视化，不生成完整乐谱。算法与限制见[混音主旋律说明](docs/predominant-mixture.md)。
+音频与物理按键只在本机分析，不依赖网络模型；应用不保存真实音频、屏幕或输入文字。
 
 ## 开发文档
 
-- [贡献指南与测试命令](CONTRIBUTING.md)
-- [插件开发指南](docs/plugin-development.md) · [插件 API 契约](contracts/plugins/README.md)
-- [架构与依赖边界](docs/architecture.md)
+- [贡献指南与测试](CONTRIBUTING.md) · [架构与依赖边界](docs/architecture.md)
+- [插件契约](contracts/plugins/README.md) · [可视化契约](contracts/visualization/README.md)
 - [音频数据](contracts/audio-features/README.md) · [键盘数据](contracts/keyboard-input/README.md)
 - [外观设置](docs/appearance.md) · [验证记录](docs/validation/README.md)
-
-插件版另带 **「牛来」**，详见[牛来说明](plugins/niulai-keyboard/README.md)。
-
-插件版另带 **「麦芬与线条小狗」**，详见[麦芬皮肤说明](plugins/muffin-puppies/README.md)。皮肤采用断续手绘键盘，两只小狗随按键播放模型绘制的跳跃帧，麦芬随音乐节拍吹泡泡。

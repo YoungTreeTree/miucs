@@ -52,9 +52,23 @@ import AppKit
         print("PASS CPU surface disposal: 10 reload cycles retain no layers or frame contents")
         // Catalog scans do not create workers; each selection starts only its own package.
         let host=PluginHost.shared, registry=PluginVisualizations.registry()
-        let ids=Set(["pencil-flight","staff-note","pixel-keyboard"])
+        let ids=Set(["pixel-keyboard","muffin-puppies","niulai-keyboard","heiji-kazuha"])
         precondition(ids.isSubset(of:Set(registry.descriptors.map(\.id))))
         precondition(host.packages.isEmpty,"Tray must not eagerly launch a plugin")
+        precondition(registry.descriptors.prefix(4).map(\.id)==["pixel-keyboard","muffin-puppies","niulai-keyboard","heiji-kazuha"])
+        precondition(registry.descriptor(id:"pixel-keyboard")?.name=="奶牛猫")
+        let suite="MiucsCuratedPlugins-"+UUID().uuidString
+        let preferences=UserDefaults(suiteName:suite)!
+        defer { preferences.removePersistentDomain(forName:suite) }
+        for saved in [nil,"removed-plugin","muffin-puppies","pixel-keyboard"] as [String?] {
+            if let saved { preferences.set(saved,forKey:VisualizerPanel.selectionPreferencesKey) }
+            else { preferences.removeObject(forKey:VisualizerPanel.selectionPreferencesKey) }
+            let panel=VisualizerPanel(source:FeatureChannel(),registry:registry,preferences:preferences,persistsFrame:false,monitorsHover:false)
+            precondition(panel.descriptor.id==(saved=="muffin-puppies" ? "muffin-puppies" : "pixel-keyboard"),"First launch and missing plugins select the cat; valid choices survive")
+            panel.visualizationHost.dispose()
+            precondition(host.packages.isEmpty)
+        }
+        print("PASS featured cat ordering, renamed catalog and saved-selection fallback")
         let keys=KeyboardChannel()
         let item=NSStatusBar.system.statusItem(withLength:NSStatusItem.variableLength)
         let tray=AppTrayIcon(item:item,source:keys)

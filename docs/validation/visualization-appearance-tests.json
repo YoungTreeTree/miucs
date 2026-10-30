@@ -41,18 +41,6 @@
       "passed" : true
     },
     {
-      "name" : "Legacy flight ink migrates to the nearest shared color without losing its original data",
-      "passed" : true
-    },
-    {
-      "name" : "An explicit shared selection takes precedence over a legacy palette",
-      "passed" : true
-    },
-    {
-      "name" : "Corrupt legacy data cannot enter the shared color model",
-      "passed" : true
-    },
-    {
       "name" : "Native opacity menu actions apply, mark and save ten levels from 10 to 100 percent",
       "passed" : true
     },
@@ -69,7 +57,7 @@
       "passed" : true
     },
     {
-      "name" : "All three modes inherit transparency while adjustment overlays remain opaque",
+      "name" : "All four modes inherit transparency while adjustment overlays remain opaque",
       "passed" : true
     },
     {
@@ -90,5 +78,5 @@
     }
   ],
   "failed" : 0,
-  "passed" : 22
+  "passed" : 19
 }

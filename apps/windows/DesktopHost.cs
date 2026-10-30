@@ -113,7 +113,7 @@ internal sealed class DesktopHost : IDisposable
     private void SwitchVisualization(string id)
     {
         if (!pluginHost.Views.ContainsKey(id))
-            id=pluginHost.Views.Keys.FirstOrDefault() ?? "";
+            id=pluginHost.Views.ContainsKey("pixel-keyboard") ? "pixel-keyboard" : pluginHost.Views.Keys.FirstOrDefault() ?? "";
         if (view != null && view.Id == id) return;
         WindowFrame? previous = view == null ? null : CurrentFrame();
         hoverLock?.Reset();

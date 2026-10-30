@@ -258,14 +258,15 @@ end
 
 Lua 不能直接访问网络、文件系统、原始 PCM 或输入文字。独立 worker 用于故障隔离，并非操作系统级安全沙箱；安装插件仍需信任其来源。运行时限制、资源上限和性能要求见[插件 API](../contracts/plugins/README.md)。
 
-可直接参考三个相互独立的内置包：
+可直接参考四个独立的内置包：
 
-- [铅笔飞鸟](../plugins/pencil-flight/)：音频特征映射、路径与粒子。
-- [五线谱音符](../plugins/staff-note/)：旋律轨迹、键盘星星与节拍轻弧。
-- [像素音乐键盘](../plugins/pixel-keyboard/)：物理按键、图集和像素动画。
+- [奶牛猫](../plugins/pixel-keyboard/)：默认主打，物理按键、图集和像素动画。
+- [麦芬](../plugins/muffin-puppies/)：跳跃帧、手绘键盘与节拍泡泡。
+- [牛来](../plugins/niulai-keyboard/)：按键和音乐的独立动作。
+- [平次与和叶](../plugins/heiji-kazuha/)：挥剑与节拍转身。
 
 修改宿主或运行时的开发者可继续阅读[贡献指南](../CONTRIBUTING.md)和[插件迁移与验收记录](plugin-migration.md)。
 
 ## 虚拟运行与测试环境
 
-运行 `python3 tools/plugins/lab.py serve --plugin plugins/staff-note` 打开本地插件实验台，可模拟音频、键盘、重连、权限和窗口生命周期，固定种子回放并导出截图与诊断。完整用法、场景格式及覆盖边界见 [插件实验台](plugin-lab.md)。
+运行 `python3 tools/plugins/lab.py serve --plugin plugins/pixel-keyboard` 打开本地插件实验台，可模拟音频、键盘、重连、权限和窗口生命周期，固定种子回放并导出截图与诊断。完整用法、场景格式及覆盖边界见 [插件实验台](plugin-lab.md)。

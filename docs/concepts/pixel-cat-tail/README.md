@@ -1,6 +1,6 @@
 # 像素猫尾巴：概念与动作参考
 
-确认的 v2 概念已在 macOS 与 Windows 的 `PixelTailScene` 中重建为缓存的像素矢量动画，保持固定尾根和稳定粗细，并由实际拍点驱动。生产实现与灵敏度参数见[像素音乐键盘说明](../../pixel-keyboard.md)，实际原生合成演示见[主页 GIF](../../assets/miucs-pixel-keyboard.gif)。以下保留设计过程及生成提示词。
+确认的 v2 概念已转为奶牛猫插件的尾巴图集和 Lua 节拍动画，保持固定尾根和稳定粗细，并由实际拍点驱动。生产实现与灵敏度参数见[奶牛猫说明](../../pixel-keyboard.md)，实际原生合成演示见[主页 GIF](../../assets/miucs-pixel-keyboard.gif)。以下保留设计过程及生成提示词。
 
 ## v2：收细与循环预览
 

@@ -38,7 +38,7 @@ flowchart LR
 | `tools/macos/` | 输入诊断与音频文件分析 |
 | `tests/` | 契约、通用音频、场景规则与各平台集成验证 |
 
-通用 API 不出现原生视图、颜色或 Combine 类型；原生扩展单独归入 `platforms/`。音频核心不引用任何飞鸟或窗口对象。macOS 与 Windows 平台实现互不引用。`scripts/check-boundaries.py` 检查当前 Swift 源码的这些约束，`test-contracts.sh` 不链接 Apple UI、采集或 Accelerate 框架。
+通用 API 不出现原生视图、颜色或 Combine 类型；原生扩展单独归入 `platforms/`。音频核心不引用任何角色或窗口对象。macOS 与 Windows 平台实现互不引用。`scripts/check-boundaries.py` 检查当前 Swift 源码的这些约束，`test-contracts.sh` 不链接 Apple UI、采集或 Accelerate 框架。
 
 这些目录是源码与依赖边界：macOS 由 `swiftc` 分组编译；Windows 由 `apps/windows/Miucs.Windows.csproj` 组合各 Windows 目录的 C# 源码。Lua 插件通过 C ABI 宿主桥接到隔离 worker，不加载第三方原生插件。Windows 的数值、事件、场景和窗口偏好在独立可移植测试中验证，原生平台检查见 `docs/windows-acceptance.md`。
 
@@ -58,7 +58,7 @@ flowchart LR
 
 通道用短锁保护内存值，不执行回调或 UI 工作，不逐帧序列化。连续状态只有一个最新快照；起音和节拍各保留最多 64 个，超过 250ms 或容量时丢弃最旧项；频谱变化用单调最大值队列保存最近 250ms 的未读区间峰值。订阅者有独立游标，互不排空彼此的事件。
 
-消费者每次屏幕刷新读一次。帧通过 `sessionID + sequence` 去重；同一帧不会反复重置动作。短事件即使下一帧已恢复平静，也能在后续刷新触发。多起音在飞鸟会话中合为一次振翅；其他模块可自行逐个处理。切换或恢复显示时新建订阅，从当前序号开始，不补播先前动作。
+消费者每次屏幕刷新读一次。帧通过 `sessionID + sequence` 去重；同一帧不会反复重置动作。短事件即使下一帧已恢复平静，也能在后续刷新触发。各插件按自己的动画规则消费起音、节拍和按键事件。切换或恢复显示时新建订阅，从当前序号开始，不补播先前动作。
 
 每次采集重建产生新 UUID，同时清理快照和事件。旧队列的迟到回调因代次不符被拒绝；消费者收到新代次后清除自己的输入历史。音频窗口中心时间用于音高和测量时间线，主机单调接收时间用于事件过期、帧龄和恢复看门狗，二者不混算。
 
@@ -72,11 +72,11 @@ macOS 的 `PluginVisualizations.registry()` 从插件清单创建描述符；`Pl
 
 `VisualizationRegistry`、`VisualizationController` 和平台视图接口是应用内部的窗口适配层。扩展可视化应遵循 [插件契约](../contracts/plugins/README.md)，不向应用注册原生类。音频和键盘使用独立的代次、序号和权限；`PluginHost` 同帧打包两路快照与短事件，交给当前插件。
 
-`plugins/pencil-flight`、`plugins/staff-note`、`plugins/pixel-keyboard` 分别维护飞鸟、音符和像素键盘的状态。新增插件只需提供清单、Lua 和资源。应用猫头图标及 `TrayHeadAnimation` 属于外壳，独立于当前插件；插件切换不影响托盘身份。
+`plugins/pixel-keyboard`、`plugins/muffin-puppies`、`plugins/niulai-keyboard`、`plugins/heiji-kazuha` 分别维护奶牛猫、麦芬、牛来、平次与和叶的状态。奶牛猫为默认插件并在目录中置顶。新增插件只需提供清单、Lua 和资源。应用猫头图标及 `TrayHeadAnimation` 属于外壳，独立于当前插件；插件切换不影响托盘身份。
 
-全局颜色与透明度由外壳保存。macOS 通过 `VisualizationAppearanceStore` 和 `PluginSession` 传递笔色，Windows 通过 `PluginHost.Appearance` 传递外观。变更外观不重建输入采集或清理动画。旧飞鸟配色仅保留最小读取迁移逻辑，旧调色盘与模型已移除。
+全局颜色与透明度由外壳保存。macOS 通过 `VisualizationAppearanceStore` 和 `PluginSession` 传递笔色，Windows 通过 `PluginHost.Appearance` 传递外观。变更外观不重建输入采集或清理动画。插件保留自己的角色配色，旧专属调色盘与迁移代码已移除。
 
-窗口负责透明、鼠标穿透、悬停锁、拖动和等比缩放。切换前保存旧位置与尺寸、暂停绘制，释放旧会话，再恢复目标插件视口并激活。隐藏和切换不停止音频采集。每个插件独立保存位置和大小，旧飞鸟窗口偏好键继续兼容，未知选择回退到可用插件。
+窗口负责透明、鼠标穿透、悬停锁、拖动和等比缩放。切换前保存旧位置与尺寸、暂停绘制，释放旧会话，再恢复目标插件视口并激活。隐藏和切换不停止音频采集。每个插件独立保存位置和大小，奶牛猫保持原有 `pixel-keyboard` 标识，未知选择优先回退到奶牛猫。
 
 ## 构建与验证
 
