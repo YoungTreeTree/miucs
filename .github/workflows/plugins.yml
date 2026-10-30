@@ -25,6 +25,8 @@ jobs:
           MIUCS_FORCE_CPU=1 build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/staff-note build/plugin-fixture.json
           build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/niulai-keyboard build/plugin-fixture.json
           MIUCS_FORCE_CPU=1 build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/niulai-keyboard build/plugin-fixture.json
+          build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/muffin-puppies build/plugin-fixture.json
+          MIUCS_FORCE_CPU=1 build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/muffin-puppies build/plugin-fixture.json
           build/plugins/plugin-benchmark plugins build/plugin-fixture.json > build/plugin-benchmark.json
       - uses: actions/upload-artifact@v4
         if: always()
