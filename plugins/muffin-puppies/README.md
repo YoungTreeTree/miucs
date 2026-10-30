@@ -1,10 +1,10 @@
-# 麦芬与线条小狗
+# 麦芬
 
-![麦芬与线条小狗：工作台合成音乐与打字输入预览](../../docs/assets/plugins/muffin-puppies.gif)
+![麦芬：工作台合成音乐与打字输入预览](../../docs/assets/plugins/muffin-puppies.gif)
 
 工作台使用统一合成输入生成的 12 秒循环 GIF，无声。查看[全部插件预览](../../docs/plugin-previews.md)。
 
-按已确认的第三版概念图实现的 Miucs API v1 独立皮肤，菜单名称为「麦芬与线条小狗」。
+按已确认的第三版概念图实现的 Miucs API v1 独立皮肤，菜单名称为「麦芬」。
 
 - 奶油白、草绿色键盘；屏幕、每个键帽、双爪与角色采用断续手绘轮廓。键盘线条在创建时固定，运行中不随机闪烁。
 - 左侧物理键（1–5、Q–T、A–G、Z–B 与左修饰键）让马尔济斯起跳；右侧键让小金毛起跳；空格交替触发。仅真实新按下触发，长按重复不触发。
@@ -15,7 +15,7 @@
 
 ## 安装
 
-完整复制本文件夹到 `~/Library/Application Support/Miucs/Plugins/muffin-puppies/`（macOS）或 `%LOCALAPPDATA%\Miucs\Plugins\muffin-puppies\`（Windows），菜单「重新扫描插件」后选择「麦芬与线条小狗」。
+完整复制本文件夹到 `~/Library/Application Support/Miucs/Plugins/muffin-puppies/`（macOS）或 `%LOCALAPPDATA%\Miucs\Plugins\muffin-puppies\`（Windows），菜单「重新扫描插件」后选择「麦芬」。
 
 工作区版本也会由现有构建脚本自动打包。与旧皮肤使用不同 ID 和独立的大小、位置偏好。
 

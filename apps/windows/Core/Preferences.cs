@@ -27,7 +27,7 @@ public static class WindowPlacement
 
 public sealed class Preferences
 {
-    public string Visualization { get; set; } = "pencil-flight";
+    public string Visualization { get; set; } = "pixel-keyboard";
     public string Color { get; set; } = "graphite";
     private int transparency;
     public int Transparency { get => transparency; set => transparency = Math.Clamp(value, 0, 90); }
@@ -42,7 +42,7 @@ public sealed class Preferences
             var result = JsonSerializer.Deserialize<Preferences>(File.ReadAllText(path));
             if (result == null) return new();
             result.Frames ??= new();
-            if (string.IsNullOrWhiteSpace(result.Visualization) || result.Visualization.Length > 128) result.Visualization = "pencil-flight";
+            if (string.IsNullOrWhiteSpace(result.Visualization) || result.Visualization.Length > 128) result.Visualization = "pixel-keyboard";
             result.Color = Palette.ContainsKey(result.Color ?? "") ? result.Color! : "graphite";
             foreach (var key in new List<string>(result.Frames.Keys))
                 if (result.Frames[key] == null || !result.Frames[key].IsValid) result.Frames.Remove(key);

@@ -21,8 +21,8 @@ jobs:
       - run: zsh scripts/test-plugin-macos.sh
       - run: |
           python3 tools/plugins/fixture.py
-          build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/staff-note build/plugin-fixture.json
-          MIUCS_FORCE_CPU=1 build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/staff-note build/plugin-fixture.json
+          build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/pixel-keyboard build/plugin-fixture.json
+          MIUCS_FORCE_CPU=1 build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/pixel-keyboard build/plugin-fixture.json
           build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/niulai-keyboard build/plugin-fixture.json
           MIUCS_FORCE_CPU=1 build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/niulai-keyboard build/plugin-fixture.json
           build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/muffin-puppies build/plugin-fixture.json

@@ -9,13 +9,13 @@
 ```sh
 # macOS
 sh scripts/build-plugins.sh
-python3 tools/plugins/lab.py serve --plugin plugins/staff-note
+python3 tools/plugins/lab.py serve --plugin plugins/pixel-keyboard
 ```
 
 ```powershell
 # Windows，使用项目原有 MSVC / CMake 构建环境
 ./scripts/build-windows.ps1
-python tools/plugins/lab.py serve --plugin plugins/staff-note
+python tools/plugins/lab.py serve --plugin plugins/pixel-keyboard
 ```
 
 命令会打开本地浏览器。也可加 `--no-browser --port 8765`，手动打开终端打印的 `http://127.0.0.1:8765/`。服务只绑定 IPv4 回环地址，API 校验 Host、Origin 和每次启动生成的会话 token；不提供远程访问，不上传数据。
@@ -90,7 +90,7 @@ python tools/plugins/lab.py serve --plugin plugins/staff-note
 
 ```sh
 python3 tools/plugins/lab.py run --plugin plugins/pixel-keyboard --scenario keyboard --output build/lab-keyboard
-python3 tools/plugins/lab.py run --plugin plugins/staff-note --scenario /path/to/scenario.json --output build/lab-custom
+python3 tools/plugins/lab.py run --plugin plugins/pixel-keyboard --scenario /path/to/scenario.json --output build/lab-custom
 python3 tests/plugins/lab_test.py
 ```
 

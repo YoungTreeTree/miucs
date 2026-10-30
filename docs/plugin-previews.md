@@ -1,14 +1,12 @@
-# 插件动态预览
+# 四个桌面伙伴的动态预览
 
-以下 GIF 由插件工作台使用同一组「音乐与打字」合成输入导出，每张循环 12 秒，采样 16 FPS，最长边 640 像素。正式 Lua worker 与 Skia CPU 绘制器生成画面；GIF 无声，使用暖白背景合成，不是桌面录屏。
+GIF 使用同一组「音乐与打字」合成输入，正式 Lua worker 与 Skia CPU 绘制器生成；每张循环 12 秒、采样 16 FPS、最长边 640 像素。暖白背景仅用于预览，应用浮窗是透明的。GIF 无声，不是桌面录屏。
 
 | 插件 | 说明与动态预览 |
 | --- | --- |
-| 像素音乐键盘 | [查看](pixel-keyboard.md) |
-| 五线谱音符 | [查看](staff-note.md) |
-| 铅笔飞鸟 | [查看](sound-flight.md) |
+| **奶牛猫 · 默认主打** | [查看](pixel-keyboard.md) |
+| 麦芬 | [查看](../plugins/muffin-puppies/README.md) |
 | 牛来 | [查看](../plugins/niulai-keyboard/README.md) |
-| 麦芬与线条小狗 | [查看](../plugins/muffin-puppies/README.md) |
 | 平次与和叶 | [查看](../plugins/heiji-kazuha/README.md) |
 
-导出于 2026-10-30，随机种子为 42。六个插件的公共输入 SHA-256 一致；尺寸、帧数和时长见[导出清单](assets/plugins/manifest.json)。重新生成的方法见[插件工作台](plugin-lab.md#所有皮肤的统一输入-gif)。
+导出于 2026-10-30，随机种子为 42。四个插件使用相同公共输入；尺寸、帧数和时长见[导出清单](assets/plugins/manifest.json)。重新生成的方法见[插件工作台](plugin-lab.md#所有皮肤的统一输入-gif)。

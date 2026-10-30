@@ -63,7 +63,14 @@ Json catalog(const std::vector<std::filesystem::path>& roots) {
       ids.insert(id);
       auto path=std::filesystem::canonical(f).u8string();m["directory"]=std::string(path.begin(),path.end()); result["plugins"].push_back(m);
     } catch(const std::exception& e) {result["errors"].push_back({{"directory",f.string()},{"message",e.what()}});}
-  } return result;
+  }
+  auto rank=[](const Json& plugin) {
+    constexpr std::string_view order[]={"pixel-keyboard","muffin-puppies","niulai-keyboard","heiji-kazuha"};
+    const auto& id=plugin.at("id").get_ref<const std::string&>();
+    return std::find(std::begin(order),std::end(order),id)-std::begin(order);
+  };
+  std::stable_sort(result["plugins"].begin(),result["plugins"].end(),[&](const Json& a,const Json& b){return rank(a)<rank(b);});
+  return result;
 }
 void validateNode(const Json& n) {
   if(!n.is_object() || !identifier(n.at("id").get<std::string>())) throw Error("Invalid node id");

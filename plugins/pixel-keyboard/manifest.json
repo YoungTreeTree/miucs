@@ -3,7 +3,7 @@
   "api": 1,
   "entry": "main.lua",
   "id": "pixel-keyboard",
-  "name": "像素音乐键盘",
+  "name": "奶牛猫",
   "inputs": [
     "audio",
     "keyboard"

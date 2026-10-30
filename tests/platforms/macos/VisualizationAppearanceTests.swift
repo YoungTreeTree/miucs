@@ -51,18 +51,6 @@ enum VisualizationAppearanceTests {
         check("The global selection survives a new store", VisualizationAppearanceStore(preferences: preferences).selection == .blue)
         preferences.set("future-unknown-ink", forKey: VisualizationAppearanceStore.preferencesKey)
         check("Unknown saved ink safely falls back to graphite", VisualizationAppearanceStore(preferences: preferences).selection == .graphite)
-        preferences.removeObject(forKey: VisualizationAppearanceStore.preferencesKey)
-        let legacyData = try JSONEncoder().encode(["bird": VisualizationInk.green.color])
-        preferences.set(legacyData, forKey: "MiucsPencilPalette.v1")
-        let migrated = VisualizationAppearanceStore(preferences: preferences)
-        check("Legacy flight ink migrates to the nearest shared color without losing its original data", migrated.selection == .green && preferences.data(forKey: "MiucsPencilPalette.v1") == legacyData)
-        migrated.select(.violet)
-        check("An explicit shared selection takes precedence over a legacy palette", VisualizationAppearanceStore(preferences: preferences).selection == .violet)
-        preferences.removeObject(forKey: VisualizationAppearanceStore.preferencesKey)
-        preferences.set(Data("corrupt".utf8), forKey: "MiucsPencilPalette.v1")
-        check("Corrupt legacy data cannot enter the shared color model", VisualizationAppearanceStore(preferences: preferences).selection == .graphite)
-        preferences.set(legacyData, forKey: "MiucsPencilPalette.v1")
-
         let store = VisualizationAppearanceStore(preferences: preferences)
         let transparencyMenu = VisualizationTransparencyMenu(store: store)
         var transparencyActionsWork = true
@@ -91,28 +79,28 @@ enum VisualizationAppearanceTests {
         let channel = FeatureChannel(now: { 0 }), generation = UUID()
         channel.reset(sessionID: generation, state: .running)
         let registry = VisualizationRegistry()
-        for id in ["pencil-flight", "staff-note", "pixel-keyboard"] {
+        for id in ["pixel-keyboard", "muffin-puppies", "niulai-keyboard", "heiji-kazuha"] {
             registry.register(VisualizationDescriptor(id: id, name: id)) { InkProbe(id: id) }
         }
-        let panel = VisualizerPanel(source: channel, registry: registry, selectedID: "pencil-flight", preferences: preferences, persistsFrame: false)
+        let panel = VisualizerPanel(source: channel, registry: registry, selectedID: "pixel-keyboard", preferences: preferences, persistsFrame: false)
         let binding = store.$selection.sink { panel.visualizationHost.applyAppearance($0.appearance) }
         let opacityBinding = store.$transparency.sink { panel.visualizationHost.applyTransparency($0) }
         defer { binding.cancel(); opacityBinding.cancel(); panel.orderOut(nil); panel.visualizationHost.dispose() }
         let host = panel.visualizationHost
         var opacitySurvivesSwitch = true
         store.setTransparency(70)
-        for id in ["staff-note", "pixel-keyboard", "pencil-flight"] {
+        for id in ["muffin-puppies", "niulai-keyboard", "heiji-kazuha", "pixel-keyboard"] {
             _ = panel.selectVisualization(id: id)
             opacitySurvivesSwitch = opacitySurvivesSwitch && abs(Double(host.activeView!.alphaValue) - 0.3) < 0.001 &&
                 host.subviews.filter { $0 !== host.activeView }.allSatisfy { $0.alphaValue == 1 }
         }
-        check("All three modes inherit transparency while adjustment overlays remain opaque", opacitySurvivesSwitch && panel.alphaValue == 1)
+        check("All four modes inherit transparency while adjustment overlays remain opaque", opacitySurvivesSwitch && panel.alphaValue == 1)
         host.controller.resume()
         let session = host.controller.current as! InkProbe, initialFrame = panel.frame
         store.setTransparency(50)
         store.select(.blue)
         check("Appearance updates preserve session, geometry and click-through", host.controller.current === session && panel.frame == initialFrame && panel.ignoresMouseEvents && host.activeView?.alphaValue == 0.5 && session.applied == VisualizationInk.blue.appearance)
-        _ = panel.selectVisualization(id: "staff-note")
+        _ = panel.selectVisualization(id: "muffin-puppies")
         let next = host.controller.current as! InkProbe
         check("Switching applies the shared ink before activation", next.activeInk == VisualizationInk.blue.appearance)
         panel.orderOut(nil); store.select(.green); store.setTransparency(20)

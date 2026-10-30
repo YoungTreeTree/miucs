@@ -39,7 +39,7 @@ def main():
     path = Path(args.scenario)
     if not path.is_file():
         path = PRESETS / (args.scenario + ".json")
-    folders = sorted(p.parent for p in (ROOT / "plugins").glob("*/manifest.json"))
+    folders = sorted((p.parent for p in (ROOT / "plugins").glob("*/manifest.json")), key=lambda p: (p.name != "pixel-keyboard", p.name))
     selected = None
     if args.plugin:
         folder = args.plugin.resolve()

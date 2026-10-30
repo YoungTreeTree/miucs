@@ -15,7 +15,7 @@
 | `sequence` | 每个代次内从 1 递增的接收帧序号；跨代次不能比较 |
 | `audio.time`、`melody.time`、起音事件 `time` | PCM 分析窗口中心相对当前格式时间线的秒数；重连或输入格式改变可归零 |
 | `receivedAt` | 主机单调时钟秒数，macOS 为 `systemUptime`；不是 Unix 时间，也不能与 PCM 时间相减 |
-| `frameAge` | 读取时 `max(0, 单调时钟 - receivedAt)`；无帧时缺失；飞鸟对超过 400ms 的帧按失联处理 |
+| `frameAge` | 读取时 `max(0, 单调时钟 - receivedAt)`；无帧时缺失；插件按自身规则处理过期帧 |
 
 无效 Optional 可省略或写 `null`，不能用 `0`、NaN、Infinity 替代。零音高不能表示“没有旋律”；零相关性表示有效的不相关。`isSilent` 描述已采集声音，`state` 描述连接；运行但没有 PCM、静音 PCM、权限不足是不同状态。
 

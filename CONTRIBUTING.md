@@ -4,7 +4,7 @@
 
 ## 平台支持
 
-| 平台 | 音频采集 / 恢复 | 分析后端 | 铅笔飞鸟绘制 | 五线谱音符绘制 | 应用外壳 |
+| 平台 | 音频采集 / 恢复 | 分析后端 | 四个插件绘制 | 插件适配 | 应用外壳 |
 | --- | --- | --- | --- | --- | --- |
 | macOS 14+ / Apple Silicon | 已实现，含自动恢复 | Swift 分析 + Accelerate FFT | Lua/Skia，共用五种笔色 | Lua/Skia，共用五种笔色 | 已实现 |
 | Windows 10/11 x64 | WASAPI 已实现；实机待验 | C# FFT/混音旋律/节拍；合成测试 | Lua/Skia；实机待验 | Lua/Skia；实机待验 | 托盘/透明窗口已实现；实机待验 |
@@ -77,11 +77,11 @@ python3 scripts/benchmark-pop-melody.py --prepare --adc-dataset build/adc2004 --
 sh scripts/build-plugins.sh
 sh scripts/test-plugins.sh          # C++ 运行库、固定数值回放、预览、传输与生命周期
 zsh scripts/test-plugin-macos.sh    # macOS 插件选择、独立 worker、热重载和托盘
-python3 tools/plugins/validate.py plugins/staff-note
+python3 tools/plugins/validate.py plugins/pixel-keyboard
 python3 tools/plugins/preview.py
 ```
 
-数值回放使用 `tests/plugins/reference.json.gz` 中的固定参考，覆盖三个原有插件各 600 帧。参考来自移除前的模拟器，输入哈希防止测试数据无意漂移；维护说明见 [测试基线](tests/plugins/README.md)。性能测试使用 `build/plugins/plugin-benchmark`，持续内存检查使用 `tests/plugins/soak.py`。
+数值回放使用 `tests/plugins/reference.json.gz` 中的固定参考，覆盖奶牛猫的 600 帧头部与尾巴动画；麦芬、牛来和平次与和叶由各自规则回放验证。参考来自移除前的模拟器，输入哈希防止测试数据无意漂移；维护说明见 [测试基线](tests/plugins/README.md)。性能测试使用 `build/plugins/plugin-benchmark`，持续内存检查使用 `tests/plugins/soak.py`。
 
 ## Windows 接入
 

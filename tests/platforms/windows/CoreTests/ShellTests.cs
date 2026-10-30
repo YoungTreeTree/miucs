@@ -21,11 +21,11 @@ public static class ShellTests
     public static void Run()
     {
         var monitor = new WindowFrame(0, 0, 1920, 1040);
-        var flight = WindowPlacement.Fit(new(80, 80, 400, 260), monitor, 400d / 260, 40, 1000);
-        Check(flight == new WindowFrame(80, 80, 400, 260), "valid flight placement unchanged");
-        var staff = WindowPlacement.Fit(new(-9000, 9000, 1600, 320), monitor, 5, 80, 1600);
-        Contained(staff, monitor, 5);
-        Check(Near(staff.X, 0) && Near(staff.Y, 720), "off-screen saved placement restored");
+        var canvas = WindowPlacement.Fit(new(80, 80, 400, 260), monitor, 400d / 260, 40, 1000);
+        Check(canvas == new WindowFrame(80, 80, 400, 260), "valid canvas placement unchanged");
+        var wide = WindowPlacement.Fit(new(-9000, 9000, 1600, 320), monitor, 5, 80, 1600);
+        Contained(wide, monitor, 5);
+        Check(Near(wide.X, 0) && Near(wide.Y, 720), "off-screen saved placement restored");
         var small = new WindowFrame(0, 0, 420, 90);
         var scaled = WindowPlacement.Fit(new(12, 12, 800, 160), small, 5, 80, 1600);
         Contained(scaled, small, 5);
@@ -37,16 +37,16 @@ public static class ShellTests
         var invalid = WindowPlacement.Fit(new(double.NaN, 0, double.PositiveInfinity, 0), monitor, 5, 80, 1600);
         Contained(invalid, monitor, 5);
         Check(Near(invalid.Width, 80), "corrupt saved geometry falls back to the 10 percent module minimum");
-        var tinyFlight = WindowPlacement.Fit(new(80, 80, 40, 26), monitor, 400d / 260, 40, 1000);
-        Check(tinyFlight == new WindowFrame(80, 80, 40, 26), "10 percent flight scale stays at the module minimum");
-        var clampedFlight = WindowPlacement.Fit(new(80, 80, 10, 6.5), monitor, 400d / 260, 40, 1000);
-        Check(Near(clampedFlight.Width, 40) && Near(clampedFlight.Height, 26), "flight sizes below 10 percent clamp to the module minimum");
-        var tinyStaff = WindowPlacement.Fit(new(80, 80, 80, 16), monitor, 5, 80, 1600);
-        Check(Near(tinyStaff.Width, 80) && Near(tinyStaff.Height, 16), "10 percent staff scale stays at the module minimum");
+        var tinyCanvas = WindowPlacement.Fit(new(80, 80, 40, 26), monitor, 400d / 260, 40, 1000);
+        Check(tinyCanvas == new WindowFrame(80, 80, 40, 26), "10 percent canvas scale stays at the module minimum");
+        var clampedCanvas = WindowPlacement.Fit(new(80, 80, 10, 6.5), monitor, 400d / 260, 40, 1000);
+        Check(Near(clampedCanvas.Width, 40) && Near(clampedCanvas.Height, 26), "canvas sizes below 10 percent clamp to the module minimum");
+        var tinyWide = WindowPlacement.Fit(new(80, 80, 80, 16), monitor, 5, 80, 1600);
+        Check(Near(tinyWide.Width, 80) && Near(tinyWide.Height, 16), "10 percent wide scale stays at the module minimum");
         var tinyKeys = WindowPlacement.Fit(new(80, 80, 80, 46), monitor, 800d / 460, 80, 1600);
         Check(Near(tinyKeys.Width, 80) && Near(tinyKeys.Height, 46), "10 percent pixel keyboard scale stays at the module minimum");
         bool rejected = false;
-        try { WindowPlacement.Fit(flight, new(0, 0, 0, 10), 5, 600, 1600); }
+        try { WindowPlacement.Fit(canvas, new(0, 0, 0, 10), 5, 600, 1600); }
         catch (ArgumentException) { rejected = true; }
         Check(rejected, "invalid work area rejected");
         var random = new Random(1977);
@@ -67,13 +67,13 @@ public static class ShellTests
             Check(defaults.Transparency == 0, "existing installs keep original opacity");
             Check(!defaults.KeyboardEnabled, "keyboard capture is opt-in on first launch");
             Check(defaults.TrayAnimationEnabled, "tray animation is enabled without enabling capture");
-            Check(defaults.Visualization == "pencil-flight" && defaults.Color == "graphite", "stable first-launch defaults");
+            Check(defaults.Visualization == "pixel-keyboard" && defaults.Color == "graphite", "stable first-launch defaults");
             Check(Preferences.Palette.Count == 5, "five shared colors");
-            defaults.Visualization = "staff-note"; defaults.Color = "mist-blue"; defaults.KeyboardEnabled = true;
+            defaults.Visualization = "muffin-puppies"; defaults.Color = "mist-blue"; defaults.KeyboardEnabled = true;
             defaults.Transparency = 60;
             defaults.TrayAnimationEnabled = false;
-            defaults.Frames["staff-note"] = new(-100, 70, 1000, 200);
-            defaults.Frames["pencil-flight"] = new(100, 200, 500, 325);
+            defaults.Frames["muffin-puppies"] = new(-100, 70, 1000, 200);
+            defaults.Frames["pixel-keyboard"] = new(100, 200, 500, 325);
             Check(defaults.Save(path), "preferences atomic save succeeds");
             Check(!File.Exists(path + ".tmp"), "no temporary preference file remains after save");
             var loaded = Preferences.Load(path);
@@ -83,10 +83,10 @@ public static class ShellTests
             Check(loaded.Transparency == 90, "transparency retains at least ten percent visibility");
             loaded.Transparency = -10;
             Check(loaded.Transparency == 0, "negative transparency is clamped");
-            Check(loaded.Visualization == "staff-note" && loaded.Color == "mist-blue" && loaded.KeyboardEnabled, "global selection and explicit keyboard preference round-trip");
-            Check(loaded.Frames.Count == 2 && loaded.Frames["staff-note"] == defaults.Frames["staff-note"] && loaded.Frames["pencil-flight"] == defaults.Frames["pencil-flight"], "module positions/sizes remain independent");
+            Check(loaded.Visualization == "muffin-puppies" && loaded.Color == "mist-blue" && loaded.KeyboardEnabled, "global selection and explicit keyboard preference round-trip");
+            Check(loaded.Frames.Count == 2 && loaded.Frames["muffin-puppies"] == defaults.Frames["muffin-puppies"] && loaded.Frames["pixel-keyboard"] == defaults.Frames["pixel-keyboard"], "module positions/sizes remain independent");
             File.WriteAllText(path, "{ not json");
-            Check(Preferences.Load(path).Visualization == "pencil-flight", "truncated JSON recovers to defaults");
+            Check(Preferences.Load(path).Visualization == "pixel-keyboard", "truncated JSON recovers to defaults");
             File.WriteAllText(path, "null");
             Check(!Preferences.Load(path).KeyboardEnabled, "null JSON recovers with keyboard disabled");
             File.WriteAllText(path, "{\"Transparency\":999,\"Color\":\"mist-blue\"}");
@@ -96,7 +96,7 @@ public static class ShellTests
             Check(Preferences.Load(path).Visualization == "unknown", "plugin selection survives preferences load for catalog resolution");
             var unknown = Preferences.Load(path);
             Check(unknown.Visualization == "unknown" && unknown.Color == "graphite" && unknown.Frames.Count == 0, "plugin IDs preserved and null collections sanitized");
-            File.WriteAllText(path, "{\"Frames\":{\"staff-note\":{\"X\":0,\"Y\":0,\"Width\":0,\"Height\":1},\"pencil-flight\":null}}");
+            File.WriteAllText(path, "{\"Frames\":{\"muffin-puppies\":{\"X\":0,\"Y\":0,\"Width\":0,\"Height\":1},\"pixel-keyboard\":null}}");
             Check(Preferences.Load(path).Frames.Count == 0, "invalid individual saved frames removed");
             Check(!loaded.Save(directory), "unwritable file target is a recoverable save failure");
         }

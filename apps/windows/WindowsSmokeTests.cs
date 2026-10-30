@@ -24,7 +24,7 @@ internal static class WindowsSmokeTests
     private static void VerifyPluginRendering()
     {
         using var host = new PluginHost(new AudioChannel(), new KeyboardChannel());
-        foreach (string id in new[] { "pencil-flight", "staff-note", "pixel-keyboard" })
+        foreach (string id in new[] { "pixel-keyboard", "muffin-puppies", "niulai-keyboard", "heiji-kazuha" })
         {
             if (!host.Views.ContainsKey(id)) throw new InvalidOperationException("Missing bundled plugin: " + id);
             using var view = new PluginView(host, id);

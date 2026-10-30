@@ -1,101 +1,29 @@
-# UI plugin migration
+# 插件运行时与验证
 
-To create your own plugin, start with the [插件开发指南](plugin-development.md). This document covers runtime migration, implementation details and acceptance status.
+Miucs 只使用 Lua 5.4/Skia 可视化。内置四个独立插件：
 
-The shared Lua + Skia implementation is the only visualization runtime. Native visualization implementations and mode switches have been removed. Physical-machine, latency, performance and sustained-memory acceptance gates remain separate from this product decision.
+| 菜单名称 | 稳定 ID | 默认顺序 |
+| --- | --- | --- |
+| 奶牛猫 | `pixel-keyboard` | 1，首次启动默认 |
+| 麦芬 | `muffin-puppies` | 2 |
+| 牛来 | `niulai-keyboard` | 3 |
+| 平次与和叶 | `heiji-kazuha` | 4 |
 
-## Build and run
+重命名保留插件 ID，因此奶牛猫已有的选择、位置和尺寸继续有效。失效的保存选择回退到奶牛猫；有效的其他选择继续保留。用户安装的自定义插件排在内置插件之后。
 
-Requirements: Python 3.10 with the current security updates (or 3.12), CMake 3.24+, platform C++ toolchain, Xcode/Swift on macOS, Visual Studio C++ build tools and .NET 8 on Windows. Dependencies are downloaded over HTTPS and SHA-256 verified by `scripts/prepare-plugin-deps.py`. First build downloads Lua, nlohmann JSON, matching Skia headers and prebuilt static Skia. Currently supported native dependency targets: Mac arm64, Windows x64 and Windows arm64.
+每个插件在隔离 worker 中运行 Lua；宿主将音频和键盘快照打包传输，Skia 在宿主绘制。macOS 使用 Metal，Windows 使用 D3D12/DirectComposition，初始化失败时回退到 CPU。应用猫图标、窗口、输入采集与恢复独立于插件。
 
-macOS:
-
-```sh
-zsh build.sh
-dist/Miucs.app/Contents/MacOS/Miucs
-```
-
-Windows, from PowerShell with the C++ build tools available:
-
-```powershell
-./scripts/build-windows.ps1 -Runtime win-x64
-./dist/windows/win-x64/Miucs.exe
-```
-
-All builds include the plugin runtime and bundled folders. A missing runtime is an error; there is no native visualization fallback or reduced build. Use `MIUCS_PLUGIN_DEV=1` for file-change reloads and `MIUCS_FORCE_CPU=1` to exercise the Skia CPU backend. CPU presentation is capped at 30 FPS.
-
-The three built-in IDs (`pencil-flight`, `staff-note`, `pixel-keyboard`) and their window preference keys are unchanged. Each is now an independent folder under `plugins/`, with its own manifest, source and assets. The **可视化** menu lists these plugins directly, including installed user plugins. The application owns the cat logo and tray animation; they do not load a Lua worker and keep working when a plugin fails or is reloaded. Native capture and analysis remain platform implementations; the plugin modules have no capture controls.
-
-## Package layout
-
-```text
-plugins/
-├── pixel-keyboard/   # pixel music keyboard
-├── pencil-flight/    # pencil bird
-└── staff-note/       # staff, notes and ripples
-```
-
-Each folder can be copied, updated and validated independently. No sibling folder is needed. `apps/assets` holds the application cat portrait and packaged icons; regenerate the `.icns` / `.ico` files on macOS with `python3 scripts/generate-app-icons.py`. The pixel keyboard has its own copy of the portrait for its UI.
-
-## Author a package
-
-```sh
-cp -R tools/plugins/template /path/to/my-plugin
-# Edit the manifest ID, main.lua, scene.lua and local assets.
-python3 tools/plugins/validate.py /path/to/my-plugin
-python3 tools/plugins/preview.py --plugin /path/to/my-plugin --output build/my-preview
-```
-
-The validator starts the real isolated worker, checks its single UI with synthetic input, decodes resources, and runs lifecycle callbacks. The preview exports PNG files through the same Skia CPU renderer. The manifest declares `id`, `name` and `layout` at the top level; the scene root uses the same `id`. Legacy `visualizations` arrays and `tray` entries are rejected. Both tools use only Python's standard library. See `contracts/plugins/README.md`, `manifest.schema.json` and `api.lua` for the protocol and editor definitions.
-
-Install by copying the complete folder into the platform user plugin directory and choosing the rescan menu action. Active instances survive a failed rescan/reload. Removing a folder removes its entry on rescan; the current already-loaded instance may remain until switched or reloaded. A changed manifest ID is a new package, not an update to the prior identity.
-
-## Source map
-
-| Area | Location |
-|---|---|
-| Pure scene model, resource validation, Lua runtime | `modules/plugins/src/model.*`, `resources.cpp`, `runtime.*` |
-| Worker, bounded binary transport, watchdog | `worker.cpp`, `client.*` |
-| Shared Skia painter and C ABI | `renderer.*`, `bridge.cpp`, `include/miucs_plugins.h` |
-| Metal / D3D12 + DirectComposition | `surface_mac.mm`, `surface_win.cpp` |
-| Platform feature adaptation, package lifecycle, reload | `modules/plugins/platforms/macos`, `modules/plugins/platforms/windows` |
-| Physical key names | `modules/keyboard/platforms/*/*PhysicalKeys*` |
-| Shared built-in animations and drawings | `plugins/pixel-keyboard`, `plugins/pencil-flight`, `plugins/staff-note` |
-| Template, synthetic fixture, validation and previews | `tools/plugins` |
-| Worker, transport, replay, native surface and reload tests | `tests/plugins`, `scripts/test-plugin*` |
-
-No third-party native extension ABI, marketplace, automatic download/update, arbitrary shaders or full application-page UI is included.
-
-## Verification commands
+Lua 内存、场景、图像、控制队列和脚本执行时间均有限额。输入更新合并到最新快照，短事件保留有界队列；无变化补丁跳过场景复制。切换释放旧 worker 和 surface；热重载先验证候选，再替换当前 worker。Metal drawable 使用作用域释放，CPU surface 销毁时移除子图层并清空最后一帧图像。
 
 ```sh
 sh scripts/build-plugins.sh
 sh scripts/test-plugins.sh
 zsh scripts/test-plugin-macos.sh
 python3 tools/plugins/fixture.py
-build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/staff-note build/plugin-fixture.json
-MIUCS_FORCE_CPU=1 build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/staff-note build/plugin-fixture.json
+build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/pixel-keyboard build/plugin-fixture.json
+MIUCS_FORCE_CPU=1 build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/pixel-keyboard build/plugin-fixture.json
 build/plugins/plugin-benchmark plugins build/plugin-fixture.json
 python3 tests/plugins/soak.py --seconds 1800
 ```
 
-On Windows pass the parent `plugins` directory to the surface probe; it starts a separate worker for each UI. The native probe and worker live under `build/plugins/Release` with `.exe` suffixes. `transport_test.py`, validator and preview select that build layout automatically. `.github/workflows/plugins.yml` builds both native paths and saves preview artifacts; adding a workflow does not mean it has run on the current unpushed branch.
-
-The replay compiles frozen pre-removal simulations and checks 600 frames per output against Lua, including head/tail, flight position/scale/angle/score, staff motion, trace commands and ring geometry. Fixtures cover short pitch dropouts, silence, long frame intervals, separate input sessions and audio format changes. Host/worker tests cover bounded scene memory, node count, empty path patches, deterministic seeds, revision resync, bytecode, path escapes, corrupt resources, invalid binary packets, event coalescing and a loop that catches its Lua interrupt. Mac reload tests verify candidate failure preservation and viewport continuity.
-
-`plugin-benchmark` measures script wall time and binary decode + atomic scene application separately after warmup. `plugin-surface-probe` measures CPU time spent in native rendering/submission, **not GPU completion or input-to-photon latency**. The soak uses CPU raster export, switching and worker restarts; its pacing overruns are not a GPU dropped-frame result. Run performance acceptance on otherwise idle, fixed machines with the same Release build, size and DPI as the native baseline.
-
-## Release gates
-
-Track measured local results in `docs/validation/plugin-runtime.md`. Plugins are the only runtime. Historical measurements and the frozen numerical fixture remain available for comparison; the removed native source can be recovered from Git history. The following gates still require validation:
-
-- Native Windows D3D12/DirectComposition transparency, resize/DPI, mouse passthrough, layered WPF interaction, suspend/resume and CPU fallback.
-- Native macOS transparency, backing-scale changes, mouse passthrough, hidden/resume, GPU loss and CPU fallback.
-- Shared fixture state/path agreement and reviewed screenshots on both platforms, including rings' full area and staff reconnection.
-- Isolated fixed-machine Release P95 script update and scene application each ≤ 2 ms; GPU completion separately measured, sustained drops < 1%, added input-to-display P95 ≤ one frame.
-- Thirty-minute sustained tests on each target, with repeated switching and reload, showing no sustained memory growth after cache warmup.
-- No plugin animation timer when the floating output is hidden; the application tray has its own 16 FPS cadence. Errors leave capture, the cat logo and menus available.
-
-The runtime's 50 ms CPU failure ceiling and watchdog are fault isolation limits, not relaxed performance acceptance criteria. Font rasterization and GPU antialiasing may differ slightly across platforms; no pixel-identical promise is made.
-
-Windows presentation notes: the native popup is unowned and kept immediately below the WPF window, because Win32 owned popups are constrained above their owner ([window relationships](https://learn.microsoft.com/en-us/windows/win32/winmsg/window-features#owned-windows)). The surface handles `WM_NCHITTEST` with `HTTRANSPARENT`; actual cross-process mouse passthrough remains a native acceptance check ([hit-test semantics](https://learn.microsoft.com/en-us/windows/win32/inputdev/wm-nchittest)).
+macOS 与 Windows 共享插件场景和输入契约。离屏绘制、合成回放和 CI 不能替代真实采集、权限、混合 DPI、GPU 和长期内存验证；Windows 状态见[实机验收表](windows-acceptance.md)。

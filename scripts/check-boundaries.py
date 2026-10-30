@@ -14,7 +14,7 @@ for path in shared:
         failures.append(f"{path.relative_to(root)}: shared import {imports}")
     if re.search(native_names, code):
         failures.append(f"{path.relative_to(root)}: native type in shared source")
-    if any(path.is_relative_to(root / f"modules/{source}") for source in ("audio", "keyboard")) and re.search(r"\b(?:SoundFlightWorld|Pencil\w+|Visualization\w+)\b", code):
+    if any(path.is_relative_to(root / f"modules/{source}") for source in ("audio", "keyboard")) and re.search(r"\b(?:Visualization\w+|PluginSession|PluginCanvas)\b", code):
         failures.append(f"{path.relative_to(root)}: input source depends on visualization")
 
 for platform in ("macos", "windows"):
