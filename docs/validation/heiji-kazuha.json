@@ -1,0 +1,28 @@
+{
+  "checks": 3640,
+  "nodeCount": 268,
+  "swordFrames": 12,
+  "turnFrames": 8,
+  "slowFastSwings": [
+    8,
+    17
+  ],
+  "turnsAt60And120Bpm": [
+    2,
+    6
+  ],
+  "scriptP95Ms": 0.088542,
+  "scriptMeanMs": 0.040520081692690654,
+  "inputs": "synthetic, production Lua worker",
+  "nativeDesktopAcceptance": false,
+  "validation": {
+    "pluginBuild": "passed",
+    "fullPluginSuite": "passed",
+    "macOSMetalSurface": "passed, 148 frames",
+    "macOSCPUSurface": "passed, 148 frames",
+    "assetRegistration": "original RGBA bytes retained, SHA-256 verified",
+    "gif": "640x368, 12 seconds, 16 FPS sampling, 170 encoded frames",
+    "windowsDesktop": "not run locally; CI configured",
+    "macOSHostSelectionAndReload": "passed for all six skins"
+  }
+}

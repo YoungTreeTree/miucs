@@ -1,0 +1,25 @@
+Tool: built-in image_gen; transparent_background=true
+Reference: skin-concept-v1.png
+
+Use case: stylized-concept. Production animation keyframe atlas for the approved Yuru Camp desktop skin.
+Reference image is the approved CHARACTER DESIGN reference. Extract ONLY Nadeshiko Kagamihara, the pink-haired girl seated on the LEFT, with her entire camping chair, coral patterned blanket, cup noodles and chopsticks. No Rin, fire, tent, keyboard, frame or background.
+
+Create exactly TWELVE consecutive animation frames in FOUR columns and THREE rows, a 4:3 landscape canvas. Genuine transparent background. Each virtual cell is square. Place SMALL full seated character in the central 60% of each cell with at least 15% transparent gutters on all sides. Never fill each cell edge-to-edge. No text, numbers, visible grid, borders or watermarks. Entire chair and all chair feet must be fully visible in every frame with generous bottom padding. Fixed camera, constant scale and identical chair geometry. Chair floor contact at local 80% cell height in every frame, center at local 50% cell width.
+
+Design: charming chibi Nadeshiko with long pink hair, recognizably soft pink bangs and small top tuft, warm cream puffy winter jacket, mint/coral striped scarf, warm blush, coral lap blanket with simple cream geometric pattern, brown folding camping chair. Use clean bold slightly hand-drawn black contour, flat warm cel colors and minimal texture, matching reference. Three-quarter view facing slightly RIGHT. Cute small face, expressive crescent eyes, consistent body/head proportions. Cup in her left hand close to chest, chopsticks in right hand (viewer right), with one small visible strand of noodles. Warm steam stays close to cup; no detached giant clouds.
+
+One complete gentle eating loop, read left-to-right top-to-bottom:
+1 relaxed idle holding cup with chopsticks lowered above cup, closed content smile.
+2 looks at cup, chopsticks dip slightly.
+3 lifts chopsticks, a short noodle strand rises.
+4 lifts noodles toward mouth, elbow bends.
+5 leans forward a little, mouth opens.
+6 takes noodles into mouth, chopsticks close to lips, cheeks round.
+7 slurps the remaining short noodle strand, cheeks gently puff.
+8 closes mouth and chews, eyes happily closed.
+9 happy satisfied little smile, chopsticks begin lowering.
+10 shoulders relax, chopsticks lower toward cup.
+11 nearly back to rest, hair settles.
+12 EXACT same idle rest position, expression, cup/chopstick position as frame1.
+
+Keep the chair, feet, cup hand, lap blanket, costume, hair length and head size very stable across frames; actual changes occur in elbow, chopsticks, noodles, mouth, eyes and small upper-body lean. Do not stand up, jump, bounce chair, flip orientation or add extra arms/cups/chopsticks. Not twelve identical poses: clearly show the eating sequence. This sheet will be played without procedural limb movement.

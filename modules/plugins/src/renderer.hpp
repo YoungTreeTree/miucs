@@ -17,6 +17,8 @@ class Renderer {
   std::map<std::string,std::vector<std::string>> children;
   size_t assetBytes=0;
   uint64_t treeVersion=UINT64_MAX;
+  uint64_t stampRevision=UINT64_MAX;
+  std::map<std::string,uint64_t> stamps;
   void syncTree();
   uint64_t stampNode(const std::string&);
   void drawNode(SkCanvas*,const std::string&,int);

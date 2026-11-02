@@ -34,7 +34,7 @@ internal sealed class DesktopHost : IDisposable
     private readonly Forms.NotifyIcon tray;
     private readonly AnimatedTrayIcon trayAnimation;
     private readonly PluginHost? pluginHost;
-    private readonly PixelHeadScene catHead = new();
+    private readonly TrayHeadAnimation catHead = new();
     private KeyboardSubscription headSubscription;
     private double lastHeadTime;
     private readonly Forms.ContextMenuStrip menu = new();
@@ -45,7 +45,8 @@ internal sealed class DesktopHost : IDisposable
     private bool rendering, adjusting, disposed, isVisible = true, suspended;
     private bool powerSuspended, sessionSuspended;
     private double lastTime;
-    private TimeSpan lastRender = TimeSpan.MinValue;
+    private int frameGeneration;
+    private int frameQueued;
     private Point? dragOrigin;
     private WindowFrame? dragFrame;
     private bool resizing;
@@ -68,7 +69,7 @@ internal sealed class DesktopHost : IDisposable
         { shellError = "皮肤运行库加载失败：" + error.Message; }
         window = new Window
         {
-            Title = "Miucs", WindowStyle = WindowStyle.None, AllowsTransparency = true,
+            Title = "Miucs", WindowStyle = WindowStyle.None, AllowsTransparency = false,
             Background = Brushes.Transparent, ResizeMode = ResizeMode.NoResize, ShowInTaskbar = false,
             ShowActivated = false, Topmost = true, Width = 400, Height = 260, Content = root
         };
@@ -88,7 +89,9 @@ internal sealed class DesktopHost : IDisposable
         window.Closing += (_, e) => { if (!disposed) { e.Cancel = true; SetVisible(false); } };
         window.SizeChanged += (_, _) => { if (view != null) { view.Width = window.Width; view.Height = window.Height; } };
         new WindowInteropHelper(window).EnsureHandle();
+        NativeWindow.UseHardwareTransparency(window);
         NativeWindow.SetInteractive(window, false);
+        window.ContentRendered += (_, _) => { NativeWindow.UseHardwareTransparency(window); NativeWindow.SetInteractive(window, adjusting); };
         SwitchVisualization(preferences.Visualization);
         tray = new Forms.NotifyIcon { Text = "Miucs", ContextMenuStrip = menu };
         trayAnimation = new AnimatedTrayIcon(tray, () => AdvanceCatHead(Now));
@@ -122,7 +125,7 @@ internal sealed class DesktopHost : IDisposable
         ShowSettings();
     }
 
-    internal void ShowSettings() { RefreshSettings(); settingsWindow.Present(); }
+    internal void ShowSettings() { if (disposed) return; RefreshSettings(); settingsWindow.Present(); }
     private void RefreshSettings()
     {
         if (settingsWindow == null) return;
@@ -198,31 +201,49 @@ internal sealed class DesktopHost : IDisposable
     {
         if (rendering || !isVisible || suspended || disposed) return;
         audioSubscription = audio.Subscribe(); keyboardSubscription = keyboard.Subscribe();
-        lastTime = Now; lastRender = TimeSpan.MinValue;
+        lastTime = Now;
         view.Activate();
-        CompositionTarget.Rendering += Render;
+        Miucs.Plugins.Winmm.Begin();
         rendering = true;
+        int generation = System.Threading.Interlocked.Increment(ref frameGeneration);
+        var thread = new System.Threading.Thread(() => WaitForFrames(generation)) { IsBackground = true, Name = "Miucs.Frame" };
+        thread.Start();
     }
     private void StopRendering()
     {
         if (!rendering) return;
-        CompositionTarget.Rendering -= Render; rendering = false;
+        rendering = false;
+        System.Threading.Interlocked.Increment(ref frameGeneration);
+        Miucs.Plugins.Winmm.End();
         audioSubscription.Dispose(); keyboardSubscription.Dispose();
         view.Deactivate();
     }
-    private void Render(object? sender, EventArgs args)
+    private void WaitForFrames(int generation)
     {
-        if (args is RenderingEventArgs renderingArgs)
+        while (rendering && !disposed && generation == System.Threading.Volatile.Read(ref frameGeneration))
         {
-            if (renderingArgs.RenderingTime == lastRender) return;
-            lastRender = renderingArgs.RenderingTime;
+            NativeWindow.WaitForFrame();
+            if (!rendering || disposed || generation != System.Threading.Volatile.Read(ref frameGeneration)) break;
+            if (System.Threading.Interlocked.Exchange(ref frameQueued, 1) == 1) continue;
+            app.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, () =>
+            {
+                try
+                {
+                    if (rendering && !disposed && generation == System.Threading.Volatile.Read(ref frameGeneration)) PumpFrame();
+                }
+                finally { System.Threading.Interlocked.Exchange(ref frameQueued, 0); }
+            });
         }
+    }
+    private void PumpFrame()
+    {
+        if (!rendering || disposed) return;
         double now = Now;
         double dt = Math.Max(0, now - lastTime); lastTime = now;
         var keys = keyboardSubscription.Read(now);
         var sound = audioSubscription.Read(now);
-        if (pluginHost == null) AdvanceCatHead(now);
         view.Update(sound, keys, dt);
+        view.InvalidateVisual();
     }
     private double AdvanceCatHead(double now)
     {

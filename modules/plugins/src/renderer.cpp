@@ -85,11 +85,11 @@ void Renderer::drawNode(SkCanvas* c,const std::string& id,int depth) {
   if(layer)c->restore();c->restore();
 }
 void Renderer::syncTree() {
-  if(treeVersion==scene.version)return;
+  if(treeVersion==scene.treeRevision)return;
   children.clear();for(auto& [id,n]:scene.nodes)children[n->value("parent",std::string{})].push_back(id);
   for(auto& [parent,list]:children)std::stable_sort(list.begin(),list.end(),[&](auto& a,auto& b){auto& na=*scene.nodes.at(a);auto& nb=*scene.nodes.at(b);double za=na.value("z",0.0),zb=nb.value("z",0.0);return za==zb?na.value("order",0)<nb.value("order",0):za<zb;});
   for(auto it=paths.begin();it!=paths.end();)if(!scene.nodes.contains(it->first))it=paths.erase(it);else ++it;
-  treeVersion=scene.version;
+  treeVersion=scene.treeRevision;
 }
 uint64_t Renderer::stampNode(const std::string& id) {
   uint64_t value=uint64_t(reinterpret_cast<uintptr_t>(scene.nodes.at(id).get()));
@@ -98,7 +98,10 @@ uint64_t Renderer::stampNode(const std::string& id) {
   return value;
 }
 uint64_t Renderer::stamp(const std::string& output) {
-  syncTree();if(!scene.nodes.contains(output))throw Error("Output root missing: "+output);return stampNode(output);
+  syncTree();if(!scene.nodes.contains(output))throw Error("Output root missing: "+output);
+  if(stampRevision!=scene.revision){stamps.clear();stampRevision=scene.revision;}
+  auto found=stamps.find(output);if(found!=stamps.end())return found->second;
+  auto value=stampNode(output);stamps.emplace(output,value);return value;
 }
 void Renderer::paint(SkCanvas* c,const std::string& output,int width,int height) {
   c->clear(SK_ColorTRANSPARENT);syncTree();if(!scene.nodes.contains(output))throw Error("Output root missing: "+output);

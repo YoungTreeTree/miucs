@@ -236,43 +236,6 @@ enum FeatureChannelTests {
             return stopped && session.active && session.viewport == viewport && session.inputs.last?.onsets.isEmpty == true &&
                 session.inputs.last?.spectralFluxPeak == 0 && channel.snapshot?.sessionID == id
         }
-        check("Flight consumes a short onset and flux peak even when the latest frame is quiet") {
-            let (channel, _, id) = setup(), registry = VisualizationRegistry(), flight = PencilFlightSimulation()
-            registry.register(PencilFlightSimulation.module) { flight }
-            let controller = VisualizationController(source: channel, registry: registry)
-            controller.select(id: PencilFlightSimulation.module.id); controller.resume()
-            channel.publish(audio: sample(onset: true, flux: 0.9), melody: nil, sessionID: id)
-            channel.publish(audio: sample(0.02), melody: nil, sessionID: id)
-            controller.tick(deltaTime: 1.0 / 60)
-            let emitted = flight.world.flap > 0 && !flight.world.puffs.isEmpty
-            for _ in 0..<120 { controller.tick(deltaTime: 1.0 / 60) }
-            return emitted && flight.world.flap < 0.001 && flight.world.puffs.isEmpty
-        }
-        check("Format changes clear the previous note even if PCM time restarts at the same value") {
-            let (channel, _, id) = setup(), reader = channel.subscribe(), flight = PencilFlightSimulation()
-            flight.activate(viewport: .desktop)
-            channel.publish(audio: sample(), melody: MelodyFrame(time: 0, pitchHz: 440, confidence: 1, isMelodic: true), sessionID: id)
-            flight.update(input: reader.read(), deltaTime: 1.0 / 60)
-            let melodic = flight.world.melodyNoteName == "A4"
-            var changed = sample(); changed.channelCount = 1
-            channel.publish(audio: changed, melody: nil, sessionID: id)
-            flight.update(input: reader.read(), deltaTime: 1.0 / 60)
-            return melodic && flight.world.melodyNoteName == nil && channel.snapshot?.sessionID == id
-        }
-        check("A new flight session never revives a stale snapshot or disconnected input") {
-            let (channel, clock, id) = setup(), registry = VisualizationRegistry(), flight = PencilFlightSimulation()
-            channel.publish(audio: sample(onset: true, flux: 1), melody: nil, sessionID: id)
-            clock.value += 1
-            registry.register(PencilFlightSimulation.module) { flight }
-            let controller = VisualizationController(source: channel, registry: registry)
-            controller.select(id: PencilFlightSimulation.module.id); controller.resume(); controller.tick(deltaTime: 0.1)
-            let stale = flight.world.activity == 0 && flight.world.flap == 0 && flight.world.puffs.isEmpty
-            channel.publish(audio: sample(1), melody: nil, sessionID: id); controller.tick(deltaTime: 0.1)
-            let live = flight.world.activity > 0
-            channel.reset(sessionID: UUID(), state: .recovering)
-            for _ in 0..<120 { controller.tick(deltaTime: 1.0 / 60) }
-            return stale && live && flight.world.activity == 0 && flight.world.puffs.isEmpty
-        }
         let failures = checks.filter { !($0["passed"] as! Bool) }.count
         try JSONSerialization.data(withJSONObject: ["passed": checks.count - failures, "failed": failures, "checks": checks],
             options: [.prettyPrinted, .sortedKeys]).write(to: URL(fileURLWithPath: "docs/validation/contract-tests.json"))

@@ -1,0 +1,16 @@
+{
+  "checks": 43,
+  "nodeCount": 521,
+  "maxBubbles": 7,
+  "scriptP95Ms": 0.234708,
+  "scriptMeanMs": 0.12113978897697245,
+  "inputs": "synthetic, production Lua worker",
+  "nativeDesktopAcceptance": false,
+  "drawnFramesPerDog": 16,
+  "fixedDogTransforms": true,
+  "version": "1.1.0",
+  "frameBoundsValidated": 32,
+  "modelDrawnFrames": 32,
+  "runtimeDogTransforms": "constant; only sourceRect changes",
+  "preview": "docs/concepts/muffin-puppies/frame-jump-v2/runtime-preview.webp"
+}

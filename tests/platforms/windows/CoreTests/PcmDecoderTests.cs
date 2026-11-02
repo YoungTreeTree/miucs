@@ -37,9 +37,22 @@ internal static class PcmDecoderTests
         BinaryPrimitives.WriteUInt16LittleEndian(ext.AsSpan(16), 22);
         new Guid("00000003-0000-0010-8000-00aa00389b71").ToByteArray().CopyTo(ext, 24);
         Check(PcmFormat.Parse(ext).FloatingPoint, "extensible IEEE float recognized");
-        bool threw = false; try { PcmFormat.Parse(Wave(1, 16, 6)); } catch (NotSupportedException) { threw = true; }
-        Check(threw, "surround explicitly unsupported not misdecoded");
-        threw = false; try { pcm.Decode(new byte[1], 1); } catch (ArgumentException) { threw = true; }
+        var surround = PcmFormat.Parse(Wave(1, 16, 6));
+        Check(surround.Channels == 6, "surround format is retained for downmix");
+        byte[] packet = new byte[12];
+        packet[0] = 0xff; packet[1] = 0x7f;
+        var mixed = surround.DownmixToStereo(surround.Decode(packet, 1));
+        Check(mixed.Length == 2 && mixed[0] > .99f && Math.Abs(mixed[1]) < .01f, "5.1 front left stays on the left");
+        packet = new byte[12]; packet[4] = 0xff; packet[5] = 0x7f;
+        mixed = surround.DownmixToStereo(surround.Decode(packet, 1));
+        Check(mixed[0] > .7f && mixed[1] > .7f, "center reaches both analysis channels");
+        var adapter = new AnalysisRateAdapter();
+        var fast = new float[19200];
+        for (int i = 0; i < fast.Length; i++) fast[i] = 0.5f;
+        var slow = adapter.Process(fast, 192000, 1);
+        Check(slow.Length > 4700 && slow.Length < 4900, "192 kHz tenth-second becomes 48 kHz");
+        Check(slow[^1] > .4f && slow[^1] < .6f, "resampled level stays near the source");
+        bool threw = false; try { pcm.Decode(new byte[1], 1); } catch (ArgumentException) { threw = true; }
         Check(threw, "truncated packet rejected");
         Console.WriteLine($"PCM decoder tests: {count} assertions passed.");
     }

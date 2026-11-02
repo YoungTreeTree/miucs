@@ -1,0 +1,12 @@
+Production sprite atlas, actual transparent RGBA. Draw Toyama Kazuha from the RIGHT of the reference skin, matching her chibi pixel art identity, brown high ponytail, green ribbon, peach-pink floral kimono, green obi bow at back, white tabi and sandals. ONLY Kazuha sprites; no keyboard, text, arrows, grid lines, background or shadows.
+Exactly EIGHT frames arranged in FOUR equal columns and TWO equal rows on a landscape canvas. One full-body same-scale character per cell, generous transparent gutters, feet aligned at same local baseline, all sprites same physical height. Crisp square-pixel 16-bit art, no smooth painting. The eight frames are the eight consecutive compass views of ONE clockwise turn in place. The camera NEVER changes. Maintain clothing and hairstyle across all eight sides.
+Read order left-to-right top-to-bottom:
+TOP ROW cell1 FRONT: full front face, two eyes, obi belt front.
+TOP ROW cell2 FRONT-LEFT three-quarter: face and nose point screen LEFT, both eyes may be visible, torso turned left 45 degrees.
+TOP ROW cell3 LEFT PROFILE: nose points screen LEFT, exactly one eye, body entirely side-on, green obi bow extends behind to screen RIGHT.
+TOP ROW cell4 REAR-LEFT three-quarter: back of head and big obi bow dominate, only tiny left facial edge at screen LEFT, no visible front chest.
+BOTTOM ROW cell1 BACK: back of head, ponytail, centered green obi bow, absolutely NO face.
+BOTTOM ROW cell2 REAR-RIGHT three-quarter: back and obi bow dominate, tiny face edge at screen RIGHT, no front chest.
+BOTTOM ROW cell3 RIGHT PROFILE: nose points screen RIGHT, exactly one eye, body entirely side-on, obi bow behind to screen LEFT.
+BOTTOM ROW cell4 FRONT-RIGHT three-quarter: face and nose point screen RIGHT, front chest and obi belt visible, turns back toward FRONT to close loop.
+These specific orientations are essential: first row turns toward screen LEFT, last two frames face screen RIGHT. Do not repeat left-facing profile at the end. Relaxed happy dance pose, arms a little spread, modest full-length kimono follows slight spin, ponytail trails naturally. Do not add an extra ninth pose. Character bodies stay upright. Same character scale and baseline throughout. This is an eight-direction 360-degree spin animation sprite sheet, not arbitrary cute poses.

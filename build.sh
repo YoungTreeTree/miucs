@@ -60,12 +60,10 @@ EOF
     -P miucs -A -T /usr/bin/codesign >/dev/null
 fi
 
-# Every macOS build includes the skin runtime.
 sh "$root/scripts/build-plugins.sh"
 cp "$root/build/plugins/libmiucs_plugins.dylib" "$app/Contents/MacOS/"
 cp "$root/build/plugins/miucs-plugin-worker" "$app/Contents/MacOS/"
-mkdir -p "$app/Contents/Resources/Plugins"
-cp -R "$root/plugins/pixel-keyboard" "$app/Contents/Resources/Plugins/pixel-keyboard"
+cp -R "$root/plugins" "$app/Contents/Resources/Plugins"
 cp -R "$root/third_party/plugin-licenses" "$app/Contents/Resources/PluginLicenses"
 codesign --force --sign "Miucs Dev" "$app/Contents/MacOS/libmiucs_plugins.dylib"
 codesign --force --sign "Miucs Dev" "$app/Contents/MacOS/miucs-plugin-worker"

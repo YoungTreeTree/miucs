@@ -57,7 +57,6 @@ internal sealed class PluginPackage : IDisposable
 }
 internal sealed class PluginHost : IDisposable
 {
-    internal static bool Enabled => true;
     internal static string UserDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"Miucs","Plugins");
     private readonly string builtinDirectory, userDirectory;
     private readonly Func<string, bool> includeSkin;
@@ -79,7 +78,7 @@ internal sealed class PluginHost : IDisposable
         includeSkin = include ?? (_ => true);
         builtinDirectory = builtin ?? Path.Combine(AppContext.BaseDirectory,"Plugins"); userDirectory = user ?? UserDirectory;
         audioSource=a;keyboardSource=k;audio=a.Subscribe();keyboard=k.Subscribe();Scan();
-        last=Now;timer=new DispatcherTimer(DispatcherPriority.Background){Interval=TimeSpan.FromSeconds(1d/60)};timer.Tick+=Tick;
+        last=Now;timer=new DispatcherTimer(DispatcherPriority.Background){Interval=TimeSpan.FromSeconds(1d/Miucs.Windows.NativeWindow.RefreshHz())};timer.Tick+=Tick;
     }
     internal void Scan()
     {
@@ -100,9 +99,9 @@ internal sealed class PluginHost : IDisposable
     internal void UpdateSchedule()
     {
         bool active=packages.Values.Any(p=>p.ActiveId!=null||p.IsReloading);
-        if(suspended||!active){timer.Stop();return;}
-        timer.Interval=TimeSpan.FromSeconds(1d/60);
-        if(!timer.IsEnabled){last=Now;audio.Dispose();keyboard.Dispose();audio=audioSource.Subscribe();keyboard=keyboardSource.Subscribe();timer.Start();}
+        if(suspended||!active){if(timer.IsEnabled){timer.Stop();Winmm.End();}return;}
+        timer.Interval=TimeSpan.FromSeconds(1d/Miucs.Windows.NativeWindow.RefreshHz());
+        if(!timer.IsEnabled){last=Now;audio.Dispose();keyboard.Dispose();audio=audioSource.Subscribe();keyboard=keyboardSource.Subscribe();Winmm.Begin();timer.Start();}
     }
     internal void Suspend(bool value)
     {
@@ -111,7 +110,7 @@ internal sealed class PluginHost : IDisposable
     }
     private void Tick(object? sender,EventArgs args)
     {
-        if(suspended)return;double now=Now;if(now-last<1d/60*.85)return;
+        if(suspended)return;double now=Now;if(now-last<(1d/Miucs.Windows.NativeWindow.RefreshHz())*.85)return;
         double dt=now-last;last=now;var frame=new{now,deltaTime=dt,audio=audio.Read(now),keyboard=keyboard.Read(now)};
         if(Environment.GetEnvironmentVariable("MIUCS_PLUGIN_DEV")=="1"&&now-lastScan>1){lastScan=now;foreach(var p in packages.Values)p.CheckFiles();}
         foreach(var p in packages.Values){p.PollReload();if(p.ReloadError.Length>0)Error=p.ReloadError;}
@@ -119,5 +118,13 @@ internal sealed class PluginHost : IDisposable
         {p.Post("update",frame);string error=PluginNative.Error(p.Handle);if(error.Length>0)Error=error;}
         UpdateSchedule();
     }
-    public void Dispose(){timer.Stop();timer.Tick-=Tick;audio.Dispose();keyboard.Dispose();foreach(var p in packages.Values)p.Dispose();packages.Clear();}
+    public void Dispose(){if(timer.IsEnabled){timer.Stop();Winmm.End();}timer.Tick-=Tick;audio.Dispose();keyboard.Dispose();foreach(var p in packages.Values)p.Dispose();packages.Clear();}
+}
+internal static class Winmm
+{
+    private static int held;
+    [System.Runtime.InteropServices.DllImport("winmm.dll")] private static extern uint timeBeginPeriod(uint period);
+    [System.Runtime.InteropServices.DllImport("winmm.dll")] private static extern uint timeEndPeriod(uint period);
+    internal static void Begin(){if(System.Threading.Interlocked.Increment(ref held)==1)timeBeginPeriod(1);}
+    internal static void End(){if(System.Threading.Interlocked.Decrement(ref held)==0)timeEndPeriod(1);}
 }

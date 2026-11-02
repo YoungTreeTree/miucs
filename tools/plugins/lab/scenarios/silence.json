@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "name": "静音与空闲",
+  "seed": 42,
+  "fps": 60,
+  "duration": 12,
+  "initial": {
+    "audio": {
+      "silent": true,
+      "bpm": 0
+    },
+    "keyboard": {
+      "rate": 0
+    }
+  },
+  "events": [
+    {
+      "at": 4,
+      "type": "audio",
+      "value": {
+        "silent": false,
+        "bpm": 120
+      }
+    },
+    {
+      "at": 8,
+      "type": "audio",
+      "value": {
+        "silent": true
+      }
+    }
+  ]
+}

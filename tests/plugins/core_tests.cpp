@@ -11,20 +11,61 @@ int main(int argc,char**argv){try{
   rejects([&]{contained(root,"../builtin/manifest.json");},"traversal");
   rejects([&]{contained(root,"/etc/passwd");},"absolute path");
   Runtime runtime(root);Scene scene;auto full=runtime.packet(0);scene.apply(full);check(!scene.nodes.empty(),"initial scene");
-  auto changed=runtime.handle({{"op","activate"},{"value",{{"id","staff-note"}}},{"ack",scene.version}});scene.apply(changed);
+  auto changed=runtime.handle({{"op","activate"},{"value",{{"id",m.at("id")}}},{"ack",scene.version}});scene.apply(changed);
   auto idle=runtime.handle({{"op","update"},{"value",{{"now",1},{"deltaTime",.016}}},{"ack",scene.version}});scene.apply(idle);
   auto resync=runtime.handle({{"op","sync"}});check(resync["full"]==true,"resync");
   auto bytes=encode(resync);check(decode(bytes.data(),bytes.size())==resync,"MessagePack roundtrip");
   std::stringstream wire;writePacket(wire,resync);Json read;check(readPacket(wire,read)&&read==resync,"framing");
   Json bad=resync;bad["nodes"][0]["parent"]=bad["nodes"][0]["id"];auto previous=scene.nodes;
   rejects([&]{scene.apply(bad);},"cycle denied");check(previous==scene.nodes,"atomic scene application");
+  {
+    Scene unchanged;
+    Json initial={{"full",true},{"base",0},{"version",1},{"nodes",Json::array({{{"id","root"},{"type","rect"},{"width",100}}})}};
+    check(unchanged.apply(initial),"full snapshot applied");
+    Json noop={{"full",false},{"base",1},{"version",1},{"nodes",Json::array()},{"removed",Json::array()}};
+    auto node=unchanged.nodes.at("root");auto cost=unchanged.bytes;
+    auto revision=unchanged.revision,treeRevision=unchanged.treeRevision;
+    check(!unchanged.apply(noop)&&unchanged.nodes.at("root")==node&&unchanged.bytes==cost,"empty delta preserves scene");
+    check(unchanged.revision==revision&&unchanged.treeRevision==treeRevision,"idle scene preserves render caches");
+    Json invalid=noop;invalid["base"]=0;
+    rejects([&]{unchanged.apply(invalid);},"empty delta still validates base");
+    invalid=noop;invalid["version"]="invalid";
+    rejects([&]{unchanged.apply(invalid);},"empty delta still validates version");
+    invalid=noop;invalid["nodes"]=Json::object();
+    rejects([&]{unchanged.apply(invalid);},"empty object is not a node array");
+    invalid=noop;invalid["removed"]=nullptr;
+    rejects([&]{unchanged.apply(invalid);},"null is not a removal array");
+    auto patch=noop;patch["nodes"]={{{"id","root"},{"width",200}}};
+    check(unchanged.apply(patch)&&unchanged.nodes.at("root")->at("width")==200,"same-version nonempty delta is applied");
+    check(unchanged.revision>revision&&unchanged.treeRevision==treeRevision,"geometry changes invalidate pixels without rebuilding hierarchy");
+    revision=unchanged.revision;
+    check(unchanged.apply(initial)&&unchanged.nodes.at("root")->at("width")==100,"same-version full resync is applied");
+    check(unchanged.revision>revision&&unchanged.treeRevision>treeRevision,"same-version full resync invalidates render caches");
+    for(auto property:{"z","order"}) {
+      treeRevision=unchanged.treeRevision;patch["nodes"]={{{"id","root"},{property,3}}};unchanged.apply(patch);
+      check(unchanged.treeRevision>treeRevision,"stacking changes invalidate hierarchy");
+    }
+    treeRevision=unchanged.treeRevision;
+    auto removal=noop;removal["removed"]={"root"};
+    check(unchanged.apply(removal)&&unchanged.nodes.empty()&&unchanged.bytes==0,"removal-only delta is applied");
+    check(unchanged.treeRevision>treeRevision,"removal invalidates hierarchy");
+    unchanged.apply(initial);auto emptyFull=noop;emptyFull["full"]=true;
+    check(unchanged.apply(emptyFull)&&unchanged.nodes.empty(),"empty full snapshot clears scene");
+    auto advance=noop;advance["version"]=2;
+    check(unchanged.apply(advance)&&unchanged.version==2,"empty delta can advance version");
+  }
   rejects([&]{validateNode({{"id","x"},{"type","path"},{"path",{{"C",1,2}}}});},"path arity");
-  auto list=catalog({root.parent_path()});check(list["errors"].empty()&&list["plugins"].size()==3,"three independent built-in plugins");
+  const std::set<std::string> builtinIDs={"pixel-keyboard","muffin-puppies","niulai-keyboard","heiji-kazuha","zelda-guardian","yuru-camp","inuyasha"};
+  auto list=catalog({root.parent_path()});std::set<std::string> actualIDs;
+  for(auto& item:list["plugins"])actualIDs.insert(item.at("id").get<std::string>());
+  check(list["errors"].empty()&&actualIDs==builtinIDs,"independent built-in plugins");
+  check(list["plugins"][0]["id"]=="pixel-keyboard"&&list["plugins"][0]["name"]=="奶牛猫","featured cat is first and renamed");
+  check(list["plugins"][1]["id"]=="muffin-puppies"&&list["plugins"][1]["name"]=="麦芬","Muffin follows the featured cat");
   for(auto& item:list["plugins"]) {
     auto id=item["id"].get<std::string>();Runtime single(root.parent_path()/id);
     check(single.scene.nodes.contains(id),"plugin owns its named output");
     check(!single.scene.nodes.contains("tray")&&!single.scene.nodes.contains("tray-head"),"application tray is not a plugin output");
-    for(auto other:{"pencil-flight","staff-note","pixel-keyboard"})
+    for(const auto& other:builtinIDs)
       if(id!=other)check(!single.scene.nodes.contains(other),"plugin creates only its own UI");
   }
   auto tmp=std::filesystem::temp_directory_path()/std::filesystem::path("miucs-plugin-tests-"+std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));std::filesystem::create_directory(tmp);

@@ -7,10 +7,10 @@ final class VisualizerPanel: NSPanel, NSWindowDelegate {
     static let sharedFramePreferencesKey = "MiucsSkinFrame.v1"
     enum GeometryPersistence { case perVisualization, sharedSkin }
     static func framePreferencesKey(for id: String) -> String {
-        id == "pencil-flight" ? "MiucsPencilFlightFrame" : "MiucsVisualizationFrame.v1.\(id)"
+        "MiucsVisualizationFrame.v1.\(id)"
     }
     private static func autosaveName(for id: String) -> String {
-        id == "pencil-flight" ? "MiucsPencilFlight" : "MiucsVisualization.\(id)"
+        "MiucsVisualization.\(id)"
     }
     let visualizationHost: VisualizationHostView
     private let preferences: UserDefaults
@@ -43,7 +43,7 @@ final class VisualizerPanel: NSPanel, NSWindowDelegate {
          keyboardSource: (any KeyboardFeatureSource)? = nil, monitorsHover: Bool = true,
          geometryPersistence: GeometryPersistence = .perVisualization) {
         let requestedID = selectedID ?? preferences.string(forKey: Self.selectionPreferencesKey)
-        let initial = requestedID.flatMap { registry.descriptor(id: $0) } ?? registry.descriptors.first!
+        let initial = requestedID.flatMap { registry.descriptor(id: $0) } ?? registry.descriptor(id: PluginVisualizations.defaultID) ?? registry.descriptors.first!
         descriptor = initial
         visualizationHost = VisualizationHostView(source: source, registry: registry, selectedID: initial.id,
                                                    keyboardSource: keyboardSource)
@@ -111,7 +111,7 @@ final class VisualizerPanel: NSPanel, NSWindowDelegate {
     }
 
     private func updateTitle() {
-        title = descriptor.id == "pencil-flight" ? "Miucs · Pencil Flight" : "Miucs · \(descriptor.name)"
+        title = "Miucs · \(descriptor.name)"
     }
 
     private func restoreGeometry(fallbackTopLeft: NSPoint?) {
@@ -135,8 +135,7 @@ final class VisualizerPanel: NSPanel, NSWindowDelegate {
         if geometryPersistence == .sharedSkin, restored {
             fitSharedFrameToDisplay()
         } else {
-            let legacyWidth = descriptor.id == "pencil-flight" ? preferences.object(forKey: "MiucsPencilFlightWidth") as? Double : nil
-            let width: Double = saved.map { Double($0.width) } ?? (restored ? Double(frame.width) : legacyWidth ?? layout.width)
+            let width: Double = saved.map { Double($0.width) } ?? (restored ? Double(frame.width) : layout.width)
             setDrawingWidth(width, persist: false)
         }
         visualizationHost.updateViewport()
@@ -186,7 +185,6 @@ final class VisualizerPanel: NSPanel, NSWindowDelegate {
               frame.width.isFinite, frame.height.isFinite, frame.width > 0, frame.height > 0 else { return }
         preferences.set(["x": frame.minX, "y": frame.minY,
                          "width": frame.width, "height": frame.height], forKey: geometryPreferencesKey)
-        if geometryPersistence == .perVisualization, descriptor.id == "pencil-flight" { preferences.set(frame.width, forKey: "MiucsPencilFlightWidth") }
         preferences.set(descriptor.id, forKey: Self.selectionPreferencesKey)
         if persistsFrame { saveFrame(usingName: geometryAutosaveName) }
     }

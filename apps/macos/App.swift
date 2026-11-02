@@ -28,7 +28,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, Observ
     private var diagnostics: AudioDiagnostics?
     private var visibilityItem: NSMenuItem?
     private var moveItem: NSMenuItem?
-    private let registry = BuiltInVisualizations.registry()
+    private let registry = PluginVisualizations.registry()
     private var subscriptions = Set<AnyCancellable>()
 
     func applicationDidFinishLaunching(_ notification: Notification) {

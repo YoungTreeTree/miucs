@@ -17,8 +17,8 @@ public static class WindowPlacement
         if (!requested.IsValid || !workArea.IsValid) throw new ArgumentException("Invalid display geometry");
         double scale = Math.Min(1, Math.Min(workArea.Width / requested.Width, workArea.Height / requested.Height));
         double width = requested.Width * scale, height = requested.Height * scale;
-        return new(Math.Clamp(requested.X, workArea.X, workArea.X + workArea.Width - width),
-            Math.Clamp(requested.Y, workArea.Y, workArea.Y + workArea.Height - height), width, height);
+        return new(Math.Clamp(requested.X, workArea.X, Math.Max(workArea.X, workArea.X + workArea.Width - width)),
+            Math.Clamp(requested.Y, workArea.Y, Math.Max(workArea.Y, workArea.Y + workArea.Height - height)), width, height);
     }
     // All coordinates must use the same monitor-local logical coordinate space.
     public static WindowFrame Fit(WindowFrame requested, WindowFrame workArea, double aspect, double minWidth, double maxWidth)
@@ -47,14 +47,14 @@ public sealed class Preferences
         SkinFrame is { IsValid: true } ? SkinFrame :
         Frames.TryGetValue(selectedId, out var old) && old.IsValid ? old : fallback;
     public static string DefaultPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Miucs", "preferences.v1.json");
-    public static Preferences Load(string path, bool allowPluginIds = true)
+    public static Preferences Load(string path)
     {
         try
         {
             var result = JsonSerializer.Deserialize<Preferences>(File.ReadAllText(path));
             if (result == null) return new();
             result.Frames ??= new();
-            if (string.IsNullOrWhiteSpace(result.Visualization) || result.Visualization.Length > 128 || SkinCatalog.IsRetired(result.Visualization) || (!allowPluginIds && result.Visualization != "pixel-keyboard")) result.Visualization = "pixel-keyboard";
+            if (string.IsNullOrWhiteSpace(result.Visualization) || result.Visualization.Length > 128 || SkinCatalog.IsRetired(result.Visualization)) result.Visualization = "pixel-keyboard";
             result.Color = Palette.ContainsKey(result.Color ?? "") ? result.Color! : "graphite";
             foreach (var key in new List<string>(result.Frames.Keys))
                 if (result.Frames[key] == null || !result.Frames[key].IsValid) result.Frames.Remove(key);

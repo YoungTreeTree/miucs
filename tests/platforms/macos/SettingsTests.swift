@@ -36,10 +36,10 @@ enum SettingsTests {
             if !value { failures.append(name) }
         }
 
-        let registry = BuiltInVisualizations.registry(userDirectory: temp.path)
+        let registry = PluginVisualizations.registry(userDirectory: temp.path)
         check("Only the supported plugin skin is registered, including an upgraded bundle containing retired demos",
               registry.descriptors.map(\.id) == ["pixel-keyboard"])
-        check("Plugin runtime is available without launch flags", PluginNative.shared.available && PluginHost.enabled)
+        check("Plugin runtime is available without launch flags", PluginNative.shared.available)
         let audio = FeatureChannel(), keyboard = KeyboardChannel()
         PluginHost.shared.start(audio: audio, keyboard: keyboard)
         defer { PluginHost.shared.stop() }

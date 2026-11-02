@@ -27,12 +27,6 @@ targets:
         excludes:
           - platforms/**
       - path: modules/visualizations/api/platforms/macos
-      - path: modules/visualizations/pencil-flight/core
-      - path: modules/visualizations/pencil-flight/platforms/macos
-      - path: modules/visualizations/staff-note/core
-      - path: modules/visualizations/staff-note/platforms/macos
-      - path: modules/visualizations/pixel-keyboard/core
-      - path: modules/visualizations/pixel-keyboard/platforms/macos
       - path: apps/assets/cat-head.png
         buildPhase: resources
       - path: apps/assets/Miucs.icns
@@ -48,23 +42,22 @@ targets:
         INFOPLIST_KEY_CFBundleIconFile: Miucs.icns
         INFOPLIST_KEY_NSAudioCaptureUsageDescription: Miucs listens to system audio to draw the desktop visualizer.
         INFOPLIST_KEY_NSScreenCaptureUsageDescription: Miucs uses system audio capture to draw the desktop visualizer.
-    entitlements:
-      path: apps/macos/Miucs.entitlements
-      properties:
-        com.apple.security.app-sandbox: false
     postBuildScripts:
-      - name: Package skin runtime
+      - name: Bundle plugin runtime
         basedOnDependencyAnalysis: false
         script: |
           set -eu
           sh "$SRCROOT/scripts/build-plugins.sh"
-          resources="$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH"
-          binaries="$TARGET_BUILD_DIR/$EXECUTABLE_FOLDER_PATH"
-          mkdir -p "$resources/Plugins"
-          rm -rf "$resources/Plugins/pencil-flight" "$resources/Plugins/staff-note" "$resources/Plugins/pixel-keyboard"
-          cp -R "$SRCROOT/plugins/pixel-keyboard" "$resources/Plugins/pixel-keyboard"
-          rm -rf "$resources/PluginLicenses"
-          cp -R "$SRCROOT/third_party/plugin-licenses" "$resources/PluginLicenses"
-          cp "$SRCROOT/build/plugins/libmiucs_plugins.dylib" "$SRCROOT/build/plugins/miucs-plugin-worker" "$binaries/"
-          codesign --force --sign "${EXPANDED_CODE_SIGN_IDENTITY:--}" "$binaries/libmiucs_plugins.dylib"
-          codesign --force --sign "${EXPANDED_CODE_SIGN_IDENTITY:--}" "$binaries/miucs-plugin-worker"
+          mkdir -p "$TARGET_BUILD_DIR/$EXECUTABLE_FOLDER_PATH" "$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH"
+          cp "$SRCROOT/build/plugins/libmiucs_plugins.dylib" "$SRCROOT/build/plugins/miucs-plugin-worker" "$TARGET_BUILD_DIR/$EXECUTABLE_FOLDER_PATH/"
+          rm -rf "$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/Plugins"
+          ditto "$SRCROOT/plugins" "$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/Plugins"
+          ditto "$SRCROOT/third_party/plugin-licenses" "$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/PluginLicenses"
+          if [ "${CODE_SIGNING_ALLOWED:-NO}" = YES ]; then
+            codesign --force --sign "${EXPANDED_CODE_SIGN_IDENTITY:--}" "$TARGET_BUILD_DIR/$EXECUTABLE_FOLDER_PATH/libmiucs_plugins.dylib"
+            codesign --force --sign "${EXPANDED_CODE_SIGN_IDENTITY:--}" "$TARGET_BUILD_DIR/$EXECUTABLE_FOLDER_PATH/miucs-plugin-worker"
+          fi
+    entitlements:
+      path: apps/macos/Miucs.entitlements
+      properties:
+        com.apple.security.app-sandbox: false

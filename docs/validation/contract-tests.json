@@ -67,20 +67,8 @@
     {
       "name" : "Pause drops hidden-time events on resume and forwards the new viewport",
       "passed" : true
-    },
-    {
-      "name" : "Flight consumes a short onset and flux peak even when the latest frame is quiet",
-      "passed" : true
-    },
-    {
-      "name" : "Format changes clear the previous note even if PCM time restarts at the same value",
-      "passed" : true
-    },
-    {
-      "name" : "A new flight session never revives a stale snapshot or disconnected input",
-      "passed" : true
     }
   ],
   "failed" : 0,
-  "passed" : 20
+  "passed" : 17
 }

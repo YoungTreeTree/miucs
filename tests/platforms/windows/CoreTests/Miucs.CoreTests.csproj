@@ -4,9 +4,6 @@
     <Compile Include="../../../../modules/audio/platforms/windows/Core/**/*.cs" />
     <Compile Include="../../../../modules/audio/platforms/windows/Capture/PcmDecoder.cs" />
     <Compile Include="../../../../modules/keyboard/platforms/windows/Core/**/*.cs" />
-    <Compile Include="../../../../modules/visualizations/**/platforms/windows/*Scene.cs" />
-    <Compile Include="../../../../modules/visualizations/staff-note/platforms/windows/StaffTracePath.cs" />
-    <Compile Include="../../../../modules/visualizations/staff-note/platforms/windows/StaffBeatRings.cs" />
     <Compile Include="../../../../apps/windows/Core/**/*.cs" />
     <Compile Include="../../../../modules/plugins/platforms/windows/Core/*.cs" />
     <None Include="../../../../contracts/audio-features/samples/*.json" Link="samples/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />

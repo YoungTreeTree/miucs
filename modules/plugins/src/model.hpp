@@ -26,8 +26,11 @@ struct Scene {
   std::map<std::string,size_t> costs;
   size_t bytes=0;
   uint64_t version = 0;
+  // Local cache revisions survive full snapshots, even when the wire version repeats.
+  uint64_t revision = 0, treeRevision = 0;
   void put(const std::string& id,Json node,size_t cost);
-  void apply(const Json& packet);
+  // False only for an unchanged, empty delta; full snapshots are always applied.
+  bool apply(const Json& packet);
 };
 std::vector<uint8_t> encode(const Json&);
 Json decode(const uint8_t*, size_t);

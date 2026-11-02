@@ -1,0 +1,16 @@
+{
+  "checks": 197,
+  "nodeCount": 479,
+  "drawnFrames": {
+    "link": 16,
+    "guardian": 16,
+    "left-paw": 4,
+    "right-paw": 4
+  },
+  "scriptP95Ms": 0.044917,
+  "scriptMeanMs": 0.02650984765502046,
+  "fixedActorAnchors": true,
+  "constantPixelScale": true,
+  "inputs": "synthetic, production Lua worker",
+  "nativeDesktopAcceptance": false
+}

@@ -43,6 +43,31 @@ with tempfile.TemporaryDirectory(prefix='miucs-plugin-test-') as folder:
         b.post('update',{});b.lib.miucs_surface_pixels(surface,100,100,pixels,len(pixels))
         expect(pixels.raw[10*4+3]==0 and pixels.raw[20*4+3]>0)
     finally:b.lib.miucs_surface_destroy(surface);b.close()
+    # Keep one surface alive while geometry, stacking, hierarchy and output roots change.
+    source.write_text("return {create=function() miucs.load{type='group',id='test',width=100,height=100,children={{type='rect',id='red',width=100,height=100,fill='#ff0000'},{type='rect',id='blue',width=100,height=100,fill='#0000ff'}}};miucs.load{type='rect',id='other',width=100,height=100,fill='#00ff00'} end,update=function(f) if f.add then miucs.load{type='group',id='new',width=100,height=100,children={{type='rect',id='new-child',width=100,height=100,fill='#ffffff'}}} else miucs.set(f.id,f.properties) end end}")
+    b=Bridge(root);surface=b.lib.miucs_surface_create(b.handle,None,b'test');pixels=ctypes.create_string_buffer(100*100*4)
+    try:
+        def pixel(x=50,y=50):
+            expect(b.lib.miucs_surface_pixels(surface,100,100,pixels,len(pixels))==1)
+            return pixels.raw[(y*100+x)*4:(y*100+x)*4+4]
+        expect(pixel()==bytes([255,0,0,255]))
+        expect(pixel()==bytes([255,0,0,255])) # unchanged frame reuses its stamp
+        b.post('update',{'id':'blue','properties':{'x':60}})
+        expect(pixel()==bytes([0,0,255,255]))
+        expect(pixel(80)==bytes([255,0,0,255]))
+        b.post('update',{'id':'red','properties':{'z':2}})
+        expect(pixel(80)==bytes([0,0,255,255]))
+        b.post('update',{'id':'blue','properties':{'z':2,'order':5}})
+        expect(pixel(80)==bytes([255,0,0,255]))
+        b.post('update',{'id':'blue','properties':{'visible':False}})
+        expect(pixel(80)==bytes([0,0,255,255]))
+        b.post('update',{'id':'red','properties':{'fill':'#ffffff'}})
+        expect(pixel()==b'\xff'*4)
+        # The same-version sync must not leave a stale tree or output stamp.
+        b.post('sync',{});expect(pixel()==b'\xff'*4)
+        expect(b.render('other',100,100)[:4]==bytes([0,255,0,255]))
+        b.post('update',{'add':True});expect(b.render('new',100,100)[:4]==b'\xff'*4)
+    finally:b.lib.miucs_surface_destroy(surface);b.close()
     source.write_text('return {update=function() while true do pcall(function() while true do end end) end end}')
     b=Bridge(root);start=time.monotonic()
     try:

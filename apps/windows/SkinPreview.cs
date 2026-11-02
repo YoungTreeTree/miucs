@@ -21,6 +21,7 @@ public sealed class SkinPreview : Image
     private readonly List<(BitmapSource Image, TimeSpan Delay)> frames = new();
     private readonly DispatcherTimer timer;
     private int frame;
+    private Window? owner;
     internal int FrameCount => frames.Count;
     internal bool AnimationRunning => timer.IsEnabled;
     public SkinPreview()
@@ -28,7 +29,18 @@ public sealed class SkinPreview : Image
         IsHitTestVisible = false; Stretch = Stretch.Uniform;
         timer = new DispatcherTimer(DispatcherPriority.Background) { Interval = TimeSpan.FromMilliseconds(100) };
         timer.Tick += (_, _) => AdvanceFrame();
-        Loaded += (_, _) => UpdateAnimation(); Unloaded += (_, _) => timer.Stop();
+        Loaded += (_, _) =>
+        {
+            owner = Window.GetWindow(this);
+            if (owner != null) owner.StateChanged += OwnerStateChanged;
+            UpdateAnimation();
+        };
+        Unloaded += (_, _) =>
+        {
+            timer.Stop();
+            if (owner != null) owner.StateChanged -= OwnerStateChanged;
+            owner = null;
+        };
         IsVisibleChanged += (_, _) => UpdateAnimation();
     }
     internal void AdvanceFrame()
@@ -38,8 +50,9 @@ public sealed class SkinPreview : Image
     }
     private void UpdateAnimation()
     {
-        if (frames.Count > 1 && IsLoaded && IsVisible) timer.Start(); else timer.Stop();
+        if (frames.Count > 1 && IsLoaded && IsVisible && owner?.WindowState != WindowState.Minimized) timer.Start(); else timer.Stop();
     }
+    private void OwnerStateChanged(object? sender, EventArgs e) => UpdateAnimation();
     private void LoadPreview()
     {
         timer.Stop(); frames.Clear(); frame = 0; Source = null;
@@ -58,7 +71,7 @@ public sealed class SkinPreview : Image
                 }
                 if (frames.Count > 0) break;
             }
-            catch (Exception error) when (error is IOException or UnauthorizedAccessException or NotSupportedException or ArgumentException or FileFormatException or ExternalException)
+            catch (Exception error) when (error is IOException or UnauthorizedAccessException or NotSupportedException or ArgumentException or FileFormatException or ExternalException or OutOfMemoryException)
             { frames.Clear(); }
         }
         if (frames.Count > 0) { Source = frames[0].Image; timer.Interval = frames[0].Delay; }
@@ -77,10 +90,10 @@ public sealed class SkinPreview : Image
         if ((long)image.Width * image.Height > 16_000_000) throw new NotSupportedException("Preview dimensions exceed limit");
         var dimension = new Imaging.FrameDimension(image.FrameDimensionsList[0]);
         int count = image.GetFrameCount(dimension);
-        double scale = Math.Min(1, 520d / image.Width);
+        if (count > 300) count = 1;
+        double scale = Math.Min(Math.Min(1, 520d / image.Width), Math.Sqrt(8_000_000d / (image.Width * (double)image.Height * count)));
         int width = Math.Max(1, (int)(image.Width * scale)), height = Math.Max(1, (int)(image.Height * scale));
         // Oversized animations still show their first frame; decoded caches stay bounded.
-        if (count > 150 || (long)width * height * count > 20_000_000) count = 1;
         byte[]? delays = null;
         try { delays = image.GetPropertyItem(0x5100)?.Value; } catch (ArgumentException) { }
         for (int index = 0; index < count; index++)

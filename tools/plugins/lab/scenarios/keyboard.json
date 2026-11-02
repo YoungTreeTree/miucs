@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "name": "组合按键与长按",
+  "seed": 42,
+  "fps": 60,
+  "duration": 12,
+  "initial": {
+    "audio": {
+      "silent": true
+    },
+    "keyboard": {
+      "rate": 0
+    }
+  },
+  "events": [
+    {
+      "at": 1,
+      "type": "press",
+      "value": {
+        "key": "a"
+      }
+    },
+    {
+      "at": 1,
+      "type": "press",
+      "value": {
+        "key": "j"
+      }
+    },
+    {
+      "at": 2,
+      "type": "repeat",
+      "value": {
+        "key": "a"
+      }
+    },
+    {
+      "at": 3,
+      "type": "modifiers",
+      "value": 1
+    },
+    {
+      "at": 4,
+      "type": "release",
+      "value": {
+        "key": "a"
+      }
+    },
+    {
+      "at": 4,
+      "type": "release",
+      "value": {
+        "key": "j"
+      }
+    },
+    {
+      "at": 5,
+      "type": "modifiers",
+      "value": 0
+    },
+    {
+      "at": 6,
+      "type": "keyboard",
+      "value": {
+        "rate": 12
+      }
+    },
+    {
+      "at": 9,
+      "type": "keyboard",
+      "value": {
+        "rate": 0
+      }
+    }
+  ]
+}

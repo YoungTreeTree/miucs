@@ -89,13 +89,23 @@ public sealed class LoopbackCapture : IDisposable
             if (formatLength > 4096) throw new NotSupportedException("Invalid playback format.");
             byte[] formatBytes = new byte[formatLength]; Marshal.Copy(formatPointer, formatBytes, 0, formatLength);
             var format = PcmFormat.Parse(formatBytes);
-            Check(client.Initialize(0, Loopback, 1_000_000, 0, formatPointer, 0));
+            long duration = 0;
+            if (client.GetDevicePeriod(out _, out long minimum) >= 0 && minimum > 0) duration = minimum;
+            int started = client.Initialize(0, Loopback, duration, 0, formatPointer, 0);
+            if (started < 0)
+            {
+                Release(client);
+                Check(device.Activate(AudioClientId, 23, 0, out var replacement));
+                client = (IAudioClient)replacement;
+                Check(client.Initialize(0, Loopback, 0, 0, formatPointer, 0));
+            }
             Check(client.GetService(CaptureClientId, out var captureObject)); capture = (IAudioCaptureClient)captureObject;
             var analyzer = new AudioAnalyzer();
             Check(client.Start());
             token.ThrowIfCancellationRequested();
             SetStatus(lifetime, AudioState.Running, null);
             double nextDeviceCheck = Now + 1;
+            var rateAdapter = new AnalysisRateAdapter();
             while (!token.IsCancellationRequested)
             {
                 Check(capture.GetNextPacketSize(out uint packetFrames));
@@ -107,6 +117,7 @@ public sealed class LoopbackCapture : IDisposable
                         if ((flags & 1) != 0) // AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY
                         {
                             analyzer.Reset();
+                            rateAdapter.Reset();
                             generation = BeginSession(lifetime, AudioState.Running);
                         }
                         bool silent = (flags & Silent) != 0;
@@ -115,7 +126,11 @@ public sealed class LoopbackCapture : IDisposable
                         if (!silent) Marshal.Copy(data, bytes, 0, bytes.Length);
                         double received = Now;
                         float[] pcm = format.Decode(bytes, count, silent);
-                        foreach (var analyzed in analyzer.Process(pcm, format.SampleRate, format.Channels, received))
+                        int analysisChannels = format.Channels;
+                        if (analysisChannels > 2) { pcm = format.DownmixToStereo(pcm); analysisChannels = 2; }
+                        pcm = rateAdapter.Process(pcm, format.SampleRate, analysisChannels);
+                        if (pcm.Length == 0) continue;
+                        foreach (var analyzed in analyzer.Process(pcm, AnalysisRateAdapter.TargetRate, analysisChannels, received))
                             channel.Publish(generation, analyzed.Audio, analyzed.Melody, analyzed.ReceivedAt);
                     }
                     finally { Check(capture.ReleaseBuffer(frames)); }

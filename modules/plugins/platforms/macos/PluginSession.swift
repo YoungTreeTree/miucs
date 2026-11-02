@@ -85,7 +85,6 @@ final class PluginPackage {
 @MainActor
 final class PluginHost: ObservableObject {
     static let shared = PluginHost()
-    static var enabled: Bool { true }
     private(set) var metadata = [[String: Any]]()
     private(set) var packages = [String: PluginPackage]()
     @Published private(set) var errors = [String]()
@@ -101,7 +100,6 @@ final class PluginHost: ObservableObject {
     private var observers = [NSObjectProtocol]()
     private var lastScan = 0.0
     func register(in registry: VisualizationRegistry, excluding excludedIDs: Set<String> = [], userDirectory: String? = nil) {
-        guard Self.enabled else { return }
         guard PluginNative.shared.available else { errors=["皮肤运行库不可用，请重新安装完整的 Miucs 应用。"];return }
         let result = PluginNative.shared.scan(userDirectory: userDirectory)
         metadata = (result["plugins"] as? [[String: Any]] ?? []).filter {
@@ -127,7 +125,7 @@ final class PluginHost: ObservableObject {
         let result = PluginPackage(metadata); packages[id] = result; return result
     }
     func start(audio: any AudioFeatureSource, keyboard: any KeyboardFeatureSource) {
-        guard Self.enabled, PluginNative.shared.available else { return }
+        guard PluginNative.shared.available else { return }
         audioSource = audio; keyboardSource = keyboard; self.audio = audio.subscribe(); self.keyboard = keyboard.subscribe()
         last = ProcessInfo.processInfo.systemUptime
         updateSchedule()

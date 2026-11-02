@@ -37,12 +37,40 @@ import AppKit
         defer { api.destroySurface?(surface) }
         var pixels=[UInt8](repeating:0,count:16*16*4)
         precondition(api.pixels?(surface,16,16,&pixels,pixels.count)==1 && pixels[0]==255 && pixels[2]==0,"Replacement scene must render blue")
+        // A plain CALayer selects CPU fallback. Reloads reuse this same parent layer.
+        let layer=CALayer();layer.bounds=CGRect(x:0,y:0,width:100,height:100)
+        for _ in 0..<10 {
+            let cpu="test".withCString {api.createSurface?(package.handle,Unmanaged.passUnretained(layer).toOpaque(),$0)}!
+            precondition(api.backend?(cpu)==0 && api.draw?(cpu,100,100,1)==1)
+            precondition(layer.sublayers?.count==1)
+            let child=layer.sublayers!.first!
+            precondition(child.contents != nil)
+            api.destroySurface?(cpu)
+            precondition(layer.sublayers?.isEmpty ?? true,"Disposal removes the old CPU layer")
+            precondition(child.superlayer==nil && child.contents==nil,"Disposal releases the last CPU frame")
+        }
+        print("PASS CPU surface disposal: 10 reload cycles retain no layers or frame contents")
         // Catalog scans do not create workers; each selection starts only its own package.
-        let host=PluginHost.shared, registry=VisualizationRegistry()
-        host.register(in:registry)
-        let ids=Set(["pencil-flight","staff-note","pixel-keyboard"])
+        let host=PluginHost.shared, registry=PluginVisualizations.registry()
+        let ids=Set(["pixel-keyboard","muffin-puppies","niulai-keyboard","heiji-kazuha","zelda-guardian","yuru-camp","inuyasha"])
         precondition(ids.isSubset(of:Set(registry.descriptors.map(\.id))))
         precondition(host.packages.isEmpty,"Tray must not eagerly launch a plugin")
+        precondition(registry.descriptors.prefix(4).map(\.id)==["pixel-keyboard","muffin-puppies","niulai-keyboard","heiji-kazuha"])
+        precondition(registry.descriptor(id:"pixel-keyboard")?.name=="奶牛猫")
+        precondition(registry.descriptor(id:"yuru-camp")?.name=="摇曳露营")
+        precondition(registry.descriptor(id:"inuyasha")?.name=="犬夜叉")
+        let suite="MiucsCuratedPlugins-"+UUID().uuidString
+        let preferences=UserDefaults(suiteName:suite)!
+        defer { preferences.removePersistentDomain(forName:suite) }
+        for saved in [nil,"removed-plugin","muffin-puppies","pixel-keyboard"] as [String?] {
+            if let saved { preferences.set(saved,forKey:VisualizerPanel.selectionPreferencesKey) }
+            else { preferences.removeObject(forKey:VisualizerPanel.selectionPreferencesKey) }
+            let panel=VisualizerPanel(source:FeatureChannel(),registry:registry,preferences:preferences,persistsFrame:false,monitorsHover:false)
+            precondition(panel.descriptor.id==(saved=="muffin-puppies" ? "muffin-puppies" : "pixel-keyboard"),"First launch and missing plugins select the cat; valid choices survive")
+            panel.visualizationHost.dispose()
+            precondition(host.packages.isEmpty)
+        }
+        print("PASS featured cat ordering, renamed catalog and saved-selection fallback")
         let keys=KeyboardChannel()
         let item=NSStatusBar.system.statusItem(withLength:NSStatusItem.variableLength)
         let tray=AppTrayIcon(item:item,source:keys)
@@ -50,6 +78,7 @@ import AppKit
         precondition(item.button?.image != nil,"Application logo exists without any plugin")
         for id in ids.sorted() {
             let selected=registry.makeSession(id:id)!
+            precondition(selected is PluginSession,"Every catalog entry must use the plugin runtime")
             selected.activate(viewport:.desktop)
             precondition(Set(host.packages.keys)==Set([id]),"Only selected plugin owns a worker")
             selected.dispose()

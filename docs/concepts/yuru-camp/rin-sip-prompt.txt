@@ -1,0 +1,25 @@
+Tool: built-in image_gen; transparent_background=true
+Reference: skin-concept-v1.png
+
+Use case: stylized-concept. Production animation keyframe atlas for the approved Yuru Camp desktop skin.
+Use the reference only for the RIGHT character: Rin Shima seated in her chair with a blue blanket and mug. Draw ONLY Rin with her complete chair, blanket and cup, no Nadeshiko, fire, tent, keyboard or background.
+
+Exactly TWELVE consecutive frames in FOUR columns and THREE rows on a landscape 4:3 canvas. Actual transparent background. Equal square virtual cells with generous transparent gutters at least 15% on all sides. Character PLUS chair occupies only central 60% width and 65% height. Entire chair and all feet visible, no clipping or art near cell edges. Same character scale and camera every frame. Fixed chair feet floor baseline at local y80%, horizontal center x50%. No text, numbers, panel lines or watermarks.
+
+Chibi Rin Shima from Yuru Camp: long dark navy hair with characteristic side locks, calm small blue-dark eyes, cream knitted bobble hat with muted blue zigzag stripe, muted blue winter puffer jacket, mint/coral/cream striped scarf, navy blanket with simple cream geometric pattern over lap, warm brown folding chair. She holds a small plain gray camping mug in BOTH hands. Facing slightly LEFT, three-quarter view toward campfire offscreen. Match reference's hand-inked bold slightly organic outlines, soft flat colors and simple tasteful cel shading. She is quiet and reserved, no exaggerated grin or flailing.
+
+One unhurried gentle warm-drink loop, twelve keyframes in reading order:
+1 idle, both hands cup mug at chest, calm eyes.
+2 settles shoulders slightly, glances at mug.
+3 elbows gently bend, mug starts lifting.
+4 mug reaches just below lips, a tiny steam curl.
+5 eyes half-close, takes a small sip.
+6 sip held, mug tilted very slightly toward her.
+7 lowers mug a little from lips.
+8 tiny soft closed-eye content expression, exhales small close steam curl.
+9 mug lowers toward chest.
+10 eyes open, shoulders relax.
+11 nearly at neutral, small hair follow-through.
+12 EXACT same neutral pose and mug position as frame1.
+
+Motion very restrained; chair structure and feet stay still, costume and lap blanket geometry nearly identical. Real sequential drawn hand/elbow/mug/face changes, not moving copies of a sticker. Same hat and pompom, hair length and head size throughout. No steam covering her face, no extra cup or hands, no keyboard mittens included.

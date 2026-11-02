@@ -5,8 +5,7 @@ from pathlib import Path
 
 root = Path(__file__).resolve().parent.parent
 failures = []
-shared = [*root.glob("modules/audio/core/*.swift"), *root.glob("modules/keyboard/core/*.swift"), *root.glob("modules/visualizations/api/*.swift"),
-          *root.glob("modules/visualizations/*/core/*.swift")]
+shared = [*root.glob("modules/audio/core/*.swift"), *root.glob("modules/keyboard/core/*.swift"), *root.glob("modules/visualizations/api/*.swift")]
 native_names = r"\b(?:NSView|NSColor|NSWindow|CMSampleBuffer|SCStream|CGColor|CGPath|CGEvent|AudioEngine|KeyboardEngine|KeyboardEventTap|AccelerateSpectrumTransform|vDSP_\w+)\b"
 for path in shared:
     code = re.sub(r"//[^\n]*|/\*[\s\S]*?\*/", "", path.read_text())
@@ -15,7 +14,7 @@ for path in shared:
         failures.append(f"{path.relative_to(root)}: shared import {imports}")
     if re.search(native_names, code):
         failures.append(f"{path.relative_to(root)}: native type in shared source")
-    if any(path.is_relative_to(root / f"modules/{source}") for source in ("audio", "keyboard")) and re.search(r"\b(?:SoundFlightWorld|Pencil\w+|Visualization\w+)\b", code):
+    if any(path.is_relative_to(root / f"modules/{source}") for source in ("audio", "keyboard")) and re.search(r"\b(?:Visualization\w+|PluginSession|PluginCanvas)\b", code):
         failures.append(f"{path.relative_to(root)}: input source depends on visualization")
 
 for platform in ("macos", "windows"):
@@ -37,8 +36,7 @@ for path in (root / "scripts").glob("*"):
 
 required = ["contracts/audio-features/frame.schema.json", "contracts/audio-features/input.schema.json",
             "contracts/visualization/README.md", "modules/audio/platforms/windows/README.md",
-            "modules/visualizations/pencil-flight/platforms/windows/README.md", "apps/windows/README.md",
-            "modules/visualizations/staff-note/platforms/windows/README.md",
+            "apps/windows/README.md",
             "CONTRIBUTING.md", "docs/architecture.md"]
 for name in required:
     path = root / name

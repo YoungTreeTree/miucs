@@ -96,7 +96,7 @@ internal sealed class BeatTracker
         if (period.HasValue)
             foreach (var stable in candidates)
                 if (Math.Abs(stable.Period / period.Value - 1) < .06 && stable.Correlation >= best.Correlation * .92) { best = stable; break; }
-        if (!period.HasValue && best.Correlation < .55) { proposedPeriod = null; proposedCount = 0; return; }
+        if (!period.HasValue && best.Correlation < .38) { proposedPeriod = null; proposedCount = 0; return; }
         if (!period.HasValue || Math.Abs(best.Period / period.Value - 1) > .08)
         {
             if (proposedPeriod.HasValue && Math.Abs(best.Period / proposedPeriod.Value - 1) < .05) proposedCount++;

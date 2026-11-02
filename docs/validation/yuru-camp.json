@@ -1,0 +1,17 @@
+{
+  "checks": 156,
+  "nodeCount": 538,
+  "drawnFrames": {
+    "nadeshiko": 12,
+    "rin": 12,
+    "fire": 8,
+    "left-paw": 4,
+    "right-paw": 4
+  },
+  "scriptP95Ms": 0.036167,
+  "scriptMeanMs": 0.021664721144024516,
+  "fixedActorAnchors": true,
+  "constantPixelScale": true,
+  "inputs": "synthetic, production Lua worker",
+  "nativeDesktopAcceptance": false
+}

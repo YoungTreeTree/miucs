@@ -1,0 +1,26 @@
+Tool: built-in image_gen; transparent_background=true
+
+Production animation sprite atlas for the RIGHT character in the approved Zelda keyboard skin reference. ONLY the ancient Guardian Stalker, no Link, no keyboard, no screen. Genuine transparent background. Square sprite sheet, exactly FOUR columns and FOUR rows = SIXTEEN frames in reading order.
+
+CRITICAL SPACING: each character must occupy only the CENTRAL 60% of its square cell in width and 60% in height. Leave HUGE empty transparent gutters, about 20% of a cell on every side. Smaller characters with ample whitespace, never enlarge to fill page. No frames touch each other or canvas edges. The 16 virtual cells must be perfectly equally sized. Fixed local ground baseline at 75% cell height, character horizontally centered at 50%. A small gray flat ground shadow directly under feet provides fixed registration marker. Same scale and camera in ALL frames.
+
+Character match reference: cute squat ancient six-legged spider robot, tan bronze/stone domed body, carved swirls, dark outlines, pink-magenta energy lines, one central blue-magenta eye mounted on its LEFT-facing side, no horns or stalks. Faces LEFT toward Link. Three-quarter side view, six articulated legs. Keep the eye center at approximately local x=35%, y=45% of cell; keep that exact eye location through frames except tiny recoil. Body motion must be drawn as articulating legs, bending joints, subtle weighted compression, moving ancient plates, rather than rigid sticker movement. Bold organic black outline and flat gentle cel colors consistent with approved concept; no photoreal detail. No laser beam: an external beam will be rendered from the eye center.
+
+Frames in reading order:
+1 quiet idle stance, subdued magenta eye.
+2 tiny anticipation, legs start brace.
+3 slight crouch, eye glow starts.
+4 plates tense and eye brighter.
+5 deeper brace, faint magenta eye ring.
+6 eye ring grows brighter, legs firmly planted.
+7 tense charged pose, small cyan core.
+8 fully charged, bright concentrated eye, body compressed.
+9 instantaneous FIRE: bright white-cyan eye core, tiny short starburst confined to eye, NO beam, legs push back subtly.
+10 recoil through articulated legs, eye glow remains.
+11 recoil deeper, front legs absorb force, eye pink.
+12 easing recoil, less glow.
+13 body recovers and legs extend.
+14 near idle, faint eye glow.
+15 settling into same neutral pose as frame1.
+16 EXACT same neutral pose as frame1.
+Draw 16 genuinely sequential animation frames. Never random poses, no walking or rotating, no floating body, no duplicated eyes. No text, numbers, borders, grid lines or background. Guardian should look wider than tall within the central 60% region.

@@ -10,7 +10,17 @@ swiftc -swift-version 6 -parse-as-library -O \
   "${native_libraries[@]}" tests/platforms/macos/SettingsTests.swift -o "$test_app/Contents/MacOS/settings-tests"
 cp "$root/build/plugins/libmiucs_plugins.dylib" "$root/build/plugins/miucs-plugin-worker" "$test_app/Contents/MacOS/"
 # Deliberately include old packages to verify that upgrade leftovers stay unavailable.
-cp -R "$root/plugins/pixel-keyboard" "$root/plugins/staff-note" "$root/plugins/pencil-flight" "$test_app/Contents/Resources/Plugins/"
+cp -R "$root/plugins/pixel-keyboard" "$test_app/Contents/Resources/Plugins/"
+python3 - "$test_app/Contents/Resources/Plugins" <<'PY'
+import json, pathlib, shutil, sys
+root = pathlib.Path(sys.argv[1])
+for name in ('staff-note', 'pencil-flight'):
+    target = root / name
+    shutil.copytree(root / 'pixel-keyboard', target, dirs_exist_ok=True)
+    manifest = json.loads((target / 'manifest.json').read_text())
+    manifest['id'] = name
+    (target / 'manifest.json').write_text(json.dumps(manifest))
+PY
 cp "$root/apps/assets/Miucs.icns" "$test_app/Contents/Resources/"
 cat > "$test_app/Contents/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>

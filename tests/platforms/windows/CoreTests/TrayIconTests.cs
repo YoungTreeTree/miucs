@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using Miucs.Windows;
-using Miucs.Visualizations;
+
 using Miucs.Keyboard;
 
 public static class TrayIconTests
@@ -16,7 +16,7 @@ public static class TrayIconTests
         Check(TrayIconPose.FromAngle(0) == TrayIconPose.RestFrame, "rest pose is upright");
         Check(TrayIconPose.FromAngle(double.NaN) == TrayIconPose.RestFrame, "invalid angle is safe");
         Check(TrayIconPose.FromAngle(100) == 24 && TrayIconPose.FromAngle(-100) == 0, "pose range is bounded");
-        var head = new PixelHeadScene(); var session = Guid.NewGuid(); long sequence = 0;
+        var head = new TrayHeadAnimation(); var session = Guid.NewGuid(); long sequence = 0;
         bool sawLeft = false, sawRight = false;
         for (int i = 0; i < 600; i++)
         {
@@ -87,7 +87,7 @@ public static class TrayIconTests
         for (int frame = 0; frame < TrayIconPose.FrameCount; frame++)
             File.WriteAllBytes(Path.Combine(output, $"cat-{frame:00}.ico"), TrayIconArtwork.EncodeIcon(rgba, width, height, frame));
         // Synthetic typing samples use the production floating-head scene, not a looped substitute.
-        var head = new PixelHeadScene(); var session = Guid.NewGuid(); long sequence = 0;
+        var head = new TrayHeadAnimation(); var session = Guid.NewGuid(); long sequence = 0;
         using var samples = new StreamWriter(Path.Combine(output, "poses.txt"));
         for (int tick = 0; tick < 6 * 48; tick++)
         {

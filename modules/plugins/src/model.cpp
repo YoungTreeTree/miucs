@@ -3,6 +3,8 @@
 #include <set>
 #include <cmath>
 #include <regex>
+#include <algorithm>
+#include <string_view>
 namespace miucs {
 std::filesystem::path contained(const std::filesystem::path& root, const std::string& relative) {
   auto rel=std::filesystem::u8path(relative);
@@ -61,12 +63,23 @@ Json catalog(const std::vector<std::filesystem::path>& roots) {
       ids.insert(id);
       auto path=std::filesystem::canonical(f).u8string();m["directory"]=std::string(path.begin(),path.end()); result["plugins"].push_back(m);
     } catch(const std::exception& e) {result["errors"].push_back({{"directory",f.string()},{"message",e.what()}});}
-  } return result;
+  }
+  auto rank=[](const Json& plugin) {
+    constexpr std::string_view order[]={"pixel-keyboard","muffin-puppies","niulai-keyboard","heiji-kazuha"};
+    const auto& id=plugin.at("id").get_ref<const std::string&>();
+    return std::find(std::begin(order),std::end(order),id)-std::begin(order);
+  };
+  std::stable_sort(result["plugins"].begin(),result["plugins"].end(),[&](const Json& a,const Json& b){return rank(a)<rank(b);});
+  return result;
 }
 void validateNode(const Json& n) {
   if(!n.is_object() || !identifier(n.at("id").get<std::string>())) throw Error("Invalid node id");
-  static const std::set<std::string> types={"group","path","image","text","rect","ellipse"};
-  if(!types.contains(n.at("type").get<std::string>())) throw Error("Unsupported node type");
+  // Client readers can finish packets during asynchronous close at process
+  // exit. A heap-owning static set may already have been destroyed by then.
+  // Literal views have no allocation or teardown dependency.
+  constexpr std::string_view types[]={"group","path","image","text","rect","ellipse"};
+  const auto& type=n.at("type").get_ref<const std::string&>();
+  if(std::find(std::begin(types),std::end(types),type)==std::end(types)) throw Error("Unsupported node type");
   validateProperties(n);
 }
 void validateProperties(const Json& n) {
@@ -107,13 +120,31 @@ size_t patchedCost(size_t before,const Json& current,const Json& changes) {
 void Scene::put(const std::string& id,Json node,size_t cost) {
   size_t old=costs.contains(id)?costs.at(id):0;
   if(cost>MaxSceneBytes || bytes-old>MaxSceneBytes-cost)throw Error("Scene memory budget exceeded");
+  auto previous=nodes.find(id);
+  bool treeChanged=previous==nodes.end();
+  if(!treeChanged) {
+    const auto& before=*previous->second;
+    treeChanged=before.value("parent",std::string{})!=node.value("parent",std::string{}) ||
+      before.value("z",0.0)!=node.value("z",0.0) || before.value("order",0)!=node.value("order",0);
+  }
   nodes[id]=std::make_shared<const Json>(std::move(node));costs[id]=cost;bytes=bytes-old+cost;
+  ++revision;if(treeChanged)++treeRevision;
 }
-void Scene::apply(const Json& p) {
+bool Scene::apply(const Json& p) {
   if(p.at("base").get<uint64_t>()!=version && !p.value("full",false)) throw Error("Scene revision mismatch");
+  const auto nextVersion=p.at("version").get<uint64_t>();
+  const auto& updates=p.at("nodes");
+  static const Json empty=Json::array();
+  const auto& removed=p.contains("removed")?p.at("removed"):empty;
+  if(!updates.is_array()||!removed.is_array())throw Error("Scene changes must be arrays");
+  if(!p.value("full",false)&&nextVersion==version&&updates.empty()&&removed.empty())return false;
   Scene candidate=p.value("full",false)?Scene{}:*this;
-  for(auto& id:p.value("removed",Json::array())) {auto key=id.get<std::string>();candidate.bytes-=candidate.costs[key];candidate.costs.erase(key);candidate.nodes.erase(key);}
-  for(auto& n:p.at("nodes")) {
+  if(p.value("full",false)){candidate.revision=revision+1;candidate.treeRevision=treeRevision+1;}
+  for(auto& id:removed) {
+    auto key=id.get<std::string>();
+    if(candidate.nodes.erase(key)){candidate.bytes-=candidate.costs.at(key);candidate.costs.erase(key);++candidate.revision;++candidate.treeRevision;}
+  }
+  for(auto& n:updates) {
     std::string id=n.at("id");Json value=n;size_t cost;
     if(!p.value("full",false) && candidate.nodes.contains(id)){
       validateProperties(n);
@@ -136,7 +167,7 @@ void Scene::apply(const Json& p) {
       parent=candidate.nodes.at(parent)->value("parent",std::string{});
     }
   }
-  candidate.version=p.at("version");*this=std::move(candidate);
+  candidate.version=nextVersion;*this=std::move(candidate);return true;
 }
 std::vector<uint8_t> encode(const Json& j) {auto b=Json::to_msgpack(j);if(b.size()>MaxPacket)throw Error("Packet too large");return b;}
 namespace {

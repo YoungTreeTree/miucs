@@ -19,9 +19,6 @@ final class VisualizationAppearanceStore: ObservableObject {
         transparency = min(90, max(0, preferences.object(forKey: Self.transparencyKey) as? Int ?? 0))
         if let raw = preferences.string(forKey: Self.preferencesKey) {
             selection = VisualizationInk(rawValue: raw) ?? .graphite
-        } else if let data = preferences.data(forKey: PencilPaletteStore.preferencesKey),
-                  let legacy = try? JSONDecoder().decode(PencilPalette.self, from: data) {
-            selection = VisualizationInk.nearest(to: legacy.bird)
         } else { selection = .graphite }
     }
     // Called only by a normal launch, so offline diagnostics remain read-only.

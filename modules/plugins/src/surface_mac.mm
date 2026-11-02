@@ -8,6 +8,12 @@
 #include "include/gpu/ganesh/mtl/GrMtlDirectContext.h"
 #include "include/gpu/ganesh/mtl/SkSurfaceMetal.h"
 namespace miucs {
+// Skia fills this handle lazily with a __bridge_retained drawable during drawing/flush.
+// Keep it alive through presentation and release it even if rendering throws.
+struct RetainedDrawable {
+  GrMTLHandle handle=nullptr;
+  ~RetainedDrawable(){if(handle)CFRelease(handle);}
+};
 class MacSurface final:public NativeSurface {
   CALayer* layer;
   CALayer* cpuLayer;
@@ -24,14 +30,19 @@ public:
       }
     }
   }
+  ~MacSurface() override {
+    [CATransaction begin];[CATransaction setDisableActions:YES];
+    cpuLayer.contents=nil;[cpuLayer removeFromSuperlayer];
+    [CATransaction commit];
+  }
   bool gpu()const override{return bool(context);}
   bool draw(Renderer& renderer,const std::string& output,int w,int h,double scale) override {
     @autoreleasepool {
       if(context && context->abandoned())context.reset();
       if(context){auto metal=(CAMetalLayer*)layer;metal.contentsScale=scale;metal.drawableSize=CGSizeMake(w,h);
-        GrMTLHandle drawable=nullptr;auto surface=SkSurfaces::WrapCAMetalLayer(context.get(),(__bridge const void*)metal,kTopLeft_GrSurfaceOrigin,1,kBGRA_8888_SkColorType,nullptr,nullptr,&drawable);
+        RetainedDrawable drawable;auto surface=SkSurfaces::WrapCAMetalLayer(context.get(),(__bridge const void*)metal,kTopLeft_GrSurfaceOrigin,1,kBGRA_8888_SkColorType,nullptr,nullptr,&drawable.handle);
         if(!surface)return false;renderer.paint(surface->getCanvas(),output,w,h);context->flushAndSubmit();
-        if(drawable){id<MTLCommandBuffer> command=[queue commandBuffer];[command presentDrawable:(__bridge id<CAMetalDrawable>)drawable];[command commit];}
+        if(drawable.handle){id<MTLCommandBuffer> command=[queue commandBuffer];[command presentDrawable:(__bridge id<CAMetalDrawable>)drawable.handle];[command commit];}
         return true;
       }
       auto surface=SkSurfaces::Raster(SkImageInfo::MakeN32Premul(w,h));if(!surface)return false;renderer.paint(surface->getCanvas(),output,w,h);

@@ -1,9 +1,9 @@
 name: UI plugins
 on:
   push:
-    paths: ['apps/assets/**', 'modules/plugins/**', 'plugins/**', 'contracts/plugins/**', 'tools/plugins/**', 'tests/plugins/**', 'scripts/*plugin*', '.github/workflows/plugins.yml']
+    paths: ['apps/assets/**', 'apps/macos/**', 'apps/windows/**', 'modules/plugins/**', 'modules/visualizations/api/**', 'scripts/swift-sources.sh', 'scripts/test-settings.sh', 'tests/platforms/macos/SettingsTests.swift', 'plugins/**', 'contracts/plugins/**', 'tools/plugins/**', 'tests/plugins/**', 'scripts/*plugin*', '.github/workflows/plugins.yml']
   pull_request:
-    paths: ['apps/assets/**', 'modules/plugins/**', 'plugins/**', 'contracts/plugins/**', 'tools/plugins/**', 'tests/plugins/**', 'scripts/*plugin*', '.github/workflows/plugins.yml']
+    paths: ['apps/assets/**', 'apps/macos/**', 'apps/windows/**', 'modules/plugins/**', 'modules/visualizations/api/**', 'scripts/swift-sources.sh', 'scripts/test-settings.sh', 'tests/platforms/macos/SettingsTests.swift', 'plugins/**', 'contracts/plugins/**', 'tools/plugins/**', 'tests/plugins/**', 'scripts/*plugin*', '.github/workflows/plugins.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -15,13 +15,21 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - run: python -m pip install -r tools/plugins/requirements.txt
       - run: sh scripts/build-plugins.sh
       - run: sh scripts/test-plugins.sh
       - run: zsh scripts/test-plugin-macos.sh
+      - run: zsh scripts/test-settings.sh
       - run: |
           python3 tools/plugins/fixture.py
-          build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/staff-note build/plugin-fixture.json
-          MIUCS_FORCE_CPU=1 build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/staff-note build/plugin-fixture.json
+          build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/pixel-keyboard build/plugin-fixture.json
+          MIUCS_FORCE_CPU=1 build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/pixel-keyboard build/plugin-fixture.json
+          build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/niulai-keyboard build/plugin-fixture.json
+          MIUCS_FORCE_CPU=1 build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/niulai-keyboard build/plugin-fixture.json
+          build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/muffin-puppies build/plugin-fixture.json
+          MIUCS_FORCE_CPU=1 build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/muffin-puppies build/plugin-fixture.json
+          build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/heiji-kazuha build/plugin-fixture.json
+          MIUCS_FORCE_CPU=1 build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/heiji-kazuha build/plugin-fixture.json
           build/plugins/plugin-benchmark plugins build/plugin-fixture.json > build/plugin-benchmark.json
       - uses: actions/upload-artifact@v4
         if: always()
@@ -31,6 +39,7 @@ jobs:
             build/plugin-preview/
             build/plugin-replay/report.json
             build/plugin-benchmark.json
+            build/settings-preview/
   windows:
     runs-on: windows-latest
     steps:
@@ -38,18 +47,47 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - run: python -m pip install -r tools/plugins/requirements.txt
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
       - shell: pwsh
-        run: ./scripts/build-windows.ps1 -Plugins
+        run: ./scripts/build-windows.ps1
       - shell: pwsh
         run: |
           python tools/plugins/fixture.py
+          python tests/plugins/gif_test.py
+          if ($LASTEXITCODE -ne 0) { throw 'GIF export tests failed' }
+          python tests/plugins/lab_test.py
+          if ($LASTEXITCODE -ne 0) { throw 'Plugin lab tests failed' }
           python tests/plugins/transport_test.py
           if ($LASTEXITCODE -ne 0) { throw 'Transport tests failed' }
           python tools/plugins/validate.py tools/plugins/template
           if ($LASTEXITCODE -ne 0) { throw 'Template validation failed' }
+          python tools/plugins/validate.py plugins/niulai-keyboard
+          if ($LASTEXITCODE -ne 0) { throw 'Niulai lifecycle validation failed' }
+          python tests/plugins/niulai_replay.py
+          if ($LASTEXITCODE -ne 0) { throw 'Niulai input replay failed' }
+          python tools/plugins/validate.py plugins/muffin-puppies
+          if ($LASTEXITCODE -ne 0) { throw 'Muffin lifecycle validation failed' }
+          python tests/plugins/muffin_replay.py
+          if ($LASTEXITCODE -ne 0) { throw 'Muffin input replay failed' }
+          python tools/plugins/validate.py plugins/heiji-kazuha
+          if ($LASTEXITCODE -ne 0) { throw 'Heiji Kazuha lifecycle validation failed' }
+          python tests/plugins/heiji_kazuha_replay.py
+          if ($LASTEXITCODE -ne 0) { throw 'Heiji Kazuha input replay failed' }
+          python tools/plugins/validate.py plugins/zelda-guardian
+          if ($LASTEXITCODE -ne 0) { throw 'Zelda lifecycle validation failed' }
+          python tests/plugins/zelda_replay.py
+          if ($LASTEXITCODE -ne 0) { throw 'Zelda input replay failed' }
+          python tools/plugins/validate.py plugins/yuru-camp
+          if ($LASTEXITCODE -ne 0) { throw 'Yuru Camp lifecycle validation failed' }
+          python tests/plugins/camp_replay.py
+          if ($LASTEXITCODE -ne 0) { throw 'Yuru Camp input replay failed' }
+          python tools/plugins/validate.py plugins/inuyasha
+          if ($LASTEXITCODE -ne 0) { throw 'Inuyasha lifecycle validation failed' }
+          python tests/plugins/inuyasha_replay.py
+          if ($LASTEXITCODE -ne 0) { throw 'Inuyasha input replay failed' }
           python tools/plugins/preview.py
           if ($LASTEXITCODE -ne 0) { throw 'CPU preview failed' }
           build/plugins/Release/plugin-surface-probe.exe build/plugins/Release/miucs-plugin-worker.exe plugins build/plugin-fixture.json

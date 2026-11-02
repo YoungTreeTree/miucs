@@ -18,13 +18,21 @@ internal static class Program
         using var instance = new Mutex(true, @"Local\Miucs.Windows", out bool first);
         if (!first) { reopen.Set(); return 0; }
         var app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
-        using var host = new DesktopHost(app);
-        var registration = ThreadPool.RegisterWaitForSingleObject(reopen, (_, _) =>
+        try
         {
-            if (!app.Dispatcher.HasShutdownStarted) app.Dispatcher.BeginInvoke(new Action(host.ShowSettings));
-        }, null, Timeout.Infinite, false);
-        try { app.Run(); }
-        finally { registration.Unregister(null); }
-        return 0;
+            using var host = new DesktopHost(app);
+            var registration = ThreadPool.RegisterWaitForSingleObject(reopen, (_, _) =>
+            {
+                if (!app.Dispatcher.HasShutdownStarted) app.Dispatcher.BeginInvoke(new Action(host.ShowSettings));
+            }, null, Timeout.Infinite, false);
+            try { app.Run(); }
+            finally { registration.Unregister(null); }
+            return 0;
+        }
+        catch (Exception error)
+        {
+            MessageBox.Show(error.Message, "Miucs 启动失败", MessageBoxButton.OK, MessageBoxImage.Error);
+            return 1;
+        }
     }
 }

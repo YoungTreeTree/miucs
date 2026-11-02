@@ -1,0 +1,13 @@
+Tool: built-in image_gen; transparent_background=true
+Reference: skin-concept-v3.png
+Output: plugins/muffin-puppies/assets/characters.png
+
+Use case: precise-object-edit / background-extraction.
+From the supplied approved concept image, produce a PRODUCTION TRANSPARENT SPRITE ATLAS containing only its three main characters. Faithfully preserve exact character identities, colors and distinctive broken marker contours. NOT a new concept design.
+Output image aspect ratio 3:2, ideally 1536 x 1024, with an INVISIBLE exact grid of 3 columns x 2 rows, each equal cell. No labels, numbers, borders or grid lines. Genuine transparent background with full opaque interior character fills including WHITE Maltese (white must not become transparent). No shadows, text, keyboard, bubbles, motion marks or background. Generous transparent gutters so nothing crosses cell boundaries.
+Column 1 BOTH rows = white Maltese. Column 2 BOTH rows = tan Golden Retriever with red collar. Column 3 BOTH rows = orange Muffin with red large ear-shaped hood, forehead tuft, cream long pointed cheek tufts, cream belly, gold key, red cape, yellow white-tipped tail and blue bubble wand. These must be the same approved faces from reference, no new designs.
+All character art centered in own equal cell, fit within 76% cell width and 78% cell height. Feet baseline at 88% cell height. Every character has EXACT same scale, body proportions and feet anchor between its two rows.
+TOP ROW neutral poses: white dog upright standing on two feet, arms relaxed slightly out, happy small face; golden dog same upright neutral; Muffin seated holding ring wand right next to its mouth facing LEFT, calm half-lidded expression.
+BOTTOM ROW action poses: white dog with both arms lifted and two separated rounded feet ready for jump, ears slightly raised, same face and SAME baseline as neutral (jump translation happens in runtime); golden dog with both arms lifted and legs ready to jump, same scale and baseline; Muffin seated in EXACT SAME pose/position as above but cheeks subtly puffed and mouth a tiny o to blow through wand, ring stays at exact same coordinate.
+Do not place jump character higher in its cell than neutral. No rotation of whole sprites.
+Linework is the key: chunky irregular BLACK ink broken into varying length hand-drawn strokes with small visible gaps and round ends, matched to approved art, not continuous smooth vector outlines and not regular dotted/stitching lines. Retain flat pale cream/white, warm tan, coral red and yellow fills, minimal shading. Crisp production-ready alpha edges. Small facial details remain legible solid marks. Ensure images are fully separate, six cells with NO overlap. No soap bubbles drawn; bubbles animated separately in application.
