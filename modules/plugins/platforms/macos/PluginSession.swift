@@ -104,11 +104,6 @@ final class PluginHost: ObservableObject {
         let result = PluginNative.shared.scan(userDirectory: userDirectory)
         metadata = (result["plugins"] as? [[String: Any]] ?? []).filter {
             !excludedIDs.contains($0["id"] as? String ?? "")
-        }.sorted {
-            let a = $0["id"] as? String ?? "", b = $1["id"] as? String ?? ""
-            if a == "pixel-keyboard" { return b != a }
-            if b == "pixel-keyboard" { return false }
-            return a < b
         }
         errors = (result["errors"] as? [[String: Any]] ?? []).compactMap { $0["message"] as? String }
         let nextIDs=Set(metadata.compactMap { $0["id"] as? String })

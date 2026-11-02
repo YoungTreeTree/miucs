@@ -74,7 +74,7 @@
         </Style>
         <Style TargetType="CheckBox"><Setter Property="VerticalContentAlignment" Value="Center"/><Setter Property="Padding" Value="5"/></Style>
     </Window.Resources>
-    <Grid>
+    <Grid Background="{Binding Background, RelativeSource={RelativeSource AncestorType=Window}}">
         <Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
         <Border Background="White" BorderBrush="#E3E4E8" BorderThickness="0,0,1,0" Padding="12,26">
             <DockPanel LastChildFill="True">
