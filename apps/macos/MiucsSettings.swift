@@ -17,7 +17,7 @@ enum SettingsPage: String, CaseIterable, Identifiable {
         case .skins: "点击卡片，使用你喜欢的皮肤。"
         case .appearance: "调整皮肤的大小、透明度和摆放位置。"
         case .inputs: "连接声音与按键，让皮肤动起来。"
-        case .about: "让音乐自己飞。"
+        case .about: "你敲你的，它蹦它的。"
         }
     }
 }
@@ -133,13 +133,14 @@ private struct MiucsSettingsView: View {
 
     private var sidebar: some View {
         VStack(alignment: .leading, spacing: 24) {
-            HStack(spacing: 10) {
-                Image(nsImage: NSImage(named: NSImage.applicationIconName) ?? NSImage())
-                    .resizable().frame(width: 38, height: 38)
-                VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(spacing: 10) {
+                    Image(nsImage: NSImage(named: NSImage.applicationIconName) ?? NSImage())
+                        .resizable().frame(width: 38, height: 38)
                     Text("Miucs").font(.system(size: 19, weight: .semibold))
-                    Text("让音乐自己飞。").font(.system(size: 10)).foregroundStyle(.secondary)
                 }
+                Text("你敲你的，它蹦它的。").font(.system(size: 10)).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }.padding(.horizontal, 8)
             VStack(spacing: 5) {
                 ForEach(SettingsPage.allCases.filter { $0 != .about }) { page in navigation(page) }
@@ -286,7 +287,7 @@ private struct MiucsSettingsView: View {
         VStack(spacing: 16) {
             Image(nsImage: NSImage(named: NSImage.applicationIconName) ?? NSImage()).resizable().frame(width: 84, height: 84)
             Text("Miucs").font(.system(size: 28, weight: .semibold))
-            Text("让音乐自己飞。").foregroundStyle(.secondary)
+            Text("你敲你的，它蹦它的。").foregroundStyle(.secondary)
             Text("用声音与按键，让桌面上的皮肤动起来。").font(.system(size: 13))
             Text("版本 \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0")")
                 .font(.system(size: 11)).foregroundStyle(.secondary)
