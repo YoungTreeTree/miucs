@@ -67,9 +67,9 @@ public static class ShellTests
             Check(defaults.Transparency == 0, "existing installs keep original opacity");
             Check(!defaults.KeyboardEnabled, "keyboard capture is opt-in on first launch");
             Check(defaults.TrayAnimationEnabled, "tray animation is enabled without enabling capture");
-            Check(defaults.Visualization == "pencil-flight" && defaults.Color == "graphite", "stable first-launch defaults");
+            Check(defaults.Visualization == "pixel-keyboard" && defaults.Color == "graphite", "stable first-launch defaults");
             Check(Preferences.Palette.Count == 5, "five shared colors");
-            defaults.Visualization = "staff-note"; defaults.Color = "mist-blue"; defaults.KeyboardEnabled = true;
+            defaults.Visualization = "test-skin"; defaults.Color = "mist-blue"; defaults.KeyboardEnabled = true;
             defaults.Transparency = 60;
             defaults.TrayAnimationEnabled = false;
             defaults.Frames["staff-note"] = new(-100, 70, 1000, 200);
@@ -83,10 +83,10 @@ public static class ShellTests
             Check(loaded.Transparency == 90, "transparency retains at least ten percent visibility");
             loaded.Transparency = -10;
             Check(loaded.Transparency == 0, "negative transparency is clamped");
-            Check(loaded.Visualization == "staff-note" && loaded.Color == "mist-blue" && loaded.KeyboardEnabled, "global selection and explicit keyboard preference round-trip");
-            Check(loaded.Frames.Count == 2 && loaded.Frames["staff-note"] == defaults.Frames["staff-note"] && loaded.Frames["pencil-flight"] == defaults.Frames["pencil-flight"], "module positions/sizes remain independent");
+            Check(loaded.Visualization == "test-skin" && loaded.Color == "mist-blue" && loaded.KeyboardEnabled, "global selection and explicit keyboard preference round-trip");
+            Check(loaded.Frames.Count == 2 && loaded.Frames["staff-note"] == defaults.Frames["staff-note"] && loaded.Frames["pencil-flight"] == defaults.Frames["pencil-flight"], "legacy per-skin records remain available for migration");
             File.WriteAllText(path, "{ not json");
-            Check(Preferences.Load(path).Visualization == "pencil-flight", "truncated JSON recovers to defaults");
+            Check(Preferences.Load(path).Visualization == "pixel-keyboard", "truncated JSON recovers to defaults");
             File.WriteAllText(path, "null");
             Check(!Preferences.Load(path).KeyboardEnabled, "null JSON recovers with keyboard disabled");
             File.WriteAllText(path, "{\"Transparency\":999,\"Color\":\"mist-blue\"}");
@@ -94,8 +94,8 @@ public static class ShellTests
             Check(Preferences.Load(path).Transparency == 90 && Preferences.Load(path).Color == "mist-blue", "out of range saved transparency preserves other preferences");
             File.WriteAllText(path, "{\"Visualization\":\"unknown\",\"Color\":null,\"Frames\":null}");
             Check(Preferences.Load(path, allowPluginIds: true).Visualization == "unknown", "plugin selection survives preferences load for catalog resolution");
-            var unknown = Preferences.Load(path);
-            Check(unknown.Visualization == "pencil-flight" && unknown.Color == "graphite" && unknown.Frames.Count == 0, "unknown IDs and null collections sanitized");
+            var unknown = Preferences.Load(path, allowPluginIds: false);
+            Check(unknown.Visualization == "pixel-keyboard" && unknown.Color == "graphite" && unknown.Frames.Count == 0, "unknown IDs and null collections sanitized");
             File.WriteAllText(path, "{\"Frames\":{\"staff-note\":{\"X\":0,\"Y\":0,\"Width\":0,\"Height\":1},\"pencil-flight\":null}}");
             Check(Preferences.Load(path).Frames.Count == 0, "invalid individual saved frames removed");
             Check(!loaded.Save(directory), "unwritable file target is a recoverable save failure");

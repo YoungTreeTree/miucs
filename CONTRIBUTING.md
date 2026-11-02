@@ -1,5 +1,7 @@
 # 参与 Miucs 开发
 
+macOS 当前通过插件皮肤运行，默认构建包含 Lua / Skia；设置窗口使用「皮肤、外观与位置、声音与键盘、关于」。五线谱和飞鸟仅保留为历史代码与回归基线，不能注册为正式皮肤。修改设置与皮肤入口时运行 `zsh scripts/test-settings.sh`；它使用独立偏好和临时插件目录，不采集真实音频与按键。
+
 当前可运行版本是 macOS 原生应用。请先阅读 [架构说明](docs/architecture.md)、[音频契约](contracts/audio-features/README.md) 和 [可视化契约](contracts/visualization/README.md)。Windows 已新增独立 .NET 8/WPF 实现和构建入口；跨平台核心测试/交叉构建与 Windows 实机验收分开记录，后者尚待执行。
 
 ## 平台支持
@@ -54,9 +56,8 @@ zsh scripts/validate-audio.sh       # 基础音频与独立 NumPy 参考
 构建后运行窗口验证与预览：
 
 ```sh
-dist/Miucs.app/Contents/MacOS/Miucs --verify-flight-window --output docs/validation/flight-window-tests.json
-dist/Miucs.app/Contents/MacOS/Miucs --render-flight-preview --output build/flight-preview
-dist/Miucs.app/Contents/MacOS/Miucs --render-staff-preview --output build/staff-note-preview
+zsh scripts/test-settings.sh
+open dist/Miucs.app --args --settings
 dist/Miucs.app/Contents/MacOS/Miucs --diagnose-inputs --duration 8 --output build/input-diagnostics.json
 ```
 
@@ -90,7 +91,7 @@ zsh scripts/render-demo.sh --staff
 
 ## 新增可视化
 
-新增可视化优先从 [Lua 插件开发指南](docs/plugin-development.md) 开始：复制模板、编写场景和动画，再安装到用户目录。插件模式需要使用带运行库的构建并显式开启；无需改动下面的原生模块注册代码。
+新增可视化优先从 [Lua 插件开发指南](docs/plugin-development.md) 开始：复制模板、编写场景和动画，再安装到用户目录。macOS 构建默认包含运行库；新增皮肤无需改动原生注册代码。下面的原生模块说明仅用于历史回归与其他平台。
 
 ### 原生模块（编译进应用）
 

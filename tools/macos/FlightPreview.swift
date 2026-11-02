@@ -7,7 +7,7 @@ enum FlightPreview {
         let suite = "MiucsWindowTest-" + UUID().uuidString
         let preferences = UserDefaults(suiteName: suite)!
         defer { preferences.removePersistentDomain(forName: suite) }
-        let panel = VisualizerPanel(source: FeatureChannel(), registry: BuiltInVisualizations.registry(preferences: preferences), selectedID: BuiltInVisualizations.defaultID, preferences: preferences, persistsFrame: false)
+        let panel = VisualizerPanel(source: FeatureChannel(), registry: NativeVisualizationFixtures.registry(preferences: preferences), selectedID: NativeVisualizationFixtures.defaultID, preferences: preferences, persistsFrame: false)
         var checks = [[String: Any]]()
         func record(_ name: String, _ passed: Bool) { checks.append(["name": name, "passed": passed]) }
         record("400x260 native panel", panel.frame.width == 400 && panel.frame.height == 260)
@@ -17,19 +17,19 @@ enum FlightPreview {
         record("Scale to 150 percent without stretching", panel.frame.width == 600 && panel.frame.height == 390 && panel.drawingScale == 1.5)
         record("Drawing view follows window size", panel.contentView?.bounds.size == panel.frame.size)
         record("Scaling preserves mouse click-through", panel.ignoresMouseEvents)
-        let restored = VisualizerPanel(source: FeatureChannel(), registry: BuiltInVisualizations.registry(preferences: preferences), selectedID: BuiltInVisualizations.defaultID, preferences: preferences, persistsFrame: false)
+        let restored = VisualizerPanel(source: FeatureChannel(), registry: NativeVisualizationFixtures.registry(preferences: preferences), selectedID: NativeVisualizationFixtures.defaultID, preferences: preferences, persistsFrame: false)
         record("Custom size survives reopening", restored.frame.width == 600 && restored.frame.height == 390)
         panel.setAdjustingPosition(true)
         if let screen = NSScreen.main {
             panel.setFrameOrigin(NSPoint(x: screen.visibleFrame.minX + 84, y: screen.visibleFrame.minY + 96))
         }
         let movedFrame = panel.frame
-        let afterMove = VisualizerPanel(source: FeatureChannel(), registry: BuiltInVisualizations.registry(preferences: preferences), selectedID: BuiltInVisualizations.defaultID, preferences: preferences, persistsFrame: false)
+        let afterMove = VisualizerPanel(source: FeatureChannel(), registry: NativeVisualizationFixtures.registry(preferences: preferences), selectedID: NativeVisualizationFixtures.defaultID, preferences: preferences, persistsFrame: false)
         record("Native move saves position before finishing adjustment", afterMove.frame == movedFrame)
         panel.setDrawingWidth(500, persist: false)
         panel.saveDrawingFrame() // Same save invoked by applicationWillTerminate.
         let unfinishedFrame = panel.frame
-        let afterQuit = VisualizerPanel(source: FeatureChannel(), registry: BuiltInVisualizations.registry(preferences: preferences), selectedID: BuiltInVisualizations.defaultID, preferences: preferences, persistsFrame: false)
+        let afterQuit = VisualizerPanel(source: FeatureChannel(), registry: NativeVisualizationFixtures.registry(preferences: preferences), selectedID: NativeVisualizationFixtures.defaultID, preferences: preferences, persistsFrame: false)
         record("Shutdown save restores unfinished adjustment and click-through", afterQuit.frame == unfinishedFrame && afterQuit.ignoresMouseEvents && !afterQuit.isAdjustingPosition)
         panel.setAdjustingPosition(false)
         panel.setDrawingWidth(100)
@@ -51,10 +51,10 @@ enum FlightPreview {
         panel.orderOut(nil)
         record("Hide restores safe input state", !panel.isVisible && panel.ignoresMouseEvents)
         preferences.set(["x": -100_000.0, "y": -100_000.0, "width": 400.0, "height": 260.0], forKey: "MiucsPencilFlightFrame")
-        let recovered = VisualizerPanel(source: FeatureChannel(), registry: BuiltInVisualizations.registry(preferences: preferences), selectedID: BuiltInVisualizations.defaultID, preferences: preferences, persistsFrame: false)
+        let recovered = VisualizerPanel(source: FeatureChannel(), registry: NativeVisualizationFixtures.registry(preferences: preferences), selectedID: NativeVisualizationFixtures.defaultID, preferences: preferences, persistsFrame: false)
         record("Disconnected display recovers frame into visible desktop", NSScreen.screens.contains { $0.visibleFrame.insetBy(dx: -0.1, dy: -0.1).contains(recovered.frame) })
         preferences.set(["x": "invalid", "y": 0, "width": -1, "height": 260] as [String: Any], forKey: "MiucsPencilFlightFrame")
-        let fallback = VisualizerPanel(source: FeatureChannel(), registry: BuiltInVisualizations.registry(preferences: preferences), selectedID: BuiltInVisualizations.defaultID, preferences: preferences, persistsFrame: false)
+        let fallback = VisualizerPanel(source: FeatureChannel(), registry: NativeVisualizationFixtures.registry(preferences: preferences), selectedID: NativeVisualizationFixtures.defaultID, preferences: preferences, persistsFrame: false)
         record("Malformed saved frame falls back safely", fallback.frame.width > 0 && fallback.frame.origin.x.isFinite && preferences.dictionary(forKey: "MiucsPencilFlightFrame")?["x"] is Double)
         let failures = checks.filter { !($0["passed"] as! Bool) }.count
         try FileManager.default.createDirectory(at: output.deletingLastPathComponent(), withIntermediateDirectories: true)

@@ -14,11 +14,17 @@ internal static class Program
             try { WindowsSmokeTests.Run(args.Length > 1 ? args[1] : "build/windows-smoke"); return 0; }
             catch (Exception error) { Console.Error.WriteLine(error); return 1; }
         }
+        using var reopen = new EventWaitHandle(false, EventResetMode.AutoReset, @"Local\Miucs.Windows.ShowSettings");
         using var instance = new Mutex(true, @"Local\Miucs.Windows", out bool first);
-        if (!first) return 0;
+        if (!first) { reopen.Set(); return 0; }
         var app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
         using var host = new DesktopHost(app);
-        app.Run();
+        var registration = ThreadPool.RegisterWaitForSingleObject(reopen, (_, _) =>
+        {
+            if (!app.Dispatcher.HasShutdownStarted) app.Dispatcher.BeginInvoke(new Action(host.ShowSettings));
+        }, null, Timeout.Infinite, false);
+        try { app.Run(); }
+        finally { registration.Unregister(null); }
         return 0;
     }
 }

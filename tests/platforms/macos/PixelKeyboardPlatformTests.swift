@@ -19,8 +19,8 @@ import UniformTypeIdentifiers
         NSApplication.shared.setActivationPolicy(.prohibited)
         var checks = [[String:Any]]()
         func check(_ name:String,_ ok:Bool){checks.append(["name":name,"passed":ok]);print("\(ok ? "PASS" : "FAIL") \(name)")}
-        let session = MacPixelKeyboardSession(), registry = BuiltInVisualizations.registry()
-        check("Third visualization is selectable with its own proportional layout", registry.descriptors.map(\.id) == ["pencil-flight","staff-note","pixel-keyboard"] && session.descriptor.layout.height == 460)
+        let session = MacPixelKeyboardSession(), registry = NativeVisualizationFixtures.registry()
+        check("Pixel regression fixture is selectable with its own proportional layout", registry.descriptors.map(\.id) == ["pencil-flight","staff-note","pixel-keyboard"] && session.descriptor.layout.height == 460)
         check("Transparent photo-derived cat portrait loads independently of an app bundle", PixelCatPortrait.image != nil &&
             PixelCatPortrait.image?.alphaInfo != CGImageAlphaInfo.none && PixelCatPortrait.image?.alphaInfo != CGImageAlphaInfo.noneSkipLast)
         session.activate(viewport:VisualizationViewport(width:800,height:460,scale:1))

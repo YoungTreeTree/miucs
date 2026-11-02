@@ -12,6 +12,14 @@ public sealed record WindowFrame(double X, double Y, double Width, double Height
 
 public static class WindowPlacement
 {
+    public static WindowFrame FitPreservingSize(WindowFrame requested, WindowFrame workArea)
+    {
+        if (!requested.IsValid || !workArea.IsValid) throw new ArgumentException("Invalid display geometry");
+        double scale = Math.Min(1, Math.Min(workArea.Width / requested.Width, workArea.Height / requested.Height));
+        double width = requested.Width * scale, height = requested.Height * scale;
+        return new(Math.Clamp(requested.X, workArea.X, workArea.X + workArea.Width - width),
+            Math.Clamp(requested.Y, workArea.Y, workArea.Y + workArea.Height - height), width, height);
+    }
     // All coordinates must use the same monitor-local logical coordinate space.
     public static WindowFrame Fit(WindowFrame requested, WindowFrame workArea, double aspect, double minWidth, double maxWidth)
     {
@@ -27,25 +35,30 @@ public static class WindowPlacement
 
 public sealed class Preferences
 {
-    public string Visualization { get; set; } = "pencil-flight";
+    public string Visualization { get; set; } = "pixel-keyboard";
     public string Color { get; set; } = "graphite";
     private int transparency;
     public int Transparency { get => transparency; set => transparency = Math.Clamp(value, 0, 90); }
     public bool KeyboardEnabled { get; set; }
     public bool TrayAnimationEnabled { get; set; } = true;
     public Dictionary<string, WindowFrame> Frames { get; set; } = new();
+    public WindowFrame? SkinFrame { get; set; }
+    public WindowFrame RestoreSkinFrame(string selectedId, WindowFrame fallback) =>
+        SkinFrame is { IsValid: true } ? SkinFrame :
+        Frames.TryGetValue(selectedId, out var old) && old.IsValid ? old : fallback;
     public static string DefaultPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Miucs", "preferences.v1.json");
-    public static Preferences Load(string path, bool allowPluginIds = false)
+    public static Preferences Load(string path, bool allowPluginIds = true)
     {
         try
         {
             var result = JsonSerializer.Deserialize<Preferences>(File.ReadAllText(path));
             if (result == null) return new();
             result.Frames ??= new();
-            if (string.IsNullOrWhiteSpace(result.Visualization) || result.Visualization.Length > 128 || (!allowPluginIds && result.Visualization is not ("staff-note" or "pixel-keyboard" or "pencil-flight"))) result.Visualization = "pencil-flight";
+            if (string.IsNullOrWhiteSpace(result.Visualization) || result.Visualization.Length > 128 || SkinCatalog.IsRetired(result.Visualization) || (!allowPluginIds && result.Visualization != "pixel-keyboard")) result.Visualization = "pixel-keyboard";
             result.Color = Palette.ContainsKey(result.Color ?? "") ? result.Color! : "graphite";
             foreach (var key in new List<string>(result.Frames.Keys))
                 if (result.Frames[key] == null || !result.Frames[key].IsValid) result.Frames.Remove(key);
+            if (result.SkinFrame?.IsValid != true) result.SkinFrame = null;
             return result;
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException or JsonException or NotSupportedException) { return new(); }

@@ -88,7 +88,7 @@ enum VisualizationAppearanceTests {
         let channel = FeatureChannel(now: { 0 }), generation = UUID()
         channel.reset(sessionID: generation, state: .running)
         let legacyStore = PencilPaletteStore(preferences: preferences)
-        let registry = BuiltInVisualizations.registry(preferences: preferences, paletteStore: legacyStore)
+        let registry = NativeVisualizationFixtures.registry(preferences: preferences, paletteStore: legacyStore)
         let panel = VisualizerPanel(source: channel, registry: registry, selectedID: "pencil-flight", preferences: preferences, persistsFrame: false)
         let binding = store.$selection.sink { panel.visualizationHost.applyAppearance($0.appearance) }
         let opacityBinding = store.$transparency.sink { panel.visualizationHost.applyTransparency($0) }

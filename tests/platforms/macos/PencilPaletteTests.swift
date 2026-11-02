@@ -42,7 +42,7 @@ enum PencilPaletteTests {
 
         let liveSession = MacPencilFlightSession(paletteStore: store)
         let liveView = liveSession.drawing
-        let panel = VisualizerPanel(source: FeatureChannel(), registry: BuiltInVisualizations.registry(paletteStore: store), selectedID: BuiltInVisualizations.defaultID, preferences: preferences, persistsFrame: false)
+        let panel = VisualizerPanel(source: FeatureChannel(), registry: NativeVisualizationFixtures.registry(paletteStore: store), selectedID: NativeVisualizationFixtures.defaultID, preferences: preferences, persistsFrame: false)
         store.set(PencilColor(hex: "318C73")!, for: .gates)
         check("Existing renderer follows palette changes synchronously", liveView.palette == store.palette &&
               liveSession.hintColor == store.palette.notes.nsColor &&

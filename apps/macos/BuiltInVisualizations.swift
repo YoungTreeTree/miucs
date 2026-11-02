@@ -3,18 +3,10 @@ import Foundation
 /// Composition root: adding an adapter here never changes audio analysis or the host.
 @MainActor
 enum BuiltInVisualizations {
-    static let defaultID = PencilFlightSimulation.module.id
-    static func registry(preferences: UserDefaults = .standard,
-                         paletteStore: PencilPaletteStore? = nil) -> VisualizationRegistry {
-        let store = paletteStore ?? PencilPaletteStore(preferences: preferences)
+    static let defaultID = "pixel-keyboard"
+    static func registry(userDirectory: String? = nil) -> VisualizationRegistry {
         let registry = VisualizationRegistry()
-        if PluginHost.enabled {
-            PluginHost.shared.register(in: registry)
-            return registry
-        }
-        registry.register(PencilFlightSimulation.module) { MacPencilFlightSession(paletteStore: store) }
-        registry.register(StaffNoteSimulation.module) { MacStaffNoteSession() }
-        registry.register(MacPixelKeyboardSession.module) { MacPixelKeyboardSession() }
+        PluginHost.shared.register(in: registry, excluding: SkinItem.retiredIDs, userDirectory: userDirectory)
         return registry
     }
 }

@@ -1,5 +1,7 @@
 # 输入与可视化分层
 
+当前 macOS 产品统一使用皮肤插件：`BuiltInVisualizations` 只注册插件目录中的受支持皮肤，默认 `pixel-keyboard`，排除 `staff-note` 与 `pencil-flight`。独立设置窗口负责皮肤卡片、位置大小、不透明度、输入连接和权限；菜单栏只保留四个快捷操作。皮肤模式使用 `MiucsSkinFrame.v1` 统一保存桌面窗口的位置和大小；切换时只替换会话与视图，不恢复目标皮肤的旧窗口记录。首次升级从当前选中皮肤的位置迁移，重启恢复同一份全局记录。下文飞鸟、五线谱及原生注册说明属于保留的历史实现与回归基线，不再表示 macOS 产品选项。Windows 暂时维持原有界面。
+
 Miucs 的输入侧包含并行的音频特征生产与键盘事件生产，可视化在同一帧消费两路数据。平台适配负责系统采集、数值后端、原生绘制；应用外壳把它们组合起来。macOS 为已实测平台；Windows 新增独立 .NET 8/WPF、WASAPI 与物理键监听实现，Linux 核心测试及交叉构建已验证，Windows 实机验收待完成。
 
 音高路径将原始混音直接送入 `MelodyAnalyzer`：频谱峰插值、有界局部白化、谐波显著度、音调性/支持度可靠性判断与相邻候选连续性。`AudioAnalysisPipeline` 将同一 PCM 直接交给主旋律和特征分析器，格式改变时重置音高历史；没有来源切换、模型推理或分离延迟补偿。`StreamOutput` 在后台准备 FFT 状态，实时音频队列只推进原生分析。旧的来源偏好不再读取。
@@ -84,7 +86,7 @@ flowchart LR
 
 `VisualizationHostView` 管理屏幕同步刷新、当前原生视图和通用状态提示，以及拖动/缩放交互。`VisualizerPanel` 按模块布局保持比例，菜单预设、拖动缩放和提示使用同一逻辑坐标，不拉伸长条文字。切换时先保存旧窗口状态并暂停刷新，替换会话与视图，恢复新模块尺寸并传递视口，最后激活；音频持续运行。首次切换沿用左上角位置并限制到屏幕内。隐藏窗口切换时不启动刷新。
 
-各模块独立保存位置与尺寸，`MiucsSelectedVisualization.v1` 保存选择；未知 ID 回退飞鸟。新模块使用 `MiucsVisualizationFrame.v1.<id>` 与原生保存名 `MiucsVisualization.<id>`。隐藏窗口停止刷新而音频继续；切换会话关闭旧模块设置界面并取消其订阅。新增内置模块只需实现会话与平台适配、声明布局，再在 `BuiltInVisualizations` 注册，无须修改音频分析。
+历史原生回归路径中，各模块独立保存位置与尺寸，`MiucsSelectedVisualization.v1` 保存选择；未知 ID 回退到首个可用皮肤（像素音乐键盘优先）。新模块使用 `MiucsVisualizationFrame.v1.<id>` 与原生保存名 `MiucsVisualization.<id>`。隐藏窗口停止刷新而音频继续；切换会话关闭旧模块设置界面并取消其订阅。新增内置模块只需实现会话与平台适配、声明布局，再在 `BuiltInVisualizations` 注册，无须修改音频分析。
 
 兼容项保持 `com.miucs.app`、`Miucs Dev` 签名策略、`MiucsPencilFlight` 窗口保存名、`MiucsPencilFlightFrame` / `MiucsPencilFlightWidth` 以及原配色偏好。现有带宽距离、响度体积和气团效果均属于飞鸟核心。
 

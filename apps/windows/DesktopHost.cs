@@ -19,12 +19,14 @@ namespace Miucs.Windows;
 internal sealed class DesktopHost : IDisposable
 {
     private readonly Application app;
-    private readonly Preferences preferences = Preferences.Load(Preferences.DefaultPath, PluginHost.Enabled);
+    private readonly Preferences preferences = Preferences.Load(Preferences.DefaultPath);
     private readonly AudioChannel audio = new();
     private readonly KeyboardChannel keyboard = new();
     private readonly LoopbackCapture capture;
     private readonly KeyboardCapture keyboardCapture;
     private readonly Window window;
+    private readonly SettingsWindow settingsWindow;
+    private string shellError = "";
     private readonly HoverLockControl hoverLock;
     private readonly Grid root = new();
     private readonly Border adjustment;
@@ -56,7 +58,14 @@ internal sealed class DesktopHost : IDisposable
         capture = new LoopbackCapture(audio);
         keyboardCapture = new KeyboardCapture(keyboard);
         headSubscription = keyboard.Subscribe(); lastHeadTime = Now;
-        if (PluginHost.Enabled && File.Exists(Path.Combine(AppContext.BaseDirectory,"miucs_plugins.dll"))) pluginHost = new PluginHost(audio, keyboard);
+        try
+        {
+            if (File.Exists(Path.Combine(AppContext.BaseDirectory, "miucs_plugins.dll")))
+                pluginHost = new PluginHost(audio, keyboard, include: id => !SkinCatalog.IsRetired(id));
+            else shellError = "皮肤运行库未找到，请重新解压完整应用。";
+        }
+        catch (Exception error) when (error is DllNotFoundException or BadImageFormatException or EntryPointNotFoundException or System.Text.Json.JsonException)
+        { shellError = "皮肤运行库加载失败：" + error.Message; }
         window = new Window
         {
             Title = "Miucs", WindowStyle = WindowStyle.None, AllowsTransparency = true,
@@ -80,12 +89,12 @@ internal sealed class DesktopHost : IDisposable
         window.SizeChanged += (_, _) => { if (view != null) { view.Width = window.Width; view.Height = window.Height; } };
         new WindowInteropHelper(window).EnsureHandle();
         NativeWindow.SetInteractive(window, false);
-        SwitchVisualization(preferences.Visualization is "staff-note" or "pixel-keyboard" or "pencil-flight" || pluginHost?.Views.ContainsKey(preferences.Visualization)==true ? preferences.Visualization : "pencil-flight");
+        SwitchVisualization(preferences.Visualization);
         tray = new Forms.NotifyIcon { Text = "Miucs", ContextMenuStrip = menu };
         trayAnimation = new AnimatedTrayIcon(tray, () => AdvanceCatHead(Now));
         tray.Visible = true;
         UpdateTrayAnimation();
-        tray.DoubleClick += (_, _) => Dispatch(() => SetVisible(!isVisible));
+        tray.DoubleClick += (_, _) => Dispatch(ShowSettings);
         menu.Opening += (_, _) => BuildMenu();
         SystemEvents.PowerModeChanged += OnPowerModeChanged;
         SystemEvents.SessionSwitch += OnSessionSwitch;
@@ -99,6 +108,44 @@ internal sealed class DesktopHost : IDisposable
         window.Show();
         hoverLock = new HoverLockControl(window, () => isVisible && !suspended && !disposed, () => SetAdjusting(!adjusting));
         StartRendering();
+        settingsWindow = new SettingsWindow(new SettingsActions
+        {
+            SelectSkin = SwitchVisualization, SetVisible = SetVisible, TogglePosition = () => SetAdjusting(!adjusting),
+            SetScale = value => { SetFrame(CurrentFrame() with { Width = view.BaseWidth * value / 100 }, preserveSize: false); SaveFrame(); SavePreferences(); RefreshSettings(); },
+            SetOpacity = value => { preferences.Transparency = (int)Math.Round(100 - value); view.Opacity = 1 - preferences.Transparency / 100d; ApplyColor(); SavePreferences(); RefreshSettings(); },
+            SetKeyboardEnabled = value => { preferences.KeyboardEnabled = value; if (value && !suspended) keyboardCapture.Start(); else keyboardCapture.Stop(); ResetCatHead(); SavePreferences(); UpdateStatus(); },
+            SetTrayAnimation = value => { preferences.TrayAnimationEnabled = value; UpdateTrayAnimation(); SavePreferences(); RefreshSettings(); },
+            ReconnectAudio = () => { if (!suspended) capture.Reconnect(); },
+            Rescan = RescanSkins, Reload = () => pluginHost?.ReloadActive(), OpenDirectory = OpenSkinDirectory
+        });
+        app.MainWindow = settingsWindow;
+        ShowSettings();
+    }
+
+    internal void ShowSettings() { RefreshSettings(); settingsWindow.Present(); }
+    private void RefreshSettings()
+    {
+        if (settingsWindow == null) return;
+        using var subscription = keyboard.Subscribe();
+        string keyboardStatus = subscription.Read(Now).State.ToString();
+        settingsWindow.UpdateState(new SettingsState(
+            pluginHost?.Views.Values.ToArray() ?? Array.Empty<PluginInfo>(), view.Id, isVisible, adjusting,
+            window.Width / view.BaseWidth * 100, view.LayoutMinWidth / view.BaseWidth * 100,
+            view.LayoutMaxWidth / view.BaseWidth * 100, 100 - preferences.Transparency,
+            preferences.KeyboardEnabled, preferences.TrayAnimationEnabled, lastStatus, keyboardStatus,
+            string.Join("\n", new[] { shellError, capture.LastError, pluginHost?.Error }.Where(e => !string.IsNullOrEmpty(e)))));
+    }
+    private void OpenSkinDirectory()
+    {
+        try { Directory.CreateDirectory(PluginHost.UserDirectory); Process.Start(new ProcessStartInfo(PluginHost.UserDirectory) { UseShellExecute = true }); shellError = ""; }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception) { shellError = "无法打开皮肤文件夹：" + e.Message; }
+        RefreshSettings();
+    }
+    private void RescanSkins()
+    {
+        pluginHost?.Scan();
+        if (pluginHost?.Views.ContainsKey(view.Id) != true) SwitchVisualization(preferences.Visualization);
+        RefreshSettings();
     }
 
     private void Dispatch(Action action)
@@ -107,38 +154,35 @@ internal sealed class DesktopHost : IDisposable
     }
     private void SwitchVisualization(string id)
     {
-        if (pluginHost != null && !pluginHost.Views.ContainsKey(id))
-            id=pluginHost.Views.Keys.FirstOrDefault() ?? "";
+        if (pluginHost?.Views.ContainsKey(id) != true)
+            id = pluginHost?.Views.ContainsKey("pixel-keyboard") == true ? "pixel-keyboard" : pluginHost?.Views.Keys.FirstOrDefault() ?? "";
         if (view != null && view.Id == id) return;
-        if (id != "pencil-flight" && id != "staff-note" && id != "pixel-keyboard" && pluginHost == null) return;
         WindowFrame? previous = view == null ? null : CurrentFrame();
         hoverLock?.Reset();
         StopRendering();
-        if (view != null)
-        {
-            SaveFrame(); root.Children.Remove(view); view.Dispose();
-        }
-        view = pluginHost?.Views.ContainsKey(id) == true ? new PluginView(pluginHost,id) : pluginHost != null ? new EmptyPluginView() : id switch { "staff-note" => new StaffNoteView(), "pixel-keyboard" => new PixelKeyboardView(catHead), _ => new PencilFlightView() };
-        if (id.Length>0) preferences.Visualization = id;
-        ApplyColor();
-        view.Opacity = 1 - preferences.Transparency / 100d;
+        if (view != null) { SaveFrame(); root.Children.Remove(view); view.Dispose(); }
+        view = id.Length > 0 && pluginHost != null ? new PluginView(pluginHost, id) : new EmptyPluginView();
+        if (id.Length > 0) preferences.Visualization = id;
+        ApplyColor(); view.Opacity = 1 - preferences.Transparency / 100d;
         root.Children.Insert(0, view);
-        var requested = preferences.Frames.TryGetValue(id, out var saved) ? saved :
-            new WindowFrame(previous?.X ?? 80, previous?.Y ?? 80, view.BaseWidth, view.BaseHeight);
-        SetFrame(requested);
-        SavePreferences();
+        if (previous == null)
+            SetFrame(preferences.RestoreSkinFrame(id, new WindowFrame(80, 80, view.BaseWidth, view.BaseHeight)));
+        else { view.Width = window.Width; view.Height = window.Height; }
+        SaveFrame(); SavePreferences(); RefreshSettings();
         if (isVisible) StartRendering();
     }
+
     private WindowFrame CurrentFrame() => new(window.Left, window.Top, window.Width, window.Height);
-    private void SetFrame(WindowFrame requested)
+    private void SetFrame(WindowFrame requested, bool preserveSize = true)
     {
         // Move first so MonitorFromWindow identifies the saved monitor; disconnected displays fall back to nearest.
         if (requested.IsValid) { window.Left = requested.X; window.Top = requested.Y; }
-        var frame = WindowPlacement.Fit(requested, NativeWindow.WorkArea(window), view.BaseWidth / view.BaseHeight, view.LayoutMinWidth, view.LayoutMaxWidth);
+        var area = NativeWindow.WorkArea(window);
+        var frame = preserveSize ? WindowPlacement.FitPreservingSize(requested, area) : WindowPlacement.Fit(requested, area, view.BaseWidth / view.BaseHeight, view.LayoutMinWidth, view.LayoutMaxWidth);
         window.Left = frame.X; window.Top = frame.Y; window.Width = frame.Width; window.Height = frame.Height;
         view.Width = frame.Width; view.Height = frame.Height;
     }
-    private void SaveFrame() { if (view != null && view.Id.Length>0 && CurrentFrame().IsValid) preferences.Frames[view.Id] = CurrentFrame(); }
+    private void SaveFrame() { if (view != null && view.Id.Length>0 && CurrentFrame().IsValid) preferences.SkinFrame = CurrentFrame(); }
     private void SavePreferences()
     {
         if (!preferences.Save(Preferences.DefaultPath) && tray != null)
@@ -209,6 +253,7 @@ internal sealed class DesktopHost : IDisposable
         hoverLock?.Reset();
         if (value) { SetFrame(CurrentFrame()); window.Show(); StartRendering(); }
         else { StopRendering(); SaveFrame(); window.Hide(); SavePreferences(); }
+        RefreshSettings();
     }
     private void SetAdjusting(bool value)
     {
@@ -218,6 +263,7 @@ internal sealed class DesktopHost : IDisposable
         NativeWindow.SetInteractive(window, value);
         if (value) SetVisible(true);
         else { root.ReleaseMouseCapture(); SaveFrame(); SavePreferences(); }
+        RefreshSettings();
     }
     private void BeginDrag(object sender, MouseButtonEventArgs e)
     {
@@ -232,71 +278,24 @@ internal sealed class DesktopHost : IDisposable
         var p = root.PointToScreen(e.GetPosition(root));
         var dpi = VisualTreeHelper.GetDpi(window);
         double dx = (p.X - dragOrigin.Value.X) / dpi.DpiScaleX, dy = (p.Y - dragOrigin.Value.Y) / dpi.DpiScaleY;
-        if (resizing) SetFrame(dragFrame with { Width = Math.Max(1, dragFrame.Width + dx) });
+        if (resizing) SetFrame(dragFrame with { Width = Math.Max(1, dragFrame.Width + dx) }, preserveSize: false);
         else { window.Left = dragFrame.X + dx; window.Top = dragFrame.Y + dy; }
     }
     private void EndDrag(object sender, MouseButtonEventArgs e)
     {
         if (dragOrigin == null) return;
-        root.ReleaseMouseCapture(); SetFrame(CurrentFrame()); SaveFrame(); SavePreferences();
+        root.ReleaseMouseCapture(); SetFrame(CurrentFrame()); SaveFrame(); SavePreferences(); RefreshSettings();
     }
     private void BuildMenu()
     {
         while (menu.Items.Count > 0) { var old = menu.Items[0]; menu.Items.RemoveAt(0); old.Dispose(); }
-        menu.Items.Add(new Forms.ToolStripMenuItem("Miucs · " + lastStatus) { Enabled = false });
-        if (capture.LastError is string error) menu.Items.Add(new Forms.ToolStripMenuItem(error) { Enabled = false });
-        using (var keys = keyboard.Subscribe())
-            menu.Items.Add(new Forms.ToolStripMenuItem("键盘状态：" + keys.Read(Now).State) { Enabled = false });
-        Add(menu.Items, isVisible ? "隐藏画面" : "显示画面", () => SetVisible(!isVisible));
-        Add(menu.Items, "托盘猫摇头", () =>
-        {
-            preferences.TrayAnimationEnabled = !preferences.TrayAnimationEnabled;
-            UpdateTrayAnimation(); SavePreferences();
-        }, preferences.TrayAnimationEnabled);
-        var modes = new Forms.ToolStripMenuItem("可视化"); menu.Items.Add(modes);
-        if (pluginHost != null)
-        {
-            foreach (var plugin in pluginHost.Views.Values) { var id=plugin.Id;Add(modes.DropDownItems,plugin.Name,()=>SwitchVisualization(id),view.Id==id); }
-            Add(menu.Items,"重新扫描插件",()=>{pluginHost.Scan();if(view.Id.Length==0)SwitchVisualization(preferences.Visualization);});
-            Add(menu.Items,"重新加载当前插件",()=>pluginHost.ReloadActive());
-        }
-        else
-        {
-            Add(modes.DropDownItems, "铅笔飞鸟", () => SwitchVisualization("pencil-flight"), view.Id == "pencil-flight");
-            Add(modes.DropDownItems, "五线谱音符", () => SwitchVisualization("staff-note"), view.Id == "staff-note");
-            Add(modes.DropDownItems, "像素音乐键盘", () => SwitchVisualization("pixel-keyboard"), view.Id == "pixel-keyboard");
-        }
-        var sizes = new Forms.ToolStripMenuItem("画面大小"); menu.Items.Add(sizes);
-        foreach (int percent in new[] { 10, 80, 100, 125, 150, 200 })
-            Add(sizes.DropDownItems, $"{percent}%", () => { SetFrame(CurrentFrame() with { Width = view.BaseWidth * percent / 100d }); SaveFrame(); SavePreferences(); });
-        var colors = new Forms.ToolStripMenuItem("线条颜色"); menu.Items.Add(colors);
-        foreach (var entry in Preferences.Palette)
-            Add(colors.DropDownItems, entry.Value.Name, () => { preferences.Color = entry.Key; ApplyColor(); SavePreferences(); }, preferences.Color == entry.Key);
-        var transparency = new Forms.ToolStripMenuItem($"画面不透明度（{100 - preferences.Transparency}%）"); menu.Items.Add(transparency);
-        for (int value = 10; value <= 100; value += 10)
-        {
-            int percent = value;
-            Add(transparency.DropDownItems, percent == 100 ? "100%（原始效果）" : $"{percent}%", () =>
-            {
-                preferences.Transparency = 100 - percent;
-                view.Opacity = 1 - preferences.Transparency / 100d;
-                ApplyColor();
-                SavePreferences();
-            }, preferences.Transparency == 100 - percent);
-        }
-        Add(menu.Items, adjusting ? "完成调整（恢复鼠标穿透）" : "调整位置与大小…", () => SetAdjusting(!adjusting));
+        Add(menu.Items, "打开设置…", ShowSettings);
+        Add(menu.Items, isVisible ? "隐藏皮肤" : "显示皮肤", () => SetVisible(!isVisible));
+        Add(menu.Items, adjusting ? "完成调整" : "调整位置与大小…", () => SetAdjusting(!adjusting));
         menu.Items.Add(new Forms.ToolStripSeparator());
-        Add(menu.Items, "重新连接音频", () => { if (!suspended) capture.Reconnect(); });
-        Add(menu.Items, "键盘输入 · 星爆 / 猫爪", () =>
-        {
-            preferences.KeyboardEnabled = !preferences.KeyboardEnabled;
-            if (preferences.KeyboardEnabled && !suspended) keyboardCapture.Start(); else keyboardCapture.Stop();
-            ResetCatHead();
-            SavePreferences();
-        }, preferences.KeyboardEnabled);
-        menu.Items.Add(new Forms.ToolStripSeparator());
-        Add(menu.Items, "退出", () => { Dispose(); app.Shutdown(); });
+        Add(menu.Items, "退出 Miucs", () => { Dispose(); app.Shutdown(); });
     }
+
     private void Add(Forms.ToolStripItemCollection items, string text, Action action, bool check = false)
     {
         var item = new Forms.ToolStripMenuItem(text) { Checked = check };
@@ -314,7 +313,9 @@ internal sealed class DesktopHost : IDisposable
         };
         if (pluginHost?.Error.Length > 0) lastStatus = "插件：" + pluginHost.Error;
         status.Text = pluginHost?.Error.Length > 0 ? lastStatus : input.State == AudioState.Running && input.Frame != null ? "" : lastStatus;
-        tray.Text = ("Miucs · " + lastStatus)[..Math.Min(63,8+lastStatus.Length)];
+        string tooltip = "Miucs · " + lastStatus;
+        tray.Text = tooltip[..Math.Min(63, tooltip.Length)];
+        RefreshSettings();
     }
     private void Suspend()
     {
@@ -356,6 +357,7 @@ internal sealed class DesktopHost : IDisposable
         SystemParameters.StaticPropertyChanged -= OnSystemParametersChanged;
         headSubscription.Dispose();
         capture.Dispose(); keyboardCapture.Dispose(); view.Dispose();
+        settingsWindow?.CloseForExit();
         tray.Visible = false; pluginHost?.Dispose(); trayAnimation.Dispose(); tray.Dispose(); menu.Dispose(); window.Close();
     }
 }

@@ -40,7 +40,7 @@ enum PerformanceProbe {
                                     withGaps: CommandLine.arguments[1] == "--staff-joins"); return
         }
         if (3...5).contains(CommandLine.arguments.count) && ["--cadence", "--staff-cadence", "--staff-keyboard-cadence", "--staff-beats-cadence", "--staff-joins-cadence"].contains(CommandLine.arguments[1]) {
-            let id = CommandLine.arguments[1] == "--cadence" ? BuiltInVisualizations.defaultID : StaffNoteSimulation.module.id
+            let id = CommandLine.arguments[1] == "--cadence" ? NativeVisualizationFixtures.defaultID : StaffNoteSimulation.module.id
             let width = CommandLine.arguments.count > 3 ? Double(CommandLine.arguments[3]) ?? .nan : 1000
             let duration = CommandLine.arguments.count > 4 ? Double(CommandLine.arguments[4]) ?? .nan : 6
             try cadence(to: URL(fileURLWithPath: CommandLine.arguments[2]), moduleID: id,
@@ -192,7 +192,7 @@ enum PerformanceProbe {
         defer { preferences.removePersistentDomain(forName: suite) }
         let keyboard = withKeyboard ? SyntheticKeyboardInput(.typing20) : nil
         let engine = AudioEngine(factory: { _, frame, _ in ProbeCapture(onFrame: frame, onTick: { keyboard?.update(at: $0) }, withBeats: withBeats, withGaps: withGaps) }, monitorsSystem: false)
-        let panel = VisualizerPanel(source: engine.channel, registry: BuiltInVisualizations.registry(preferences: preferences), selectedID: moduleID,
+        let panel = VisualizerPanel(source: engine.channel, registry: NativeVisualizationFixtures.registry(preferences: preferences), selectedID: moduleID,
             preferences: preferences, persistsFrame: false, keyboardSource: keyboard?.channel)
         panel.setDrawingWidth(width)
         func setProbe(_ handler: ((Double, Double) -> Void)?) {

@@ -1,9 +1,11 @@
 import AppKit
 
-/// A transparent, nonactivating desktop canvas with independent module geometry.
+/// A transparent canvas. Skin mode keeps one desktop frame across package switches.
 @MainActor
 final class VisualizerPanel: NSPanel, NSWindowDelegate {
     static let selectionPreferencesKey = "MiucsSelectedVisualization.v1"
+    static let sharedFramePreferencesKey = "MiucsSkinFrame.v1"
+    enum GeometryPersistence { case perVisualization, sharedSkin }
     static func framePreferencesKey(for id: String) -> String {
         id == "pencil-flight" ? "MiucsPencilFlightFrame" : "MiucsVisualizationFrame.v1.\(id)"
     }
@@ -14,6 +16,13 @@ final class VisualizerPanel: NSPanel, NSWindowDelegate {
     private let preferences: UserDefaults
     private let persistsFrame: Bool
     private let monitorsHover: Bool
+    private let geometryPersistence: GeometryPersistence
+    private var geometryPreferencesKey: String {
+        geometryPersistence == .sharedSkin ? Self.sharedFramePreferencesKey : Self.framePreferencesKey(for: descriptor.id)
+    }
+    private var geometryAutosaveName: String {
+        geometryPersistence == .sharedSkin ? "MiucsSkin" : Self.autosaveName(for: descriptor.id)
+    }
     private(set) var descriptor: VisualizationDescriptor
     private var isRestoringFrame = true
     private var isUpdatingDrawingSize = false
@@ -31,7 +40,8 @@ final class VisualizerPanel: NSPanel, NSWindowDelegate {
 
     init(source: any AudioFeatureSource, registry: VisualizationRegistry, selectedID: String? = nil,
          preferences: UserDefaults = .standard, persistsFrame: Bool = true,
-         keyboardSource: (any KeyboardFeatureSource)? = nil, monitorsHover: Bool = true) {
+         keyboardSource: (any KeyboardFeatureSource)? = nil, monitorsHover: Bool = true,
+         geometryPersistence: GeometryPersistence = .perVisualization) {
         let requestedID = selectedID ?? preferences.string(forKey: Self.selectionPreferencesKey)
         let initial = requestedID.flatMap { registry.descriptor(id: $0) } ?? registry.descriptors.first!
         descriptor = initial
@@ -39,6 +49,7 @@ final class VisualizerPanel: NSPanel, NSWindowDelegate {
                                                    keyboardSource: keyboardSource)
         self.preferences = preferences; self.persistsFrame = persistsFrame
         self.monitorsHover = monitorsHover
+        self.geometryPersistence = geometryPersistence
         super.init(contentRect: NSRect(x: 80, y: 80, width: initial.layout.width, height: initial.layout.height),
                    styleMask: [.borderless, .nonactivatingPanel, .fullSizeContentView],
                    backing: .buffered, defer: false)
@@ -80,12 +91,18 @@ final class VisualizerPanel: NSPanel, NSWindowDelegate {
         if persistsFrame { setFrameAutosaveName("") }
         guard visualizationHost.select(id: id) else {
             isRestoringFrame = false
-            if persistsFrame { setFrameAutosaveName(Self.autosaveName(for: descriptor.id)) }
+            if persistsFrame { setFrameAutosaveName(geometryAutosaveName) }
             if wasRendering { visualizationHost.setRendering(true) }
             return false
         }
         descriptor = next; updateTitle()
-        restoreGeometry(fallbackTopLeft: anchor)
+        if geometryPersistence == .sharedSkin {
+            // Replacing the artwork must not resize, reposition or round the window.
+            visualizationHost.updateViewport()
+            if persistsFrame { setFrameAutosaveName(geometryAutosaveName) }
+        } else {
+            restoreGeometry(fallbackTopLeft: anchor)
+        }
         isRestoringFrame = false
         saveDrawingFrame()
         if wasRendering { visualizationHost.setRendering(true) }
@@ -102,7 +119,10 @@ final class VisualizerPanel: NSPanel, NSWindowDelegate {
         var restored = false
         if let saved { setFrame(saved, display: false); restored = true }
         else if persistsFrame {
-            restored = setFrameUsingName(Self.autosaveName(for: descriptor.id), force: true)
+            restored = setFrameUsingName(geometryAutosaveName, force: true)
+            if !restored, geometryPersistence == .sharedSkin {
+                restored = setFrameUsingName(Self.autosaveName(for: descriptor.id), force: true)
+            }
         }
         let layout = descriptor.layout
         if !restored {
@@ -112,11 +132,26 @@ final class VisualizerPanel: NSPanel, NSWindowDelegate {
             setFrame(NSRect(x: topLeft.x, y: topLeft.y - layout.height,
                             width: layout.width, height: layout.height), display: false)
         }
-        let legacyWidth = descriptor.id == "pencil-flight" ? preferences.object(forKey: "MiucsPencilFlightWidth") as? Double : nil
-        let width: Double = saved.map { Double($0.width) } ?? (restored ? Double(frame.width) : legacyWidth ?? layout.width)
-        setDrawingWidth(width, persist: false)
+        if geometryPersistence == .sharedSkin, restored {
+            fitSharedFrameToDisplay()
+        } else {
+            let legacyWidth = descriptor.id == "pencil-flight" ? preferences.object(forKey: "MiucsPencilFlightWidth") as? Double : nil
+            let width: Double = saved.map { Double($0.width) } ?? (restored ? Double(frame.width) : legacyWidth ?? layout.width)
+            setDrawingWidth(width, persist: false)
+        }
         visualizationHost.updateViewport()
-        if persistsFrame { setFrameAutosaveName(Self.autosaveName(for: descriptor.id)) }
+        if persistsFrame { setFrameAutosaveName(geometryAutosaveName) }
+    }
+
+    private func fitSharedFrameToDisplay() {
+        let visible = visibleFrame(), current = frame
+        guard !visible.contains(current) else { return }
+        let scale = min(1, min(visible.width / current.width, visible.height / current.height))
+        let size = NSSize(width: current.width * scale, height: current.height * scale)
+        let origin = NSPoint(x: min(max(current.minX, visible.minX), visible.maxX - size.width),
+                             y: min(max(current.minY, visible.minY), visible.maxY - size.height))
+        setFrame(NSRect(origin: origin, size: size), display: false)
+        visualizationHost.updateViewport()
     }
 
     private func visibleFrame() -> NSRect {
@@ -150,14 +185,21 @@ final class VisualizerPanel: NSPanel, NSWindowDelegate {
               frame.origin.x.isFinite, frame.origin.y.isFinite,
               frame.width.isFinite, frame.height.isFinite, frame.width > 0, frame.height > 0 else { return }
         preferences.set(["x": frame.minX, "y": frame.minY,
-                         "width": frame.width, "height": frame.height], forKey: Self.framePreferencesKey(for: descriptor.id))
-        if descriptor.id == "pencil-flight" { preferences.set(frame.width, forKey: "MiucsPencilFlightWidth") }
+                         "width": frame.width, "height": frame.height], forKey: geometryPreferencesKey)
+        if geometryPersistence == .perVisualization, descriptor.id == "pencil-flight" { preferences.set(frame.width, forKey: "MiucsPencilFlightWidth") }
         preferences.set(descriptor.id, forKey: Self.selectionPreferencesKey)
-        if persistsFrame { saveFrame(usingName: Self.autosaveName(for: descriptor.id)) }
+        if persistsFrame { saveFrame(usingName: geometryAutosaveName) }
     }
 
     private func readSavedFrame() -> NSRect? {
-        guard let saved = preferences.dictionary(forKey: Self.framePreferencesKey(for: descriptor.id)),
+        if let saved = readFrame(forKey: geometryPreferencesKey) { return saved }
+        // One-time migration starts from the selected skin's existing placement.
+        if geometryPersistence == .sharedSkin { return readFrame(forKey: Self.framePreferencesKey(for: descriptor.id)) }
+        return nil
+    }
+
+    private func readFrame(forKey key: String) -> NSRect? {
+        guard let saved = preferences.dictionary(forKey: key),
               let x = saved["x"] as? Double, let y = saved["y"] as? Double,
               let width = saved["width"] as? Double, let height = saved["height"] as? Double,
               [x, y, width, height].allSatisfy(\.isFinite), width > 0, height > 0 else { return nil }
@@ -199,7 +241,10 @@ final class VisualizerPanel: NSPanel, NSWindowDelegate {
         if let control = hoverLockPanel { removeChildWindow(control); control.orderOut(nil) }
     }
     @objc private func displaysChanged() {
-        hideHoverLock(); setAdjustingPosition(false); setDrawingWidth(frame.width)
+        hideHoverLock(); setAdjustingPosition(false)
+        if geometryPersistence == .sharedSkin {
+            fitSharedFrameToDisplay(); positionHoverLock(); saveDrawingFrame(); onSizeChange?()
+        } else { setDrawingWidth(frame.width) }
     }
     @objc private func workspaceStateChanged(_ notification: Notification) {
         let reason: String

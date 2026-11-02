@@ -57,7 +57,10 @@ internal sealed class PluginPackage : IDisposable
 }
 internal sealed class PluginHost : IDisposable
 {
-    internal static bool Enabled => Environment.GetEnvironmentVariable("MIUCS_PLUGINS")=="1"||Array.IndexOf(Environment.GetCommandLineArgs(),"--plugins")>=0;
+    internal static bool Enabled => true;
+    internal static string UserDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"Miucs","Plugins");
+    private readonly string builtinDirectory, userDirectory;
+    private readonly Func<string, bool> includeSkin;
     internal readonly Dictionary<string,PluginInfo> Views=new();
     private readonly Dictionary<string,PluginPackage> packages=new();
     private readonly AudioChannel audioSource;
@@ -71,20 +74,21 @@ internal sealed class PluginHost : IDisposable
     internal string Ink="#3d3d3d";
     internal double Opacity=1;
     private static double Now=>Stopwatch.GetTimestamp()/(double)Stopwatch.Frequency;
-    internal PluginHost(AudioChannel a,KeyboardChannel k)
+    internal PluginHost(AudioChannel a,KeyboardChannel k, string? builtin = null, string? user = null, Func<string, bool>? include = null)
     {
+        includeSkin = include ?? (_ => true);
+        builtinDirectory = builtin ?? Path.Combine(AppContext.BaseDirectory,"Plugins"); userDirectory = user ?? UserDirectory;
         audioSource=a;keyboardSource=k;audio=a.Subscribe();keyboard=k.Subscribe();Scan();
         last=Now;timer=new DispatcherTimer(DispatcherPriority.Background){Interval=TimeSpan.FromSeconds(1d/60)};timer.Tick+=Tick;
     }
     internal void Scan()
     {
-        string builtin=Path.Combine(AppContext.BaseDirectory,"Plugins"),user=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"Miucs","Plugins");
-        nuint length=PluginNative.miucs_plugin_catalog(builtin,user,null,0);if(length>2*1024*1024)return;
-        var bytes=new byte[(int)length];PluginNative.miucs_plugin_catalog(builtin,user,bytes,length);
+        nuint length=PluginNative.miucs_plugin_catalog(builtinDirectory,userDirectory,null,0);if(length<2||length>2*1024*1024){Error="皮肤目录读取失败";return;}
+        var bytes=new byte[(int)length];PluginNative.miucs_plugin_catalog(builtinDirectory,userDirectory,bytes,length);
         using var json=JsonDocument.Parse(Encoding.UTF8.GetString(bytes,0,bytes.Length-1));
         var options=new JsonSerializerOptions{PropertyNameCaseInsensitive=true};Views.Clear();
         foreach(var p in json.RootElement.GetProperty("plugins").EnumerateArray())
-        {var info=p.Deserialize<PluginInfo>(options)!;Views[info.Id]=info;}
+        {var info=p.Deserialize<PluginInfo>(options)!;if(includeSkin(info.Id))Views[info.Id]=info;}
         Error=string.Join("; ",json.RootElement.GetProperty("errors").EnumerateArray().Select(e=>e.ToString()));
     }
     internal PluginPackage Package(PluginInfo info)
