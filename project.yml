@@ -38,7 +38,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.miucs.app
         PRODUCT_NAME: Miucs
         GENERATE_INFOPLIST_FILE: YES
-        INFOPLIST_KEY_LSUIElement: YES
+        INFOPLIST_KEY_LSUIElement: NO
         INFOPLIST_KEY_CFBundleIconFile: Miucs.icns
         INFOPLIST_KEY_NSAudioCaptureUsageDescription: Miucs listens to system audio to draw the desktop visualizer.
         INFOPLIST_KEY_NSScreenCaptureUsageDescription: Miucs uses system audio capture to draw the desktop visualizer.

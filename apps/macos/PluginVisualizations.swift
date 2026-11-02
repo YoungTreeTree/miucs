@@ -4,9 +4,9 @@ import Foundation
 @MainActor
 enum PluginVisualizations {
     static let defaultID = "pixel-keyboard"
-    static func registry() -> VisualizationRegistry {
+    static func registry(userDirectory: String? = nil) -> VisualizationRegistry {
         let registry = VisualizationRegistry()
-        PluginHost.shared.register(in: registry)
+        PluginHost.shared.register(in: registry, excluding: SkinItem.retiredIDs, userDirectory: userDirectory)
         return registry
     }
 }

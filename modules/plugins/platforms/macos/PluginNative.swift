@@ -52,12 +52,13 @@ final class PluginNative {
         _ = error?(handle, &text, text.count)
         return String(decoding: text.prefix { $0 != 0 }.map { UInt8(bitPattern:$0) }, as: UTF8.self)
     }
-    func scan() -> [String: Any] {
+    func scan(userDirectory: String? = nil) -> [String: Any] {
         guard let catalog else { return [:] }
-        let n = builtin.withCString { b in user.withCString { u in catalog(b,u,nil,0) } }
+        let directory = userDirectory ?? user
+        let n = builtin.withCString { b in directory.withCString { u in catalog(b,u,nil,0) } }
         guard n > 0, n < 2_097_152 else { return [:] }
         var text = [CChar](repeating: 0, count: n)
-        _ = builtin.withCString { b in user.withCString { u in catalog(b,u,&text,n) } }
+        _ = builtin.withCString { b in directory.withCString { u in catalog(b,u,&text,n) } }
         return (try? JSONSerialization.jsonObject(with: Data(text.prefix { $0 != 0 }.map { UInt8(bitPattern:$0) }))) as? [String: Any] ?? [:]
     }
 }

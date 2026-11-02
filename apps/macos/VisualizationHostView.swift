@@ -156,8 +156,8 @@ private final class HostOverlayView: NSView {
             case .recovering: text = "声音中断 · 正在自动恢复…"
             case .suspended: text = "等待系统唤醒…"
             case .permissionRequired: text = "等待系统音频授权…"
-            case .userStopped: text = "捕获已停止 · 菜单栏可重新连接"
-            default: text = "音频未连接 · 从菜单栏重新连接"
+            case .userStopped: text = "捕获已停止 · 在设置中重新连接"
+            default: text = "音频未连接 · 在设置中重新连接"
             }
         }
         let font = NSFont(name: "Bradley Hand", size: 12) ?? NSFont.systemFont(ofSize: 12)

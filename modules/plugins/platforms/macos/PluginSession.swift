@@ -1,5 +1,6 @@
 import AppKit
 import QuartzCore
+import Combine
 
 @MainActor
 final class PluginPackage {
@@ -82,11 +83,11 @@ final class PluginPackage {
 }
 
 @MainActor
-final class PluginHost {
+final class PluginHost: ObservableObject {
     static let shared = PluginHost()
     private(set) var metadata = [[String: Any]]()
     private(set) var packages = [String: PluginPackage]()
-    private(set) var errors = [String]()
+    @Published private(set) var errors = [String]()
     private var audioSource: (any AudioFeatureSource)?
     private var keyboardSource: (any KeyboardFeatureSource)?
     private var audio: FeatureSubscription?
@@ -98,10 +99,12 @@ final class PluginHost {
     private var registeredIDs = Set<String>()
     private var observers = [NSObjectProtocol]()
     private var lastScan = 0.0
-    func register(in registry: VisualizationRegistry) {
-        guard PluginNative.shared.available else { errors=["插件运行库不可用；请安装完整应用或重新运行 build.sh。"];return }
-        let result = PluginNative.shared.scan()
-        metadata = result["plugins"] as? [[String: Any]] ?? []
+    func register(in registry: VisualizationRegistry, excluding excludedIDs: Set<String> = [], userDirectory: String? = nil) {
+        guard PluginNative.shared.available else { errors=["皮肤运行库不可用，请重新安装完整的 Miucs 应用。"];return }
+        let result = PluginNative.shared.scan(userDirectory: userDirectory)
+        metadata = (result["plugins"] as? [[String: Any]] ?? []).filter {
+            !excludedIDs.contains($0["id"] as? String ?? "")
+        }
         errors = (result["errors"] as? [[String: Any]] ?? []).compactMap { $0["message"] as? String }
         let nextIDs=Set(metadata.compactMap { $0["id"] as? String })
         for id in registeredIDs.subtracting(nextIDs) { registry.remove(id: id) };registeredIDs=nextIDs

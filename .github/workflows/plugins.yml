@@ -1,9 +1,9 @@
 name: UI plugins
 on:
   push:
-    paths: ['apps/assets/**', 'apps/macos/**', 'apps/windows/**', 'modules/plugins/**', 'modules/visualizations/api/**', 'scripts/swift-sources.sh', 'plugins/**', 'contracts/plugins/**', 'tools/plugins/**', 'tests/plugins/**', 'scripts/*plugin*', '.github/workflows/plugins.yml']
+    paths: ['apps/assets/**', 'apps/macos/**', 'apps/windows/**', 'modules/plugins/**', 'modules/visualizations/api/**', 'scripts/swift-sources.sh', 'scripts/test-settings.sh', 'tests/platforms/macos/SettingsTests.swift', 'plugins/**', 'contracts/plugins/**', 'tools/plugins/**', 'tests/plugins/**', 'scripts/*plugin*', '.github/workflows/plugins.yml']
   pull_request:
-    paths: ['apps/assets/**', 'apps/macos/**', 'apps/windows/**', 'modules/plugins/**', 'modules/visualizations/api/**', 'scripts/swift-sources.sh', 'plugins/**', 'contracts/plugins/**', 'tools/plugins/**', 'tests/plugins/**', 'scripts/*plugin*', '.github/workflows/plugins.yml']
+    paths: ['apps/assets/**', 'apps/macos/**', 'apps/windows/**', 'modules/plugins/**', 'modules/visualizations/api/**', 'scripts/swift-sources.sh', 'scripts/test-settings.sh', 'tests/platforms/macos/SettingsTests.swift', 'plugins/**', 'contracts/plugins/**', 'tools/plugins/**', 'tests/plugins/**', 'scripts/*plugin*', '.github/workflows/plugins.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -19,6 +19,7 @@ jobs:
       - run: sh scripts/build-plugins.sh
       - run: sh scripts/test-plugins.sh
       - run: zsh scripts/test-plugin-macos.sh
+      - run: zsh scripts/test-settings.sh
       - run: |
           python3 tools/plugins/fixture.py
           build/plugins/plugin-surface-probe build/plugins/miucs-plugin-worker plugins/pixel-keyboard build/plugin-fixture.json
@@ -38,6 +39,7 @@ jobs:
             build/plugin-preview/
             build/plugin-replay/report.json
             build/plugin-benchmark.json
+            build/settings-preview/
   windows:
     runs-on: windows-latest
     steps:

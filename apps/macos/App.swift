@@ -5,72 +5,34 @@ import Combine
 @main
 struct MiucsApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
-
     var body: some Scene {
-        Settings {
-            EmptyView()
-        }
-        .commands {
-            CommandMenu("可视化") {
-                ForEach(appDelegate.visualizationDescriptors, id: \.id) { descriptor in
-                    Button(descriptor.name) { appDelegate.selectVisualization(id: descriptor.id) }
+        Settings { EmptyView() }
+            .commands {
+                CommandGroup(replacing: .appSettings) {
+                    Button("设置…") { appDelegate.showSettings() }.keyboardShortcut(",")
                 }
             }
-            CommandGroup(replacing: .appSettings) {
-                VisualizationColorCommand(store: appDelegate.appearanceStore)
-                VisualizationTransparencyCommand(store: appDelegate.appearanceStore)
-            }
-        }
-    }
-}
-
-private struct VisualizationTransparencyCommand: View {
-    @ObservedObject var store: VisualizationAppearanceStore
-    var body: some View {
-        Picker("画面不透明度", selection: Binding(get: { store.opacity }, set: { store.setOpacity($0) })) {
-            ForEach(VisualizationAppearanceStore.opacityPresets, id: \.self) { percent in
-                Text(percent == 100 ? "100%（原始效果）" : "\(percent)%").tag(percent)
-            }
-        }
-        .pickerStyle(.menu)
-    }
-}
-
-private struct VisualizationColorCommand: View {
-    @ObservedObject var store: VisualizationAppearanceStore
-    var body: some View {
-        Picker("线条颜色", selection: Binding(get: { store.selection }, set: { store.select($0) })) {
-            ForEach(VisualizationInk.allCases) { ink in Text(ink.name).tag(ink) }
-        }
-        .pickerStyle(.menu)
     }
 }
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, ObservableObject {
     let appearanceStore = VisualizationAppearanceStore()
-    private var pluginStatusItem: NSMenuItem?
+    let settings = MiucsSettingsModel()
+    private var settingsWindow: MiucsSettingsWindow?
     private var statusItem: NSStatusItem?
     private var trayIcon: AppTrayIcon?
     private var panel: VisualizerPanel?
     private let engine = AudioEngine()
     private let keyboardEngine = KeyboardEngine()
-    private var keyboardItem: NSMenuItem?
-    private var keyboardSubscription: AnyCancellable?
     private var diagnostics: AudioDiagnostics?
+    private var visibilityItem: NSMenuItem?
     private var moveItem: NSMenuItem?
-    private var sizeItem: NSMenuItem?
     private let registry = PluginVisualizations.registry()
-    var visualizationDescriptors: [VisualizationDescriptor] { registry.descriptors }
-    private var visualizationMenu: NSMenu?
-    private var colorMenu: VisualizationColorMenu?
-    private var transparencyMenu: VisualizationTransparencyMenu?
-    private var appearanceSubscription: AnyCancellable?
-    private var transparencySubscription: AnyCancellable?
+    private var subscriptions = Set<AnyCancellable>()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        NSApp.setActivationPolicy(.accessory)
-
+        NSApp.setActivationPolicy(.regular)
         if CommandLine.arguments.contains("--diagnose-audio") || CommandLine.arguments.contains("--verify-audio-recovery") {
             let diagnostics = AudioDiagnostics(engine: engine)
             self.diagnostics = diagnostics
@@ -81,71 +43,33 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, Observ
             }
             return
         }
-
         if CommandLine.arguments.contains("--diagnose-inputs") {
             Task { await InputDiagnostics.run(audio: engine, keyboard: keyboardEngine, arguments: CommandLine.arguments) }
             return
         }
-
         appearanceStore.saveSelection()
+        configureSettings()
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        trayIcon = AppTrayIcon(item:item,source:keyboardEngine.channel)
-        let menu = NSMenu();menu.delegate=self
-        menu.addItem(
-            NSMenuItem(title: "显示拾音器", action: #selector(showPanel), keyEquivalent: "s")
-        )
-        menu.addItem(
-            NSMenuItem(title: "隐藏拾音器", action: #selector(hidePanel), keyEquivalent: "h")
-        )
+        trayIcon = AppTrayIcon(item: item, source: keyboardEngine.channel)
+        let menu = NSMenu()
+        menu.delegate = self
+        func add(_ title: String, _ selector: Selector, _ key: String) -> NSMenuItem {
+            let entry = NSMenuItem(title: title, action: selector, keyEquivalent: key)
+            entry.target = self
+            menu.addItem(entry)
+            return entry
+        }
+        _ = add("打开设置…", #selector(showSettings), ",")
+        visibilityItem = add("隐藏皮肤", #selector(toggleVisibility), "h")
+        moveItem = add("调整位置与大小…", #selector(togglePositioning), "m")
         menu.addItem(.separator())
-        let move = NSMenuItem(title: "调整位置与大小…", action: #selector(togglePositioning), keyEquivalent: "m")
-        menu.addItem(move)
-        moveItem = move
-        let size = NSMenuItem(title: "画面大小", action: nil, keyEquivalent: "")
-        let sizes = NSMenu(title: "画面大小")
-        for (percent, label) in [(10, "极小"), (80, "小"), (100, "标准"), (125, "舒展"), (150, "大"), (200, "特大")] {
-            let preset = NSMenuItem(title: "\(label) · \(percent)%", action: #selector(changeSize(_:)), keyEquivalent: "")
-            preset.target = self; preset.tag = percent
-            sizes.addItem(preset)
-        }
-        size.submenu = sizes
-        menu.addItem(size)
-        sizeItem = size
-        let visualizations = NSMenu(title: "可视化")
-        for descriptor in registry.descriptors {
-            let option = NSMenuItem(title: descriptor.name, action: #selector(selectVisualization(_:)), keyEquivalent: "")
-            option.target = self; option.representedObject = descriptor.id
-            option.state = descriptor.id == PluginVisualizations.defaultID ? .on : .off
-            visualizations.addItem(option)
-        }
-        let visualizationItem = NSMenuItem(title: "可视化", action: nil, keyEquivalent: "")
-        visualizationItem.submenu = visualizations; menu.addItem(visualizationItem)
-        visualizationMenu = visualizations
-        let status=NSMenuItem(title:"插件运行中",action:nil,keyEquivalent:"");status.isEnabled=false;pluginStatusItem=status;menu.addItem(status)
-        let rescan=NSMenuItem(title:"重新扫描插件",action:#selector(rescanPlugins),keyEquivalent:"");rescan.target=self;menu.addItem(rescan)
-        let reload=NSMenuItem(title:"重新加载当前插件",action:#selector(reloadPlugins),keyEquivalent:"");reload.target=self;menu.addItem(reload)
-        let colors = VisualizationColorMenu(store: appearanceStore)
-        colorMenu = colors; menu.addItem(colors.item)
-        let transparency = VisualizationTransparencyMenu(store: appearanceStore)
-        transparencyMenu = transparency; menu.addItem(transparency.item)
-        menu.addItem(.separator())
-        menu.addItem(
-            NSMenuItem(title: "重新连接音频", action: #selector(reconnect), keyEquivalent: "r")
-        )
-        let keyboard = NSMenuItem(title: "键盘监听：正在连接…", action: #selector(connectKeyboard), keyEquivalent: "")
-        keyboard.target = self; keyboardItem = keyboard; menu.addItem(keyboard)
-        keyboardSubscription = keyboardEngine.$state.sink { [weak self] state in
-            self?.updateKeyboardMenu(state)
-        }
-        menu.addItem(
-            NSMenuItem(title: "退出 Miucs", action: #selector(quit), keyEquivalent: "q")
-        )
+        _ = add("退出 Miucs", #selector(quit), "q")
         item.menu = menu
         statusItem = item
         PluginHost.shared.start(audio: engine.channel, keyboard: keyboardEngine.channel)
-
         createPanelIfNeeded()
-
+        refreshSkins()
+        showSettings()
         Task { await engine.start() }
         Task {
             let key = "MiucsKeyboardPermissionRequested.v1"
@@ -154,110 +78,113 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, Observ
             await keyboardEngine.start(requestAccess: request)
         }
     }
-
+    private func configureSettings() {
+        settings.selectSkin = { [weak self] id in self?.selectSkin(id: id) }
+        settings.setVisible = { [weak self] value in self?.setVisible(value) }
+        settings.setScale = { [weak self] value in
+            guard let self, let panel = self.panel else { return }
+            panel.setDrawingWidth(panel.descriptor.layout.width * value / 100)
+            self.syncPanelState()
+        }
+        settings.setOpacity = { [weak self] value in self?.appearanceStore.setOpacity(Int(value.rounded())) }
+        settings.togglePosition = { [weak self] in self?.togglePositioning() }
+        settings.reconnectAudio = { [weak self] in self?.reconnect() }
+        settings.connectKeyboard = { [weak self] in self?.connectKeyboard() }
+        settings.rescan = { [weak self] in self?.rescanSkins() }
+        settings.reload = { PluginHost.shared.reloadActive() }
+        settings.openDirectory = { [weak self] in self?.openSkinDirectory() }
+        engine.$status.sink { [weak self] in self?.settings.audioStatus = $0 }.store(in: &subscriptions)
+        keyboardEngine.$state.sink { [weak self] in self?.settings.keyboardState = $0 }.store(in: &subscriptions)
+        PluginHost.shared.$errors.sink { [weak self] in self?.settings.errors = $0 }.store(in: &subscriptions)
+        appearanceStore.$transparency.sink { [weak self] percent in
+            self?.panel?.visualizationHost.applyTransparency(percent)
+            self?.settings.opacity = Double(100 - percent)
+        }.store(in: &subscriptions)
+    }
     private func createPanelIfNeeded() {
         guard panel == nil, !registry.descriptors.isEmpty else { return }
-        let panel = VisualizerPanel(source: engine.channel, registry: registry, keyboardSource: keyboardEngine.channel)
+        let panel = VisualizerPanel(source: engine.channel, registry: registry, keyboardSource: keyboardEngine.channel,
+                                    geometryPersistence: .sharedSkin)
         self.panel = panel
-        appearanceSubscription = appearanceStore.$selection.sink { [weak self] ink in
-            self?.panel?.visualizationHost.applyAppearance(ink.appearance)
-        }
-        transparencySubscription = appearanceStore.$transparency.sink { [weak self] percent in
-            self?.panel?.visualizationHost.applyTransparency(percent)
-        }
+        panel.visualizationHost.applyAppearance(appearanceStore.appearance)
+        panel.visualizationHost.applyTransparency(appearanceStore.transparency)
+        panel.onAdjustmentChange = { [weak self] in self?.syncPanelState() }
+        panel.onSizeChange = { [weak self] in self?.syncPanelState() }
         panel.orderFrontRegardless()
-        panel.onAdjustmentChange = { [weak self, weak panel] in
-            self?.moveItem?.title = panel?.isAdjustingPosition == true
-                ? "完成调整（恢复鼠标穿透）" : "调整位置与大小…"
+        syncPanelState()
+    }
+    private func syncPanelState() {
+        settings.selectedID = panel?.descriptor.id ?? ""
+        settings.isVisible = panel?.isVisible == true
+        settings.isAdjusting = panel?.isAdjustingPosition == true
+        if let panel {
+            settings.scale = panel.drawingScale * 100
+            let layout = panel.descriptor.layout
+            settings.scaleRange = (layout.minimumWidth / layout.width * 100)...(layout.maximumWidth / layout.width * 100)
         }
-        panel.onSizeChange = { [weak self] in self?.updateSizeMenu() }
-        updateSizeMenu()
-        updateVisualizationMenu()
-
+        visibilityItem?.title = settings.isVisible ? "隐藏皮肤" : "显示皮肤"
+        visibilityItem?.isEnabled = panel != nil
+        moveItem?.title = settings.isAdjusting ? "完成调整" : "调整位置与大小…"
+        moveItem?.isEnabled = panel != nil
     }
-
-    func menuWillOpen(_ menu: NSMenu) {
-        let error=PluginHost.shared.errors.last
-        pluginStatusItem?.title=error.map { "插件：" + String($0.prefix(120)) } ?? "插件运行中"
-        pluginStatusItem?.toolTip=error
+    private func refreshSkins() {
+        settings.skins = PluginHost.shared.metadata.compactMap { info in
+            guard let id = info["id"] as? String, let name = info["name"] as? String,
+                  let directory = info["directory"] as? String else { return nil }
+            return SkinItem(id: id, name: name, directory: URL(fileURLWithPath: directory))
+        }
+        syncPanelState()
     }
-    @objc private func rescanPlugins() {
-        objectWillChange.send()
-        PluginHost.shared.register(in: registry)
-        visualizationMenu?.removeAllItems()
-        for descriptor in registry.descriptors {
-            let item=NSMenuItem(title:descriptor.name,action:#selector(selectVisualization(_:)),keyEquivalent:"")
-            item.target=self;item.representedObject=descriptor.id;visualizationMenu?.addItem(item)
+    private func selectSkin(id: String) {
+        guard registry.descriptor(id: id) != nil else { return }
+        createPanelIfNeeded()
+        _ = panel?.selectVisualization(id: id)
+        syncPanelState()
+    }
+    private func rescanSkins() {
+        PluginHost.shared.register(in: registry, excluding: SkinItem.retiredIDs)
+        if let panel, registry.descriptor(id: panel.descriptor.id) == nil {
+            if let next = registry.descriptors.first {
+                _ = panel.selectVisualization(id: next.id)
+            } else {
+                panel.orderOut(nil)
+                panel.visualizationHost.dispose()
+                self.panel = nil
+            }
         }
         createPanelIfNeeded()
-        updateVisualizationMenu()
+        refreshSkins()
     }
-    @objc private func reloadPlugins() { PluginHost.shared.reloadActive() }
-    @objc private func showPanel() {
-        panel?.orderFrontRegardless()
+    private func openSkinDirectory() {
+        let url = URL(fileURLWithPath: PluginNative.shared.user)
+        do {
+            try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+            if !NSWorkspace.shared.open(url) { settings.errors = ["无法打开皮肤文件夹。"] }
+        } catch { settings.errors = ["无法创建皮肤文件夹：\(error.localizedDescription)"] }
     }
-
-    @objc private func hidePanel() {
-        panel?.orderOut(nil)
-        moveItem?.title = "调整位置与大小…"
+    @objc func showSettings() {
+        if settingsWindow == nil { settingsWindow = MiucsSettingsWindow(model: settings) }
+        syncPanelState()
+        settingsWindow?.present()
     }
-
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        showSettings()
+        return false
+    }
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
+    func menuWillOpen(_ menu: NSMenu) { syncPanelState() }
+    @objc private func toggleVisibility() { setVisible(panel?.isVisible != true) }
+    private func setVisible(_ value: Bool) {
+        if value { panel?.orderFrontRegardless() } else { panel?.orderOut(nil) }
+        syncPanelState()
+    }
     @objc private func togglePositioning() {
         guard let panel else { return }
         panel.setAdjustingPosition(!panel.isAdjustingPosition)
-        moveItem?.title = panel.isAdjustingPosition ? "完成调整（恢复鼠标穿透）" : "调整位置与大小…"
+        syncPanelState()
     }
-
-    @objc private func changeSize(_ sender: NSMenuItem) {
-        guard let panel else { return }
-        panel.setDrawingWidth(panel.descriptor.layout.width * Double(sender.tag) / 100)
-    }
-
-    @objc private func selectVisualization(_ sender: NSMenuItem) {
-        guard let id = sender.representedObject as? String else { return }
-        selectVisualization(id: id)
-    }
-
-    func selectVisualization(id: String) {
-        guard panel?.selectVisualization(id: id) == true else { return }
-        updateVisualizationMenu()
-        updateSizeMenu()
-    }
-
-    private func updateVisualizationMenu() {
-        for option in visualizationMenu?.items ?? [] {
-            option.state = option.representedObject as? String == panel?.descriptor.id ? .on : .off
-        }
-    }
-
-    private func updateSizeMenu() {
-        guard let panel else { return }
-        let percent = panel.drawingScale * 100
-        sizeItem?.title = "画面大小（\(Int(percent.rounded()))%）"
-        for preset in sizeItem?.submenu?.items ?? [] {
-            preset.state = abs(percent - Double(preset.tag)) < 0.5 ? .on : .off
-        }
-    }
-
-    @objc private func reconnect() {
-        Task { await engine.reconnect() }
-    }
-
-    private func updateKeyboardMenu(_ state: KeyboardSourceState) {
-        let label: String
-        switch state {
-        case .running: label = "已连接"
-        case .permissionRequired: label = "点击授权…"
-        case .secureInput: label = "安全输入期间暂停"
-        case .suspended: label = "等待系统恢复"
-        case .recovering: label = "正在重连…"
-        case .connecting: label = "正在连接…"
-        case .stopped: label = "点击连接…"
-        }
-        keyboardItem?.title = "键盘监听：" + label
-    }
-
-    @objc private func connectKeyboard() {
+    private func reconnect() { Task { await engine.reconnect() } }
+    private func connectKeyboard() {
         Task {
             await keyboardEngine.start(requestAccess: true)
             if keyboardEngine.state == .permissionRequired,
@@ -266,19 +193,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, Observ
             }
         }
     }
-
-    @objc private func quit() {
-        keyboardEngine.stop()
-        engine.stop()
-        NSApp.terminate(nil)
-    }
-
+    @objc private func quit() { NSApp.terminate(nil) }
     func applicationWillTerminate(_ notification: Notification) {
         trayIcon?.stop()
-        PluginHost.shared.stop()
         keyboardEngine.stop()
         engine.stop()
         panel?.saveDrawingFrame()
         panel?.visualizationHost.dispose()
+        PluginHost.shared.stop()
     }
 }

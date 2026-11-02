@@ -1,0 +1,172 @@
+<Window x:Class="Miucs.Windows.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:Miucs.Windows"
+        Title="Miucs 设置" Width="960" Height="650" MinWidth="800" MinHeight="560"
+        WindowStartupLocation="CenterScreen" Background="#FAFAFC" ShowInTaskbar="True"
+        FontFamily="Microsoft YaHei UI, Segoe UI" FontSize="13">
+    <Window.Resources>
+        <SolidColorBrush x:Key="Accent" Color="#596FA3"/>
+        <Style x:Key="CardButton" TargetType="Button">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#DFE1E6"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Surface" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="10" Padding="8">
+                            <Grid>
+                                <ContentPresenter IsHitTestVisible="False" HorizontalAlignment="Stretch"/>
+                                <Border x:Name="Feedback" Background="{StaticResource Accent}" Opacity="0" CornerRadius="5" IsHitTestVisible="False"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Surface" Property="BorderBrush" Value="{StaticResource Accent}"/>
+                                <Setter TargetName="Feedback" Property="Opacity" Value="0.07"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True"><Setter TargetName="Feedback" Property="Opacity" Value="0.16"/></Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Surface" Property="BorderBrush" Value="{StaticResource Accent}"/></Trigger>
+                            <Trigger Property="IsEnabled" Value="False"><Setter TargetName="Surface" Property="Opacity" Value="0.5"/></Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                    <Setter Property="BorderBrush" Value="{StaticResource Accent}"/>
+                    <Setter Property="BorderThickness" Value="2"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="Navigation" TargetType="RadioButton">
+            <Setter Property="Margin" Value="0,3"/><Setter Property="Padding" Value="14,12"/>
+            <Setter Property="Background" Value="Transparent"/><Setter Property="Foreground" Value="#666A73"/>
+            <Setter Property="Cursor" Value="Hand"/><Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="Surface" CornerRadius="7" Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}"
+                                BorderBrush="Transparent" BorderThickness="1">
+                            <ContentPresenter IsHitTestVisible="False" HorizontalAlignment="Stretch"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Surface" Property="Background" Value="#E7EBF5"/>
+                                <Setter Property="Foreground" Value="{StaticResource Accent}"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Surface" Property="BorderBrush" Value="#8093BA"/></Trigger>
+                            <Trigger Property="IsPressed" Value="True"><Setter TargetName="Surface" Property="Background" Value="#D6DEEF"/></Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Surface" Property="BorderBrush" Value="{StaticResource Accent}"/></Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="Group" TargetType="Border">
+            <Setter Property="Background" Value="White"/><Setter Property="BorderBrush" Value="#E4E6EB"/>
+            <Setter Property="BorderThickness" Value="1"/><Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="20"/><Setter Property="Margin" Value="0,0,0,18"/>
+        </Style>
+        <Style TargetType="CheckBox"><Setter Property="VerticalContentAlignment" Value="Center"/><Setter Property="Padding" Value="5"/></Style>
+    </Window.Resources>
+    <Grid Background="{Binding Background, RelativeSource={RelativeSource AncestorType=Window}}">
+        <Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+        <Border Background="White" BorderBrush="#E3E4E8" BorderThickness="0,0,1,0" Padding="12,26">
+            <DockPanel LastChildFill="True">
+                <StackPanel DockPanel.Dock="Top" Margin="10,0,0,24">
+                    <TextBlock Text="Miucs" FontSize="24" FontWeight="SemiBold"/>
+                    <TextBlock Text="让音乐自己飞。" Foreground="Gray" Margin="0,5,0,0"/>
+                </StackPanel>
+                <StackPanel DockPanel.Dock="Bottom">
+                    <RadioButton x:Name="AboutNavigation" Style="{StaticResource Navigation}" GroupName="Page" Content="关于 Miucs" Tag="about" Checked="Navigate"/>
+                    <TextBlock Text="●  在后台运行" Foreground="Gray" FontSize="11" Margin="14,22,0,0"/>
+                </StackPanel>
+                <StackPanel>
+                    <RadioButton x:Name="SkinsNavigation" Style="{StaticResource Navigation}" GroupName="Page" Content="皮肤" Tag="skins" Checked="Navigate"/>
+                    <RadioButton x:Name="AppearanceNavigation" Style="{StaticResource Navigation}" GroupName="Page" Content="外观与位置" Tag="appearance" Checked="Navigate"/>
+                    <RadioButton x:Name="InputsNavigation" Style="{StaticResource Navigation}" GroupName="Page" Content="声音与键盘" Tag="inputs" Checked="Navigate"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+        <Grid Grid.Column="1" Margin="28">
+            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+            <Grid Margin="0,0,0,22">
+                <StackPanel><TextBlock x:Name="Heading" Text="皮肤" FontSize="25" FontWeight="SemiBold"/><TextBlock x:Name="Subtitle" Text="点击卡片，使用你喜欢的皮肤。" Foreground="Gray" Margin="0,8,0,0"/></StackPanel>
+                <CheckBox x:Name="VisibleToggle" Content="显示皮肤" HorizontalAlignment="Right" VerticalAlignment="Center" Click="VisibilityClick"/>
+            </Grid>
+            <ScrollViewer x:Name="PageScroll" Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" SizeChanged="ResizeCards" CanContentScroll="False">
+                <Grid>
+                    <StackPanel x:Name="SkinsPage">
+                        <DockPanel Margin="0,0,0,18">
+                            <Button Content="打开皮肤文件夹…" Padding="10,5" Click="OpenDirectoryClick" Margin="0,0,10,0"/>
+                            <Button Content="重新扫描" Padding="10,5" Click="RescanClick"/>
+                            <Button x:Name="ReloadButton" Content="重新加载当前皮肤" Padding="10,5" Click="ReloadClick" HorizontalAlignment="Right"/>
+                        </DockPanel>
+                        <TextBlock x:Name="EmptyMessage" Text="还没有可用的皮肤。将皮肤文件夹放入皮肤目录，再点击「重新扫描」。" TextWrapping="Wrap" Margin="12,35" Visibility="Collapsed"/>
+                        <ItemsControl x:Name="SkinItems">
+                            <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Style="{StaticResource CardButton}" Margin="0,0,14,16" Tag="{Binding Id}" Click="SkinClick"
+                                            Width="{Binding CardWidth, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            AutomationProperties.Name="{Binding Name}" AutomationProperties.ItemStatus="{Binding SelectionDescription}">
+                                        <StackPanel>
+                                            <Grid Height="155">
+                                                <local:SkinPreview DirectoryPath="{Binding Directory}" IsHitTestVisible="False"/>
+                                                <TextBlock Text="● ✓" Foreground="{StaticResource Accent}" FontSize="16" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="4">
+                                                    <TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding IsSelected}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></TextBlock.Style>
+                                                </TextBlock>
+                                            </Grid>
+                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextWrapping="Wrap" MinHeight="44" Padding="6,12,6,4"/>
+                                        </StackPanel>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                    <StackPanel x:Name="AppearancePage" Visibility="Collapsed">
+                        <TextBlock x:Name="CurrentSkin" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,18"/>
+                        <Border Style="{StaticResource Group}"><StackPanel>
+                            <DockPanel><TextBlock Text="画面大小"/><TextBlock x:Name="ScaleLabel" HorizontalAlignment="Right"/></DockPanel>
+                            <Slider x:Name="ScaleSlider" Margin="0,15" ValueChanged="ScaleChanged"/>
+                            <TextBlock Text="切换皮肤时保持当前位置与大小" Foreground="Gray" FontSize="12"/>
+                            <Separator Margin="0,20"/>
+                            <DockPanel><TextBlock Text="不透明度"/><TextBlock x:Name="OpacityLabel" HorizontalAlignment="Right"/></DockPanel>
+                            <Slider x:Name="OpacitySlider" Minimum="10" Maximum="100" TickFrequency="10" IsSnapToTickEnabled="True" Margin="0,15" ValueChanged="OpacityChanged"/>
+                            <Separator Margin="0,8,0,20"/>
+                            <TextBlock Text="拖动移动，拖动右下角缩放；完成后恢复鼠标穿透。" TextWrapping="Wrap" Foreground="Gray"/>
+                            <Button x:Name="PositionButton" Content="在桌面上调整…" Padding="12,7" HorizontalAlignment="Left" Margin="0,12,0,0" Click="PositionClick"/>
+                        </StackPanel></Border>
+                    </StackPanel>
+                    <StackPanel x:Name="InputsPage" Visibility="Collapsed">
+                        <Border Style="{StaticResource Group}"><StackPanel>
+                            <DockPanel><TextBlock Text="系统音频" FontWeight="SemiBold"/><Button Content="重新连接" Padding="10,5" HorizontalAlignment="Right" Click="ReconnectClick"/></DockPanel>
+                            <TextBlock x:Name="AudioStatus" TextWrapping="Wrap" Foreground="Gray" Margin="0,10,0,0"/>
+                        </StackPanel></Border>
+                        <Border Style="{StaticResource Group}"><StackPanel>
+                            <CheckBox x:Name="KeyboardToggle" Content="启用键盘响应" Click="KeyboardClick"/>
+                            <TextBlock x:Name="KeyboardStatus" Foreground="Gray" Margin="0,10"/>
+                            <TextBlock Text="只处理物理键位，不读取输入文字。首次使用需主动启用。" Foreground="Gray" TextWrapping="Wrap"/>
+                        </StackPanel></Border>
+                        <Border Style="{StaticResource Group}"><CheckBox x:Name="TrayToggle" Content="托盘猫摇头" Click="TrayClick"/></Border>
+                        <TextBlock Text="音频和按键只在本机处理，不保存真实音频、屏幕画面或输入文字。" TextWrapping="Wrap" Foreground="Gray"/>
+                    </StackPanel>
+                    <StackPanel x:Name="AboutPage" Visibility="Collapsed" HorizontalAlignment="Center" Margin="20,40">
+                        <TextBlock Text="Miucs" FontSize="30" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                        <TextBlock Text="让音乐自己飞。" Margin="0,16" HorizontalAlignment="Center"/>
+                        <TextBlock Text="用声音与按键，让桌面上的皮肤动起来。"/>
+                    </StackPanel>
+                </Grid>
+            </ScrollViewer>
+            <StackPanel Grid.Row="2" Margin="0,18,0,0">
+                <TextBlock x:Name="ErrorMessage" Foreground="#A85921" TextWrapping="Wrap" MaxHeight="70"/>
+                <TextBlock Text="✓  更改即时生效，自动保存" Foreground="Gray" FontSize="11" Margin="0,6,0,0"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

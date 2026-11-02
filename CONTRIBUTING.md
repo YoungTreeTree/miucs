@@ -4,10 +4,10 @@
 
 ## 平台支持
 
-| 平台 | 音频采集 / 恢复 | 分析后端 | 四个插件绘制 | 插件适配 | 应用外壳 |
+| 平台 | 音频采集 / 恢复 | 分析后端 | 插件绘制 | 插件适配 | 应用外壳 |
 | --- | --- | --- | --- | --- | --- |
 | macOS 14+ / Apple Silicon | 已实现，含自动恢复 | Swift 分析 + Accelerate FFT | Lua/Skia，共用五种笔色 | Lua/Skia，共用五种笔色 | 已实现 |
-| Windows 10/11 x64 | WASAPI 已实现；实机待验 | C# FFT/混音旋律/节拍；合成测试 | Lua/Skia；实机待验 | Lua/Skia；实机待验 | 托盘/透明窗口已实现；实机待验 |
+| Windows 10/11 x64 | WASAPI 已实现；实机待验 | C# FFT/混音旋律/节拍；合成测试 | Lua/Skia；实机待验 | Lua/Skia；实机待验 | 设置/任务栏/托盘/透明窗口已实现；实机待验 |
 
 通用核心当前以 Swift 源码实现。语言无关契约与样本为跨平台协作入口，不表示 Windows 已能直接构建这些代码。
 
@@ -40,6 +40,8 @@ zsh scripts/test-beat-tracker.sh    # 原始 PCM 节拍、半速/倍速、变速
 zsh scripts/test-melody.sh          # 合成独奏/伴奏与响应时序
 zsh scripts/test-audio-pipeline.sh  # 分析编排等价与格式切换
 zsh scripts/test-audio-recovery.sh  # 采集生命周期、退避与迟到回调
+sh scripts/build-plugins.sh        # 设置测试需要正式插件运行库
+zsh scripts/test-settings.sh       # 独立设置、预览、安全路径、共享位置和重启恢复
 zsh scripts/test-appearance.sh      # 全局五色、菜单选择、偏好迁移与会话切换
 zsh scripts/test-visualization-host.sh # 原生视图切换、资源释放和窗口兼容
 zsh scripts/validate-audio.sh       # 基础音频与独立 NumPy 参考
@@ -95,3 +97,5 @@ Windows 使用 .NET 8/C# 与 WPF，不引入 macOS 目录依赖。`scripts/build
 ## 悬浮锁回归
 
 双端悬浮 3 秒的小锁入口与菜单共用调整状态，设计与实机检查见 [悬浮锁说明](docs/hover-lock.md)。Windows 核心测试包含悬浮等待状态；macOS 窗口测试包含按钮与穿透检查。`.github/workflows/macos.yml` 运行窗口与外观回归，并编译完整应用（不生成个人签名证书）。原生 CI 通过也不替代混合 DPI、跨应用点击穿透的真实桌面验收。
+
+Windows 设置的命中区域、滚动、任务栏重开和 GIF 生命周期由 `Miucs.exe --smoke-test build/windows-smoke` 在 Windows CI 验证。测试只使用合成皮肤和临时目录，不开启真实音频/键盘捕获。可移植共享位置与预览目录测试运行于 `CoreTests`。

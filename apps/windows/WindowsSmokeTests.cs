@@ -21,6 +21,7 @@ internal static class WindowsSmokeTests
         VerifyHardwareClickThrough();
         VerifyTrayCat(output);
         VerifyPluginRendering();
+        SettingsSmokeTests.Run(output);
         File.WriteAllText(Path.Combine(output, "result.json"), "{\"pluginSurface\":\"passed\",\"realLoopback\":\"not-run\",\"realKeyboard\":\"not-run\",\"syntheticHoverWindow\":\"passed\"}\n");
     }
     private static void VerifyPluginRendering()
