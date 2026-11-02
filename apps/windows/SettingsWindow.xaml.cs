@@ -101,7 +101,7 @@ public partial class SettingsWindow : Window
         AboutPage.Visibility = page == "about" ? Visibility.Visible : Visibility.Collapsed;
         VisibleToggle.Visibility = page is "skins" or "appearance" ? Visibility.Visible : Visibility.Collapsed;
         Heading.Text = button.Content.ToString();
-        Subtitle.Text = page switch { "skins" => "点击卡片，使用你喜欢的皮肤。", "appearance" => "调整皮肤的大小、透明度和摆放位置。", "inputs" => "连接声音与按键，让皮肤动起来。", _ => "让音乐自己飞。" };
+        Subtitle.Text = page switch { "skins" => "点击卡片，使用你喜欢的皮肤。", "appearance" => "调整皮肤的大小、透明度和摆放位置。", "inputs" => "连接声音与按键，让皮肤动起来。", _ => "你敲你的，它蹦它的。" };
         PageScroll.ScrollToTop();
     }
     private void ResizeCards(object sender, SizeChangedEventArgs e)
