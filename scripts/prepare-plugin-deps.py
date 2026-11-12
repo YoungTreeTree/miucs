@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Fetch pinned Lua, JSON and matching Skia headers/static libraries; verify before extraction."""
-import argparse, hashlib, pathlib, platform, tarfile, urllib.request, tempfile, shutil
+import argparse, hashlib, http.client, pathlib, platform, tarfile, urllib.error, urllib.request, tempfile, shutil, time
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 DEST=ROOT/'build/plugin-deps'
 SKIA='0746a1afaf750159e1a6aef29992980f4e293585'
@@ -9,14 +9,52 @@ BINARIES={
  'mac-arm64':('aarch64-apple-darwin-ganesh-jpegd-jpege-metal-pdf-textlayout','34ffe920f5a5cd4838e7ffe4cf6af48529c87bc0d74462de3e49a5715b35591a'),
  'win-x64':('x86_64-pc-windows-msvc-d3d-ganesh-jpegd-jpege-pdf-textlayout','6fd83e1a78729c5bb3eb9d331e999d3ba88ad13e99bf8370362ea29b81aef495'),
  'win-arm64':('aarch64-pc-windows-msvc-d3d-ganesh-jpegd-jpege-pdf-textlayout','b11178ef3f64140a3774b055385f07202597cfe2ffcdfe578fec603b2fb94086')}
+
+def download_once(file, url, digest):
+    temporary = None
+    try:
+        # Close the file before replacing it; Windows cannot rename an open file.
+        with tempfile.NamedTemporaryFile(dir=file.parent, prefix=file.name+'.', suffix='.download', delete=False) as output:
+            temporary = pathlib.Path(output.name)
+            checksum = hashlib.sha256()
+            size = 0
+            with urllib.request.urlopen(url, timeout=30) as response:
+                while chunk := response.read(1024 * 1024):
+                    output.write(chunk)
+                    checksum.update(chunk)
+                    size += len(chunk)
+                expected = response.headers.get('Content-Length')
+                if expected is not None and size < int(expected):
+                    raise http.client.IncompleteRead(b'', int(expected) - size)
+        if checksum.hexdigest() != digest:
+            raise RuntimeError('SHA-256 mismatch: '+file.name)
+        temporary.replace(file)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+
+def download(file, url, digest):
+    attempts = 4
+    for attempt in range(attempts):
+        try:
+            download_once(file, url, digest)
+            return
+        except (urllib.error.URLError, ConnectionError, TimeoutError, http.client.IncompleteRead) as error:
+            # Retry transient transport/server failures, not missing files or a
+            # checksum mismatch. TLS verification and pinned digests stay enabled.
+            if isinstance(error, urllib.error.HTTPError) and error.code not in (408, 429) and not 500 <= error.code < 600:
+                raise
+            if attempt + 1 == attempts:
+                raise RuntimeError(f'Download failed after {attempts} attempts: {file.name}') from error
+            delay = 2 ** attempt
+            print(f'Download interrupted for {file.name} ({error}); retrying in {delay}s [{attempt+2}/{attempts}]', flush=True)
+            time.sleep(delay)
+
 def fetch(name,url,digest,folder=None):
     file=DEST/name
     if not file.exists() or hashlib.sha256(file.read_bytes()).hexdigest()!=digest:
         print('Downloading',name,flush=True)
-        temp=file.with_suffix('.download')
-        urllib.request.urlretrieve(url,temp)
-        if hashlib.sha256(temp.read_bytes()).hexdigest()!=digest:temp.unlink();raise RuntimeError('SHA-256 mismatch: '+name)
-        temp.replace(file)
+        download(file,url,digest)
     marker=DEST/(folder+'.verified' if folder else name+'.verified')
     if folder and (not (DEST/folder).exists() or not marker.exists() or marker.read_text()!=digest):
         with tarfile.open(file) as archive:
