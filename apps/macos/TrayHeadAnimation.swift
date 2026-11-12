@@ -1,3 +1,6 @@
+#if canImport(MiucsCore)
+import MiucsCore
+#endif
 import Foundation
 
 /// Typing controls the portrait independently of music. The channel's rate excludes

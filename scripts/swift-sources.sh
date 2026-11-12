@@ -9,8 +9,13 @@ fft_macos=("$root/modules/audio/platforms/macos/AccelerateSpectrumTransform.swif
 pcm_macos=("$root/modules/audio/platforms/macos/AudioPCMDecoder.swift")
 visualization_core=("$root"/modules/visualizations/api/*.swift)
 visualization_macos=("$root"/modules/visualizations/api/platforms/macos/*.swift "$root"/modules/plugins/platforms/macos/*.swift)
+hardware_core=("$root"/modules/hardware/macos/*.swift)
+core_sources=("${audio_core[@]}" "${audio_macos[@]}" "${keyboard_core[@]}" "${keyboard_macos[@]}" "${hardware_core[@]}")
 app_macos=("$root"/apps/macos/*.swift)
 host_macos=(${app_macos:#*/App.swift})
 tool_libraries=("$root/tools/macos/AudioDiagnostics.swift" "$root/tools/macos/InputDiagnostics.swift")
-native_libraries=("${audio_core[@]}" "${audio_macos[@]}" "${keyboard_core[@]}" "${keyboard_macos[@]}" "${visualization_core[@]}" "${visualization_macos[@]}" "${host_macos[@]}" "${tool_libraries[@]}")
+native_libraries=("${audio_core[@]}" "${audio_macos[@]}" "${keyboard_core[@]}" "${keyboard_macos[@]}" "${hardware_core[@]}" "${visualization_core[@]}" "${visualization_macos[@]}" "${host_macos[@]}" "${tool_libraries[@]}")
 app_sources=("${native_libraries[@]}" "$root/apps/macos/App.swift")
+
+# App builds link MiucsCore; source-based regression suites above retain internal test seams.
+linked_app_sources=("${visualization_core[@]}" "${visualization_macos[@]}" "${app_macos[@]}" "${tool_libraries[@]}")

@@ -29,6 +29,10 @@
       "passed" : true
     },
     {
+      "name" : "Stopping active capture clears the audio input until it is enabled again",
+      "passed" : true
+    },
+    {
       "name" : "macOS user-stop is respected until explicitly restarted",
       "passed" : true
     },
@@ -83,5 +87,5 @@
   ],
   "failed" : 0,
   "method" : "injected capture transport, actual retry tasks, workspace notifications and controlled monotonic clock; no machine sleep or device changes",
-  "passed" : 20
+  "passed" : 21
 }

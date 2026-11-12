@@ -1,3 +1,6 @@
+#if canImport(MiucsCore)
+import MiucsCore
+#endif
 import AVFoundation
 import Foundation
 

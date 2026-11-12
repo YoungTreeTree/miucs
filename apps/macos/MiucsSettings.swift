@@ -1,14 +1,18 @@
+#if canImport(MiucsCore)
+import MiucsCore
+#endif
 import AppKit
 import SwiftUI
 
 enum SettingsPage: String, CaseIterable, Identifiable {
-    case skins = "皮肤", appearance = "外观与位置", inputs = "声音与键盘", about = "关于 Miucs"
+    case skins = "皮肤", appearance = "外观与位置", inputs = "声音与键盘", hardware = "硬件屏幕", about = "关于 Miucs"
     var id: String { rawValue }
     var symbol: String {
         switch self {
         case .skins: "square.grid.2x2"
         case .appearance: "slider.horizontal.3"
         case .inputs: "waveform"
+        case .hardware: "display"
         case .about: "info.circle"
         }
     }
@@ -17,6 +21,7 @@ enum SettingsPage: String, CaseIterable, Identifiable {
         case .skins: "点击卡片，使用你喜欢的皮肤。"
         case .appearance: "调整皮肤的大小、透明度和摆放位置。"
         case .inputs: "连接声音与按键，让皮肤动起来。"
+        case .hardware: "把当前皮肤显示在 USB 小屏幕上。"
         case .about: "你敲你的，它蹦它的。"
         }
     }
@@ -31,7 +36,9 @@ final class MiucsSettingsModel: ObservableObject {
     @Published var scale = 100.0
     @Published var scaleRange = 10.0...200.0
     @Published var opacity = 100.0
+    @Published var trayAnimationEnabled = true
     @Published var isAdjusting = false
+    @Published var audioCaptureEnabled = true
     @Published var audioStatus = "正在连接系统音频…"
     @Published var keyboardState = KeyboardSourceState.connecting
     @Published var errors = [String]()
@@ -39,7 +46,9 @@ final class MiucsSettingsModel: ObservableObject {
     var setVisible: (Bool) -> Void = { _ in }
     var setScale: (Double) -> Void = { _ in }
     var setOpacity: (Double) -> Void = { _ in }
+    var setTrayAnimationEnabled: (Bool) -> Void = { _ in }
     var togglePosition: () -> Void = {}
+    var setAudioCaptureEnabled: (Bool) -> Void = { _ in }
     var reconnectAudio: () -> Void = {}
     var connectKeyboard: () -> Void = {}
     var rescan: () -> Void = {}
@@ -114,6 +123,7 @@ private struct MiucsSettingsView: View {
                         case .skins: skins
                         case .appearance: appearance
                         case .inputs: inputs
+                        case .hardware: HardwareDisplaySettings()
                         case .about: about
                         }
                     }.frame(maxWidth: .infinity, alignment: .leading)
@@ -220,6 +230,12 @@ private struct MiucsSettingsView: View {
 
     private var appearance: some View {
         VStack(alignment: .leading, spacing: 20) {
+            settingsGroup {
+                Toggle("菜单栏猫头摇晃", isOn: Binding(
+                    get: { model.trayAnimationEnabled }, set: { model.setTrayAnimationEnabled($0) }
+                ))
+                .toggleStyle(.switch)
+            }
             if let skin = model.currentSkin {
                 HStack(spacing: 12) {
                     SkinPreview(url: skin.previewURL).frame(width: 76, height: 50)
@@ -259,12 +275,19 @@ private struct MiucsSettingsView: View {
     private var inputs: some View {
         VStack(alignment: .leading, spacing: 20) {
             settingsGroup {
-                HStack {
+                Toggle(isOn: Binding(
+                    get: { model.audioCaptureEnabled }, set: { model.setAudioCaptureEnabled($0) }
+                )) {
                     Label("系统音频", systemImage: "speaker.wave.2")
+                }
+                .toggleStyle(.switch)
+                HStack {
+                    Text(model.audioCaptureEnabled ? model.audioStatus : "已关闭")
+                        .font(.system(size: 12)).foregroundStyle(.secondary)
                     Spacer()
                     Button("重新连接", action: model.reconnectAudio)
+                        .disabled(!model.audioCaptureEnabled)
                 }
-                Text(model.audioStatus).font(.system(size: 12)).foregroundStyle(.secondary)
             }
             settingsGroup {
                 HStack {
@@ -299,6 +322,40 @@ private struct MiucsSettingsView: View {
             .padding(20).frame(maxWidth: .infinity, alignment: .leading)
             .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 10))
             .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.primary.opacity(0.08)))
+    }
+}
+
+private struct HardwareDisplaySettings: View {
+    @ObservedObject private var hardware = HardwareDisplay.shared
+    var body: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            Toggle("在硬件屏幕上显示皮肤", isOn: Binding(get: { hardware.enabled }, set: { hardware.setEnabled($0) }))
+                .toggleStyle(.switch)
+            VStack(alignment: .leading, spacing: 14) {
+                HStack {
+                    Label(hardware.status, systemImage: hardware.connected ? "checkmark.circle.fill" : "cable.connector")
+                    Spacer()
+                    Button("重新连接") { hardware.reconnect() }.disabled(!hardware.enabled)
+                }
+                if !hardware.detail.isEmpty { Text(hardware.detail).font(.system(size: 12)).foregroundStyle(.secondary) }
+            }.padding(20).frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 10))
+            if hardware.screen?.card != nil {
+                Text("桌屿会把皮肤卡片叠在壁纸上。卡片的位置和方向由桌屿固件决定。")
+                    .font(.system(size: 12)).foregroundStyle(.secondary)
+            } else {
+                Picker("摆放方向", selection: Binding(get: { hardware.orientation }, set: { hardware.setOrientation($0) })) {
+                    ForEach(HardwareOrientation.allCases) { orientation in Text(orientation.title).tag(orientation) }
+                }.pickerStyle(.menu).frame(maxWidth: 340)
+                Text("方向即时生效。画面会保持比例并居中显示，留出边缘空间。")
+                    .font(.system(size: 12)).foregroundStyle(.secondary)
+            }
+            Divider()
+            Text("选择的皮肤、音乐和按键响应会同步到屏幕；隐藏桌面皮肤后，硬件屏幕仍可继续显示。")
+                .font(.system(size: 13)).fixedSize(horizontal: false, vertical: true)
+            Text("用原生 USB 数据口连接已烧录桌屿或 Miucs 屏幕固件的开发板，打开开关即可自动连接。")
+                .font(.system(size: 12)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+        }
     }
 }
 

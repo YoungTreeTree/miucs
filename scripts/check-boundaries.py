@@ -10,7 +10,7 @@ native_names = r"\b(?:NSView|NSColor|NSWindow|CMSampleBuffer|SCStream|CGColor|CG
 for path in shared:
     code = re.sub(r"//[^\n]*|/\*[\s\S]*?\*/", "", path.read_text())
     imports = re.findall(r"^import\s+(\w+)", code, re.M)
-    if set(imports) - {"Foundation"}:
+    if set(imports) - {"Foundation", "MiucsCore"}:
         failures.append(f"{path.relative_to(root)}: shared import {imports}")
     if re.search(native_names, code):
         failures.append(f"{path.relative_to(root)}: native type in shared source")

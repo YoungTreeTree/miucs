@@ -20,9 +20,9 @@ typealias KeyboardCaptureFactory = @Sendable (
 
 /// Keyboard lifetime is independent of audio capture and of the currently visible module.
 @MainActor
-final class KeyboardEngine: ObservableObject {
-    let channel: KeyboardChannel
-    @Published private(set) var state = KeyboardSourceState.stopped
+public final class KeyboardEngine: ObservableObject {
+    public let channel: KeyboardChannel
+    @Published public private(set) var state = KeyboardSourceState.stopped
     private let factory: KeyboardCaptureFactory
     private let environment: @MainActor () async -> KeyboardEnvironment
     private let requestPermission: @MainActor () -> Bool
@@ -42,6 +42,8 @@ final class KeyboardEngine: ObservableObject {
     private var failures = 0
     private var retryAt = 0.0
 
+    public convenience init() { self.init(monitorsSystem: true) }
+
     init(factory: @escaping KeyboardCaptureFactory = { KeyboardEventTap(onEvent: $0, onInterruption: $1) },
          environment: @escaping @MainActor () async -> KeyboardEnvironment = { await KeyboardEnvironment.current() },
          requestPermission: @escaping @MainActor () -> Bool = { CGRequestListenEventAccess() },
@@ -54,7 +56,7 @@ final class KeyboardEngine: ObservableObject {
 
     deinit { polling?.cancel(); capture?.stop() }
 
-    func start(requestAccess: Bool = false) async {
+    public func start(requestAccess: Bool = false) async {
         if !wanted {
             wanted = true; lifecycle = UUID(); installObservers()
             polling = Task { [weak self, pollInterval] in
@@ -68,7 +70,7 @@ final class KeyboardEngine: ObservableObject {
         await refresh(requestAccess: requestAccess)
     }
 
-    func stop() {
+    public func stop() {
         wanted = false; lifecycle = UUID()
         checking = nil; pendingPermissionRequest = false
         polling?.cancel(); polling = nil; observers.removeAll()

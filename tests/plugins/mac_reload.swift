@@ -26,6 +26,7 @@ import AppKit
         try wait { api.ready?(package.handle)==1 }
         package.activeID="test";package.post("activate",["id":"test","width":100,"height":100,"scale":2])
         try wait { (api.completed?(package.handle) ?? 0)>=2 }
+        precondition(package.pixels(width: 16, height: 16)?[2] == 255, "Hardware export initially renders red")
         let original=package.handle
         try source("this is invalid Lua")
         package.requestReload();try wait { !package.reloadError.isEmpty }
@@ -33,6 +34,7 @@ import AppKit
         try source(script("#0000ff"))
         package.requestReload();try wait { package.handle != original }
         precondition(package.reloadError.isEmpty)
+        precondition(package.pixels(width: 16, height: 16)?[0] == 255, "Reload invalidates the hardware export surface before closing the old worker")
         let surface="test".withCString {api.createSurface?(package.handle,nil,$0)}!
         defer { api.destroySurface?(surface) }
         var pixels=[UInt8](repeating:0,count:16*16*4)
@@ -76,16 +78,35 @@ import AppKit
         let tray=AppTrayIcon(item:item,source:keys)
         defer {tray.stop();NSStatusBar.system.removeStatusItem(item);host.stop()}
         precondition(item.button?.image != nil,"Application logo exists without any plugin")
+        let card = DeskIsleCard(announcement: "DESKISLE 1 1 512 288 JPEG 98304 3000")!
         for id in ids.sorted() {
             let selected=registry.makeSession(id:id)!
             precondition(selected is PluginSession,"Every catalog entry must use the plugin runtime")
             selected.activate(viewport:.desktop)
             precondition(Set(host.packages.keys)==Set([id]),"Only selected plugin owns a worker")
+            let plugin = selected as! PluginSession
+            try wait { (api.completed?(plugin.package.handle) ?? 0) >= 2 }
+            guard let pixels = plugin.package.pixels(width: 800, height: 460),
+                  let jpeg = HardwareFrame.jpeg(bgra: pixels, width: 800, height: 460, orientation: .landscape) else {
+                fatalError("Hardware export failed for \(id)")
+            }
+            precondition(HardwareFrame.jpeg(bgra: pixels, width: 800, height: 460, orientation: .landscape,
+                                            screen: .deskIsle(card)) != nil, "DeskIsle card export failed for \(id)")
+            let output = URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appendingPathComponent("build/hardware-previews")
+            try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
+            try jpeg.write(to: output.appendingPathComponent(id + ".jpg"))
+            plugin.package.hardwareActive = true
+            selected.deactivate()
+            precondition(plugin.package.needsUpdates, "Hiding the desktop must keep hardware animation active")
             selected.dispose()
+            precondition(host.packages[id] === plugin.package, "Hardware holds the worker after the desktop view is disposed")
+            plugin.package.hardwareActive = false
+            host.releaseUnused(plugin.package)
             precondition(host.packages.isEmpty,"Switching/disposal releases the old worker")
             precondition(item.button?.image != nil,"Plugin disposal preserves application tray")
         }
         print("PASS independent plugin selection and application tray lifetime")
+        print("PASS hardware export for all seven skins, hidden desktop lifetime and reload invalidation")
         print("PASS Mac plugin reload: syntax failure preserves live scene; successful candidate preserves viewport and swaps rendered output")
     }
 }

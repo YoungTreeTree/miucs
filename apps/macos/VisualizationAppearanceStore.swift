@@ -6,9 +6,11 @@ import Combine
 final class VisualizationAppearanceStore: ObservableObject {
     static let preferencesKey = "MiucsVisualizationInk.v1"
     static let transparencyKey = "MiucsVisualizationTransparency.v1"
+    static let trayAnimationKey = "MiucsTrayAnimation.enabled"
     static let opacityPresets = Array(stride(from: 10, through: 100, by: 10))
     @Published private(set) var selection: VisualizationInk
     @Published private(set) var transparency: Int
+    @Published private(set) var trayAnimationEnabled: Bool
     var opacity: Int { 100 - transparency }
     func setOpacity(_ percent: Int) { setTransparency(100 - min(100, max(10, percent))) }
     private let preferences: UserDefaults
@@ -17,6 +19,7 @@ final class VisualizationAppearanceStore: ObservableObject {
     init(preferences: UserDefaults = .standard) {
         self.preferences = preferences
         transparency = min(90, max(0, preferences.object(forKey: Self.transparencyKey) as? Int ?? 0))
+        trayAnimationEnabled = preferences.object(forKey: Self.trayAnimationKey) as? Bool ?? true
         if let raw = preferences.string(forKey: Self.preferencesKey) {
             selection = VisualizationInk(rawValue: raw) ?? .graphite
         } else { selection = .graphite }
@@ -33,5 +36,11 @@ final class VisualizationAppearanceStore: ObservableObject {
         guard transparency != value else { return }
         preferences.set(value, forKey: Self.transparencyKey)
         transparency = value
+    }
+
+    func setTrayAnimationEnabled(_ enabled: Bool) {
+        guard trayAnimationEnabled != enabled else { return }
+        preferences.set(enabled, forKey: Self.trayAnimationKey)
+        trayAnimationEnabled = enabled
     }
 }

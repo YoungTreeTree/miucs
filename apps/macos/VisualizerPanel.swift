@@ -1,3 +1,6 @@
+#if canImport(MiucsCore)
+import MiucsCore
+#endif
 import AppKit
 
 /// A transparent canvas. Skin mode keeps one desktop frame across package switches.

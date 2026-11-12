@@ -1,9 +1,9 @@
 name: macOS
 on:
   push:
-    paths: ['apps/assets/**', 'apps/macos/**', 'modules/**/*.swift', 'plugins/**', 'build.sh', 'project.yml', 'tools/macos/**', 'tests/**/*.swift', 'scripts/*.sh', '.github/workflows/macos.yml']
+    paths: ['apps/assets/**', 'apps/macos/**', 'modules/**/*.swift', 'plugins/**', 'build.sh', 'Package.swift', 'project.yml', 'tools/macos/**', 'tests/**/*.swift', 'scripts/*.sh', '.github/workflows/macos.yml']
   pull_request:
-    paths: ['apps/assets/**', 'apps/macos/**', 'modules/**/*.swift', 'plugins/**', 'build.sh', 'project.yml', 'tools/macos/**', 'tests/**/*.swift', 'scripts/*.sh', '.github/workflows/macos.yml']
+    paths: ['apps/assets/**', 'apps/macos/**', 'modules/**/*.swift', 'plugins/**', 'build.sh', 'Package.swift', 'project.yml', 'tools/macos/**', 'tests/**/*.swift', 'scripts/*.sh', '.github/workflows/macos.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -17,16 +17,21 @@ jobs:
           rm -f docs/validation/visualization-host-tests.json docs/validation/visualization-appearance-tests.json
           zsh scripts/test-visualization-host.sh
           zsh scripts/test-appearance.sh
+      - name: Embedded core regression tests
+        run: swift test
       - name: Compile complete application without personal signing identity
         shell: zsh {0}
         run: |
           root="$PWD"
           source scripts/swift-sources.sh
           mkdir -p build
+          swift build -c release --product MiucsCore
+          core_bin="$(swift build -c release --show-bin-path)"
           swiftc -parse-as-library -swift-version 6 -O \
             -framework AppKit -framework SwiftUI -framework ScreenCaptureKit \
             -framework CoreMedia -framework CoreAudio -framework Accelerate \
-            -o build/Miucs "${app_sources[@]}"
+            -I "$core_bin/Modules" -L "$core_bin" -lMiucsCore \
+            -o build/Miucs "${linked_app_sources[@]}"
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -21,7 +21,7 @@ open dist/Miucs.app
 ```
 
 
-只修改模块时优先进入相应 `core/` 或 `platforms/macos/`。`scripts/swift-sources.sh` 通过模块目录通配符定义编译分组；增加目录时也要更新 `project.yml`。应用组合点是 `apps/macos/PluginVisualizations.swift`，只注册插件目录中的可视化。
+只修改模块时优先进入相应 `core/` 或 `platforms/macos/`。`MiucsCore` 的模块边界在 `Package.swift`，`build.sh` 和 Xcode 工程均链接该库。`scripts/swift-sources.sh` 保留源码回归测试分组；增加目录时同步维护。嵌入方式见 [核心库指南](docs/embedding.md)。应用组合点是 `apps/macos/PluginVisualizations.swift`，只注册插件目录中的可视化。
 
 离线参考和资源工具需要 Python；应用运行不依赖 Python：
 
@@ -34,6 +34,7 @@ python3 -m pip install -r tests/requirements.txt
 以下命令从仓库根目录执行，不改变个人位置或配色偏好。窗口与外观测试使用独立偏好域。
 
 ```sh
+swift test                        # 核心库皮肤、输入、恢复与释放
 zsh scripts/test-contracts.sh       # 依赖边界、Schema、通道与会话切换
 zsh scripts/test-keyboard.sh        # 键盘通道、并行输入、权限/休眠/重连和原生事件解码
 zsh scripts/test-beat-tracker.sh    # 原始 PCM 节拍、半速/倍速、变速、静音和时序

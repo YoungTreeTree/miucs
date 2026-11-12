@@ -1,3 +1,6 @@
+#if canImport(MiucsCore)
+import MiucsCore
+#endif
 import AppKit
 import QuartzCore
 import Combine
@@ -8,6 +11,9 @@ final class PluginPackage {
     let id: String
     var handle: UnsafeMutableRawPointer?
     var activeID: String?
+    var hardwareActive = false
+    var needsUpdates: Bool { activeID != nil || hardwareActive }
+    private var exportSurface: UnsafeMutableRawPointer?
     private var viewport: [String:Any] = [:]
     var appearance: [String: Any] = ["ink": "#3d3d3d"]
     var reloadError = ""
@@ -26,6 +32,20 @@ final class PluginPackage {
         guard let handle else { return }
         let bytes = PluginMessagePack.encode(["op": op, "value": value])
         _ = bytes.withUnsafeBytes { api.post?(handle,$0.bindMemory(to: UInt8.self).baseAddress!,bytes.count) }
+    }
+    func pixels(width: Int, height: Int) -> Data? {
+        guard let handle else { return nil }
+        if exportSurface == nil { exportSurface = id.withCString { api.createSurface?(handle, nil, $0) } }
+        guard let exportSurface else { return nil }
+        var result = Data(count: width * height * 4)
+        let valid = result.withUnsafeMutableBytes {
+            api.pixels?(exportSurface, UInt32(width), UInt32(height), $0.bindMemory(to: UInt8.self).baseAddress!, $0.count) == 1
+        }
+        return valid ? result : nil
+    }
+    private func releaseExportSurface() {
+        if let exportSurface { api.destroySurface?(exportSurface) }
+        exportSurface = nil
     }
     func checkFiles() {
         let url = URL(fileURLWithPath: directory)
@@ -51,7 +71,7 @@ final class PluginPackage {
             let bytes = PluginMessagePack.encode(["op": op, "value": value])
             _ = bytes.withUnsafeBytes { api.post?(candidate,$0.bindMemory(to: UInt8.self).baseAddress!,bytes.count) }
         }
-        send(activeID == nil ? "deactivate" : "activate", viewport)
+        send(needsUpdates ? "activate" : "deactivate", viewport)
         send("appearanceChanged", appearance)
         send("update", ["now":reloadStarted,"deltaTime":0])
     }
@@ -72,12 +92,14 @@ final class PluginPackage {
             if !valid { reloadError=api.failure(nil);api.close?(candidate);self.candidate=nil;return }
         }
         for view in views.allObjects { view.releaseSurface() }
+        releaseExportSurface()
         let previous=handle;handle=candidate;self.candidate=nil
         if let previous { api.close?(previous) }
     }
     func close() {
         if let candidate { api.close?(candidate) };candidate=nil
         for view in views.allObjects { view.releaseSurface() }
+        releaseExportSurface()
         if let handle { api.close?(handle) }; handle = nil
     }
 }
@@ -94,7 +116,7 @@ final class PluginHost: ObservableObject {
     private var keyboard: KeyboardSubscription?
     private var timer: Timer?
     private var last = 0.0
-    private var suspended = false
+    private(set) var suspended = false
     private var suspensionReasons = Set<String>()
     private var registeredIDs = Set<String>()
     private var observers = [NSObjectProtocol]()
@@ -131,6 +153,9 @@ final class PluginHost: ObservableObject {
             observers.append(NSWorkspace.shared.notificationCenter.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in MainActor.assumeIsolated { self?.setSuspended(false, reason: name == NSWorkspace.didWakeNotification ? "sleep" : "session") } })
         }
     }
+    func hardwareSubscriptions() -> (FeatureSubscription?, KeyboardSubscription?) {
+        (audioSource?.subscribe(), keyboardSource?.subscribe())
+    }
     private func setSuspended(_ value: Bool, reason: String) {
         if value { suspensionReasons.insert(reason) } else { suspensionReasons.remove(reason) }
         suspended = !suspensionReasons.isEmpty;updateSchedule(); last = ProcessInfo.processInfo.systemUptime
@@ -140,7 +165,7 @@ final class PluginHost: ObservableObject {
         }
     }
     func updateSchedule() {
-        let needed = !suspended && packages.values.contains { $0.activeID != nil || $0.isReloading }
+        let needed = !suspended && packages.values.contains { $0.needsUpdates || $0.isReloading }
         guard needed else { timer?.invalidate();timer=nil;return }
         guard timer == nil else { return }
         last=ProcessInfo.processInfo.systemUptime
@@ -163,7 +188,7 @@ final class PluginHost: ObservableObject {
             package.pollReload()
             if !package.reloadError.isEmpty, !errors.contains(package.reloadError) { errors.append(package.reloadError) }
         }
-        for package in packages.values where package.activeID != nil {
+        for package in packages.values where package.needsUpdates {
             package.post("update",frame)
             let error = PluginNative.shared.failure(package.handle)
             if !error.isEmpty, !errors.contains(error) { errors.append(error); fputs("Plugin: \(error)\n",stderr) }
@@ -171,7 +196,7 @@ final class PluginHost: ObservableObject {
         updateSchedule()
     }
     func releaseUnused(_ package: PluginPackage) {
-        guard package.activeID == nil else { return }
+        guard !package.needsUpdates else { return }
         package.close();packages.removeValue(forKey:package.id)
     }
     func reloadActive() { errors=[];for package in packages.values { package.requestReload() };updateSchedule() }
@@ -231,7 +256,7 @@ final class PluginSession: MacVisualizationSession {
         package.appearance=["ink":String(format:"#%02x%02x%02x",Int(ink.red*255),Int(ink.green*255),Int(ink.blue*255))]
         package.post("appearanceChanged",package.appearance)
     }
-    func deactivate() { if package.activeID==descriptor.id { package.activeID=nil;package.post("deactivate");PluginHost.shared.updateSchedule() } }
+    func deactivate() { if package.activeID==descriptor.id { package.activeID=nil;if !package.hardwareActive { package.post("deactivate") };PluginHost.shared.updateSchedule() } }
     func dispose() { deactivate();canvas.releaseSurface();PluginHost.shared.releaseUnused(package) }
     func presentSettings() {}
     private func viewportValue(_ v: VisualizationViewport)->[String:Any] { ["id":descriptor.id,"width":v.width,"height":v.height,"scale":v.scale] }
