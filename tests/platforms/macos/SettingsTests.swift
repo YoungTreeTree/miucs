@@ -81,8 +81,8 @@ enum SettingsTests {
         let window = controller.window!
         let view = window.contentView!
         check("Configuration is a regular, key-capable window independent from the desktop panel", window.canBecomeKey && !panel.canBecomeKey)
-        check("Only skins, appearance, inputs and about are navigation destinations", SettingsPage.allCases.map(\.rawValue) == ["皮肤", "外观与位置", "声音与键盘", "关于 Miucs"])
-        for (page, name) in [(SettingsPage.skins, "skins"), (.appearance, "appearance"), (.inputs, "inputs")] {
+        check("Skin, appearance, input, hardware and about settings are available", SettingsPage.allCases.map(\.rawValue) == ["皮肤", "外观与位置", "声音与键盘", "硬件屏幕", "关于 Miucs"])
+        for (page, name) in [(SettingsPage.skins, "skins"), (.appearance, "appearance"), (.inputs, "inputs"), (.hardware, "hardware")] {
             model.page = page
             await Task.yield()
             try await Task.sleep(for: .milliseconds(180))

@@ -10,3 +10,7 @@ __pycache__/
 # Windows/.NET build products
 **/bin/
 **/obj/
+
+# Swift Package Manager
+.build/
+.swiftpm/

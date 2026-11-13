@@ -169,6 +169,28 @@ struct AudioRecoveryTests {
             await engine.start()
             try require(engine.isRunning && h.requests == 2, "Explicit restart failed")
         }
+        await check("Stopping active capture clears the audio input until it is enabled again") {
+            let h = CaptureHarness(), engine = h.engine(); defer { engine.stop() }
+            let input = engine.channel.subscribe()
+            await engine.start()
+            let old = h.captures[0]
+            old.emit()
+            try require(input.read().frame != nil, "Expected an active audio frame")
+
+            engine.stop()
+            old.emit(); old.fail()
+            engine.handleLifecycle(.configurationChanged); engine.handleLifecycle(.wake)
+            let stopped = input.read()
+            try require(stopped.state == .stopped && stopped.frame == nil && !engine.isRunning,
+                        "A stopped capture still exposed audio")
+            try await settle()
+            try require(h.requests == 1 && !old.active && old.stops > 0 && input.read().frame == nil,
+                        "Capture did not stop or restarted on its own")
+
+            await engine.start()
+            h.captures[1].emit()
+            try require(h.requests == 2 && input.read().frame != nil, "Explicit restart did not resume input")
+        }
         await check("macOS user-stop is respected until explicitly restarted") {
             let h = CaptureHarness(), engine = h.engine(); defer { engine.stop() }
             await engine.start(); h.captures[0].fail(.userStopped)

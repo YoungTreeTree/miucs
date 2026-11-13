@@ -1,44 +1,44 @@
 import Foundation
 
-enum AudioSourceState: String, Codable, Sendable {
+public enum AudioSourceState: String, Codable, Sendable {
     case stopped, connecting, running, recovering, suspended, permissionRequired, userStopped
 }
 
 /// Value contract v1. PCM window time and host-monotonic receipt time are distinct.
-struct AudioFeatureFrame: Codable, Sendable {
-    var version = 1
-    let sessionID: UUID
-    let sequence: UInt64
-    let receivedAt: Double
-    let audio: AudioFeatures
-    let melody: MelodyFrame?
+public struct AudioFeatureFrame: Codable, Sendable {
+    public var version = 1
+    public let sessionID: UUID
+    public let sequence: UInt64
+    public let receivedAt: Double
+    public let audio: AudioFeatures
+    public let melody: MelodyFrame?
 }
 
-struct AudioOnsetEvent: Codable, Sendable {
-    let sequence: UInt64
-    let time: Double
-    let receivedAt: Double
-    let strength: Double
+public struct AudioOnsetEvent: Codable, Sendable {
+    public let sequence: UInt64
+    public let time: Double
+    public let receivedAt: Double
+    public let strength: Double
 }
 
-struct FeatureInput: Codable, Sendable {
-    var version = 1
-    let sessionID: UUID
-    let state: AudioSourceState
-    let frame: AudioFeatureFrame?
-    let frameAge: Double?
-    let onsets: [AudioOnsetEvent]
-    let spectralFluxPeak: Double
+public struct FeatureInput: Codable, Sendable {
+    public var version = 1
+    public let sessionID: UUID
+    public let state: AudioSourceState
+    public let frame: AudioFeatureFrame?
+    public let frameAge: Double?
+    public let onsets: [AudioOnsetEvent]
+    public let spectralFluxPeak: Double
     /// Missing in v1 recordings made before beat tracking was added.
-    var beats: [AudioBeatEvent]? = nil
+    public var beats: [AudioBeatEvent]? = nil
 }
 
-protocol AudioFeatureSource: Sendable {
+public protocol AudioFeatureSource: Sendable {
     func subscribe() -> FeatureSubscription
 }
 
 /// A consumer owns its cursor; one consumer cannot drain another's events.
-final class FeatureSubscription: @unchecked Sendable {
+public final class FeatureSubscription: @unchecked Sendable {
     private let channel: FeatureChannel
     private let lock = NSLock()
     private var sessionID: UUID
@@ -46,20 +46,22 @@ final class FeatureSubscription: @unchecked Sendable {
     fileprivate init(channel: FeatureChannel, sessionID: UUID, sequence: UInt64) {
         self.channel = channel; self.sessionID = sessionID; self.sequence = sequence
     }
-    func read() -> FeatureInput {
+    public func read() -> FeatureInput {
         lock.lock(); defer { lock.unlock() }
         let input = channel.read(sessionID: sessionID, after: sequence)
         sessionID = input.sessionID
         sequence = input.frame?.sequence ?? 0
         return input
     }
+
+    public func activitySignals() -> AsyncStream<Void> { channel.activitySignals() }
 }
 
 /// Short-lock UI handoff: one snapshot, 64 onsets, and a recent flux maximum deque.
-/// No callback runs under this lock and no UI work is enqueued per audio frame.
-final class FeatureChannel: AudioFeatureSource, @unchecked Sendable {
-    static let eventCapacity = 64
-    static let eventLifetime = 0.250
+/// Consumers can opt in to wakeups for active audio and capture state changes.
+public final class FeatureChannel: AudioFeatureSource, @unchecked Sendable {
+    public static let eventCapacity = 64
+    public static let eventLifetime = 0.250
     private struct FluxSample { let sequence: UInt64; let receivedAt: Double; let value: Double }
     private let lock = NSLock()
     private let now: @Sendable () -> Double
@@ -75,28 +77,33 @@ final class FeatureChannel: AudioFeatureSource, @unchecked Sendable {
     private var lastFrameAt: Double?
     private var recordFrames = false
     private var recorded = [AudioFeatureFrame]()
+    private var activityObservers = [UUID: AsyncStream<Void>.Continuation]()
 
-    init(now: @escaping @Sendable () -> Double = { ProcessInfo.processInfo.systemUptime }) { self.now = now }
+    public init(now: @escaping @Sendable () -> Double = { ProcessInfo.processInfo.systemUptime }) { self.now = now }
 
-    func reset(sessionID: UUID, state: AudioSourceState) {
-        lock.lock(); defer { lock.unlock() }
+    public func reset(sessionID: UUID, state: AudioSourceState) {
+        lock.lock()
         self.sessionID = sessionID; self.state = state; sequence = 0
         latestFrame = nil; onsets.removeAll(keepingCapacity: true); flux.removeAll(keepingCapacity: true)
         firstFrameAt = nil; lastFrameAt = nil
         beats.removeAll(keepingCapacity: true); lastBeatTime = nil
+        unlockAndSignalActivity()
     }
 
-    func setState(_ state: AudioSourceState) {
-        lock.lock(); defer { lock.unlock() }
+    public func setState(_ state: AudioSourceState) {
+        lock.lock()
+        guard self.state != state else { lock.unlock(); return }
         self.state = state
         if state != .running { beats.removeAll(keepingCapacity: true) }
+        unlockAndSignalActivity()
     }
 
     @discardableResult
-    func publish(audio: AudioFeatures, melody: MelodyFrame?, sessionID: UUID) -> Bool {
+    public func publish(audio: AudioFeatures, melody: MelodyFrame?, sessionID: UUID) -> Bool {
         let time = now()
-        lock.lock(); defer { lock.unlock() }
-        guard sessionID == self.sessionID, state == .running else { return false }
+        lock.lock()
+        guard sessionID == self.sessionID, state == .running else { lock.unlock(); return false }
+        let signalActivity = !audio.isSilent || latestFrame?.audio.isSilent != true
         if let previous = latestFrame?.audio,
            previous.sampleRate != audio.sampleRate || previous.channelCount != audio.channelCount || audio.time < previous.time {
             beats.removeAll(keepingCapacity: true); lastBeatTime = nil
@@ -140,12 +147,35 @@ final class FeatureChannel: AudioFeatureSource, @unchecked Sendable {
             recorded.append(frame)
             if recorded.count > 10_000 { recorded.removeFirst(recorded.count - 10_000) }
         }
+        if signalActivity { unlockAndSignalActivity() } else { lock.unlock() }
         return true
     }
 
-    func subscribe() -> FeatureSubscription {
+    private func unlockAndSignalActivity() {
+        let observers = activityObservers.values
+        lock.unlock()
+        for observer in observers { observer.yield() }
+    }
+
+    public func subscribe() -> FeatureSubscription {
         lock.lock(); defer { lock.unlock() }
         return FeatureSubscription(channel: self, sessionID: sessionID, sequence: sequence)
+    }
+
+    fileprivate func activitySignals() -> AsyncStream<Void> {
+        let id = UUID()
+        let (stream, continuation) = AsyncStream<Void>.makeStream(bufferingPolicy: .bufferingNewest(1))
+        continuation.onTermination = { [weak self] _ in self?.removeActivityObserver(id) }
+        lock.lock()
+        activityObservers[id] = continuation
+        lock.unlock()
+        continuation.yield()
+        return stream
+    }
+
+    private func removeActivityObserver(_ id: UUID) {
+        lock.lock(); defer { lock.unlock() }
+        activityObservers.removeValue(forKey: id)
     }
 
     fileprivate func read(sessionID: UUID, after cursor: UInt64) -> FeatureInput {
@@ -162,24 +192,24 @@ final class FeatureChannel: AudioFeatureSource, @unchecked Sendable {
                             onsets: events, spectralFluxPeak: peak, beats: beats.filter { $0.sequence > after })
     }
 
-    var snapshot: AudioFeatureFrame? {
+    public var snapshot: AudioFeatureFrame? {
         lock.lock(); defer { lock.unlock() }; return latestFrame
     }
-    var health: (first: Double?, last: Double?) {
+    public var health: (first: Double?, last: Double?) {
         lock.lock(); defer { lock.unlock() }; return (firstFrameAt, lastFrameAt)
     }
-    var currentState: AudioSourceState {
+    public var currentState: AudioSourceState {
         lock.lock(); defer { lock.unlock() }; return state
     }
 
-    func startRecording() {
+    public func startRecording() {
         lock.lock(); defer { lock.unlock() }; recorded.removeAll(); recordFrames = true
     }
-    func stopRecording() -> [AudioFeatureFrame] {
+    public func stopRecording() -> [AudioFeatureFrame] {
         lock.lock(); defer { lock.unlock() }; recordFrames = false
         defer { recorded.removeAll() }; return recorded
     }
-    var recordedFrameCount: Int {
+    public var recordedFrameCount: Int {
         lock.lock(); defer { lock.unlock() }; return recorded.count
     }
 }

@@ -40,7 +40,9 @@ flowchart LR
 
 通用 API 不出现原生视图、颜色或 Combine 类型；原生扩展单独归入 `platforms/`。音频核心不引用任何角色或窗口对象。macOS 与 Windows 平台实现互不引用。`scripts/check-boundaries.py` 检查当前 Swift 源码的这些约束，`test-contracts.sh` 不链接 Apple UI、采集或 Accelerate 框架。
 
-这些目录是源码与依赖边界：macOS 由 `swiftc` 分组编译；Windows 由 `apps/windows/Miucs.Windows.csproj` 组合各 Windows 目录的 C# 源码。Lua 插件通过 C ABI 宿主桥接到隔离 worker，不加载第三方原生插件。Windows 的数值、事件、场景和窗口偏好在独立可移植测试中验证，原生平台检查见 `docs/windows-acceptance.md`。
+这些目录也是 Swift Package 的源码边界：`MiucsCore` 编译音频、键盘与 `modules/hardware/macos/`，携带皮肤资源；macOS 独立应用链接同一个核心库，再组合桌面窗口及 Lua/Skia worker。源码回归测试保留 `swiftc` 分组以使用内部测试接缝；Windows 由 `apps/windows/Miucs.Windows.csproj` 组合各 Windows 目录的 C# 源码。Lua 插件通过 C ABI 宿主桥接到隔离 worker，不加载第三方原生插件。Windows 的数值、事件、场景和窗口偏好在独立可移植测试中验证，原生平台检查见 `docs/windows-acceptance.md`。
+
+嵌入宿主使用 `NativePetSession` 与注入的 `NativePetTransport`，让开发板执行 Lua 和绘制。核心库不主动发现 USB、不依赖 `PluginHost.shared`。设置、设备所有权与是否启用输入由宿主控制，见 [嵌入指南](embedding.md)。
 
 ## 设置窗口与皮肤位置
 

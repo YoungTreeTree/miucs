@@ -1,6 +1,6 @@
 import Foundation
 
-final class KeyboardSubscription: @unchecked Sendable {
+public final class KeyboardSubscription: @unchecked Sendable {
     private let channel: KeyboardChannel
     private let lock = NSLock()
     private var sessionID: UUID
@@ -10,19 +10,21 @@ final class KeyboardSubscription: @unchecked Sendable {
         self.channel = channel; self.sessionID = sessionID; self.sequence = sequence
     }
 
-    func read() -> KeyboardInput {
+    public func read() -> KeyboardInput {
         lock.lock(); defer { lock.unlock() }
         let input = channel.read(sessionID: sessionID, after: sequence)
         sessionID = input.sessionID; sequence = input.sequence
         return input
     }
+
+    public func eventSignals() -> AsyncStream<Void> { channel.eventSignals() }
 }
 
-/// Bounded in-memory handoff. Capture never calls UI code or queues a task per key.
-final class KeyboardChannel: KeyboardFeatureSource, @unchecked Sendable {
-    static let eventCapacity = 128
-    static let eventLifetime = 0.250
-    static let rateCapacity = 256
+/// Bounded in-memory handoff. A signal wakes the reader, and the channel preserves event order.
+public final class KeyboardChannel: KeyboardFeatureSource, @unchecked Sendable {
+    public static let eventCapacity = 128
+    public static let eventLifetime = 0.250
+    public static let rateCapacity = 256
     private let lock = NSLock()
     private let now: @Sendable () -> Double
     private var sessionID = UUID()
@@ -33,31 +35,41 @@ final class KeyboardChannel: KeyboardFeatureSource, @unchecked Sendable {
     private var presses = [Double]()
     private var events = [KeyboardInputEvent]()
     private var lastActivity: Double?
+    private var eventObservers = [UUID: AsyncStream<Void>.Continuation]()
 
-    init(now: @escaping @Sendable () -> Double = { ProcessInfo.processInfo.systemUptime }) {
+    public init(now: @escaping @Sendable () -> Double = { ProcessInfo.processInfo.systemUptime }) {
         self.now = now
     }
 
-    func reset(sessionID: UUID, state: KeyboardSourceState) {
-        lock.lock(); defer { lock.unlock() }
+    public func reset(sessionID: UUID, state: KeyboardSourceState) {
+        lock.lock()
         self.sessionID = sessionID; self.state = state; sequence = 0
         modifiers = []; held.removeAll(keepingCapacity: true)
         presses.removeAll(keepingCapacity: true); events.removeAll(keepingCapacity: true)
         lastActivity = nil
+        unlockAndSignalEvents()
     }
 
-    func setRunning(sessionID: UUID) {
-        lock.lock(); defer { lock.unlock() }
-        if self.sessionID == sessionID { state = .running }
+    public func setRunning(sessionID: UUID) {
+        lock.lock()
+        guard self.sessionID == sessionID, state != .running else { lock.unlock(); return }
+        state = .running
+        unlockAndSignalEvents()
     }
 
     @discardableResult
-    func publish(_ event: KeyboardRawEvent, sessionID: UUID) -> Bool {
-        lock.lock(); defer { lock.unlock() }
-        guard self.sessionID == sessionID, state == .running else { return false }
+    public func publish(_ event: KeyboardRawEvent, sessionID: UUID) -> Bool {
+        lock.lock()
+        guard self.sessionID == sessionID, state == .running else {
+            lock.unlock()
+            return false
+        }
         // Sample under the lock, so concurrent callbacks cannot reorder receipt time.
         let time = now()
-        guard time.isFinite else { return false }
+        guard time.isFinite else {
+            lock.unlock()
+            return false
+        }
         prune(at: time)
         var kind = event.kind
         var duration: Double?
@@ -82,12 +94,36 @@ final class KeyboardChannel: KeyboardFeatureSource, @unchecked Sendable {
             keyCode: event.keyCode, modifiers: event.modifiers, heldDuration: duration,
             modifierIsPressed: event.modifierIsPressed))
         if events.count > Self.eventCapacity { events.removeFirst(events.count - Self.eventCapacity) }
+        unlockAndSignalEvents()
         return true
     }
 
-    func subscribe() -> KeyboardSubscription {
+    private func unlockAndSignalEvents() {
+        let observers = eventObservers.values
+        lock.unlock()
+        for observer in observers { observer.yield() }
+    }
+
+    public func subscribe() -> KeyboardSubscription {
         lock.lock(); defer { lock.unlock() }
         return KeyboardSubscription(channel: self, sessionID: sessionID, sequence: sequence)
+    }
+
+    fileprivate func eventSignals() -> AsyncStream<Void> {
+        let id = UUID()
+        let (stream, continuation) = AsyncStream<Void>.makeStream(bufferingPolicy: .bufferingNewest(1))
+        continuation.onTermination = { [weak self] _ in self?.removeEventObserver(id) }
+        lock.lock()
+        eventObservers[id] = continuation
+        lock.unlock()
+        // Include events that arrived between subscribing and registering for wakeups.
+        continuation.yield()
+        return stream
+    }
+
+    private func removeEventObserver(_ id: UUID) {
+        lock.lock(); defer { lock.unlock() }
+        eventObservers.removeValue(forKey: id)
     }
 
     fileprivate func read(sessionID: UUID, after cursor: UInt64) -> KeyboardInput {

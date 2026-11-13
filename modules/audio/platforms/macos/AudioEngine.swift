@@ -27,18 +27,18 @@ struct AudioRecoveryTiming {
     var permissionPoll = 5.0
 }
 
-enum AudioCaptureLifecycleEvent {
+public enum AudioCaptureLifecycleEvent {
     case sleep, wake, screensSleep, screensWake, configurationChanged
 }
 
 /// Owns one capture generation. Old callbacks and cancelled attempts cannot revive it.
 @MainActor
-final class AudioEngine: NSObject, ObservableObject {
-    let channel: FeatureChannel
-    var features: AudioFeatures? { channel.snapshot?.audio }
-    var melody: MelodyFrame? { channel.snapshot?.melody }
-    @Published private(set) var status = "正在连接系统音频…"
-    @Published private(set) var isRunning = false
+public final class AudioEngine: NSObject, ObservableObject {
+    public let channel: FeatureChannel
+    public var features: AudioFeatures? { channel.snapshot?.audio }
+    public var melody: MelodyFrame? { channel.snapshot?.melody }
+    @Published public private(set) var status = "正在连接系统音频…"
+    @Published public private(set) var isRunning = false
 
     private let factory: AudioCaptureFactory?
     private let timing: AudioRecoveryTiming
@@ -65,6 +65,8 @@ final class AudioEngine: NSObject, ObservableObject {
     private var expectedAudioSince: Double?
     private var suspended: Bool { systemSleeping || screensSleeping }
 
+    public override convenience init() { self.init(factory: nil) }
+
     init(factory: AudioCaptureFactory? = nil, timing: AudioRecoveryTiming = AudioRecoveryTiming(),
          monitorsSystem: Bool = true,
          now: @escaping @Sendable () -> Double = { ProcessInfo.processInfo.systemUptime },
@@ -79,21 +81,21 @@ final class AudioEngine: NSObject, ObservableObject {
         super.init()
     }
 
-    func start(excludingExistingApplications: Bool = false) async {
+    public func start(excludingExistingApplications: Bool = false) async {
         guard !wanted else { return }
         wanted = true; excludesExistingApplications = excludingExistingApplications
         installObservers()
         await connect()
     }
 
-    func reconnect() async {
+    public func reconnect() async {
         wanted = true; failures = 0; waitingForPermission = false
         installObservers()
         invalidateCapture()
         await connect()
     }
 
-    func stop() {
+    public func stop() {
         wanted = false
         invalidateCapture()
         observers.removeAll(); outputObserver = nil
@@ -102,7 +104,7 @@ final class AudioEngine: NSObject, ObservableObject {
         setStatus(.stopped, "已暂停")
     }
 
-    func handleLifecycle(_ event: AudioCaptureLifecycleEvent) {
+    public func handleLifecycle(_ event: AudioCaptureLifecycleEvent) {
         guard wanted else { return }
         let wasSuspended = suspended
         switch event {
@@ -187,7 +189,7 @@ final class AudioEngine: NSObject, ObservableObject {
         let nsError = error as NSError
         if nsError.domain == SCStreamErrorDomain && nsError.code == SCStreamError.Code.userStopped.rawValue {
             stop() // Respect an explicit stop from macOS's capture controls.
-            setStatus(.userStopped, "系统已停止音频捕获 · 可从菜单栏重新连接")
+            setStatus(.userStopped, "系统已停止音频捕获")
         } else if nsError.domain == SCStreamErrorDomain && nsError.code == SCStreamError.Code.userDeclined.rawValue {
             waitingForPermission = true
             recover("等待音频捕获授权", delay: timing.permissionPoll)
@@ -318,6 +320,7 @@ private final class ScreenAudioCapture: NSObject, AudioCaptureSession, SCStreamD
                      onFrame: @escaping @Sendable (AudioFeatures, MelodyFrame?) -> Void,
                      onFailure: @escaping @Sendable (Error) -> Void) async throws -> ScreenAudioCapture {
         let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: !excludingExistingApplications)
+        try Task.checkCancellation()
         guard let display = content.displays.first else {
             throw NSError(domain: SCStreamErrorDomain, code: SCStreamError.Code.noCaptureSource.rawValue)
         }
@@ -334,19 +337,21 @@ private final class ScreenAudioCapture: NSObject, AudioCaptureSession, SCStreamD
         capture.output = try await Task.detached(priority: .userInitiated) {
             try StreamOutput(onFrame: onFrame, onFailure: onFailure)
         }.value
+        try Task.checkCancellation()
         capture.stream = SCStream(filter: filter, configuration: config, delegate: capture)
         try capture.stream.addStreamOutput(capture.output, type: .audio, sampleHandlerQueue: capture.output.queue)
         return capture
     }
 
-    func start() async throws {
+    public func start() async throws {
         try await stream.startCapture()
         hasStarted = true
         if stopRequested { await stop() }
     }
 
-    func stop() async {
+    public func stop() async {
         stopRequested = true
+        output.stopAcceptingAudio()
         guard hasStarted else { return }
         hasStarted = false
         try? await stream.stopCapture()
@@ -383,6 +388,8 @@ private final class StreamOutput: NSObject, SCStreamOutput, @unchecked Sendable 
     let queue = DispatchQueue(label: "miucs.audio", qos: .userInteractive)
     private let onFrame: @Sendable (AudioFeatures, MelodyFrame?) -> Void
     private let onFailure: @Sendable (Error) -> Void
+    private let inputLock = NSLock()
+    private var acceptsAudio = true
     private var consecutiveFailures = 0
     private var reportedFailure = false
     private let analysis: AudioAnalysisPipeline
@@ -396,12 +403,16 @@ private final class StreamOutput: NSObject, SCStreamOutput, @unchecked Sendable 
         AudioEngine.trace("melody analysis: predominant mixture, harmonic salience + reliability + contour continuity")
     }
 
+    func stopAcceptingAudio() {
+        inputLock.withLock { acceptsAudio = false }
+    }
+
     func stream(
         _ stream: SCStream,
         didOutputSampleBuffer sampleBuffer: CMSampleBuffer,
         of type: SCStreamOutputType
     ) {
-        guard type == .audio, sampleBuffer.isValid else { return }
+        guard type == .audio, inputLock.withLock({ acceptsAudio }), sampleBuffer.isValid else { return }
         do {
             let block = try AudioPCMDecoder.decode(sampleBuffer)
             for frame in try analysis.process(block) {

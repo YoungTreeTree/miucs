@@ -1,3 +1,6 @@
+#if canImport(MiucsCore)
+import MiucsCore
+#endif
 import AppKit
 import SwiftUI
 import Combine
@@ -17,6 +20,7 @@ struct MiucsApp: App {
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, ObservableObject {
+    private static let audioCaptureEnabledKey = "MiucsAudioCapture.enabled"
     let appearanceStore = VisualizationAppearanceStore()
     let settings = MiucsSettingsModel()
     private var settingsWindow: MiucsSettingsWindow?
@@ -50,7 +54,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, Observ
         appearanceStore.saveSelection()
         configureSettings()
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        trayIcon = AppTrayIcon(item: item, source: keyboardEngine.channel)
+        trayIcon = AppTrayIcon(item: item, source: keyboardEngine.channel,
+                              animationEnabled: appearanceStore.trayAnimationEnabled)
         let menu = NSMenu()
         menu.delegate = self
         func add(_ title: String, _ selector: Selector, _ key: String) -> NSMenuItem {
@@ -69,8 +74,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, Observ
         PluginHost.shared.start(audio: engine.channel, keyboard: keyboardEngine.channel)
         createPanelIfNeeded()
         refreshSkins()
+        HardwareDisplay.shared.start()
         showSettings()
-        Task { await engine.start() }
+        startAudioIfEnabled()
         Task {
             let key = "MiucsKeyboardPermissionRequested.v1"
             let request = !UserDefaults.standard.bool(forKey: key)
@@ -87,11 +93,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, Observ
             self.syncPanelState()
         }
         settings.setOpacity = { [weak self] value in self?.appearanceStore.setOpacity(Int(value.rounded())) }
+        settings.setTrayAnimationEnabled = { [weak self] enabled in self?.appearanceStore.setTrayAnimationEnabled(enabled) }
         settings.togglePosition = { [weak self] in self?.togglePositioning() }
+        settings.audioCaptureEnabled = UserDefaults.standard.object(forKey: Self.audioCaptureEnabledKey) as? Bool ?? true
+        settings.setAudioCaptureEnabled = { [weak self] enabled in self?.setAudioCaptureEnabled(enabled) }
         settings.reconnectAudio = { [weak self] in self?.reconnect() }
         settings.connectKeyboard = { [weak self] in self?.connectKeyboard() }
         settings.rescan = { [weak self] in self?.rescanSkins() }
-        settings.reload = { PluginHost.shared.reloadActive() }
+        settings.reload = {
+            PluginHost.shared.reloadActive()
+            HardwareDisplay.shared.reloadSkin()
+        }
         settings.openDirectory = { [weak self] in self?.openSkinDirectory() }
         engine.$status.sink { [weak self] in self?.settings.audioStatus = $0 }.store(in: &subscriptions)
         keyboardEngine.$state.sink { [weak self] in self?.settings.keyboardState = $0 }.store(in: &subscriptions)
@@ -99,6 +111,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, Observ
         appearanceStore.$transparency.sink { [weak self] percent in
             self?.panel?.visualizationHost.applyTransparency(percent)
             self?.settings.opacity = Double(100 - percent)
+        }.store(in: &subscriptions)
+        appearanceStore.$trayAnimationEnabled.sink { [weak self] enabled in
+            self?.settings.trayAnimationEnabled = enabled
+            self?.trayIcon?.setAnimationEnabled(enabled)
         }.store(in: &subscriptions)
     }
     private func createPanelIfNeeded() {
@@ -115,6 +131,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, Observ
     }
     private func syncPanelState() {
         settings.selectedID = panel?.descriptor.id ?? ""
+        HardwareDisplay.shared.selectSkin(settings.selectedID)
         settings.isVisible = panel?.isVisible == true
         settings.isAdjusting = panel?.isAdjustingPosition == true
         if let panel {
@@ -183,7 +200,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, Observ
         panel.setAdjustingPosition(!panel.isAdjustingPosition)
         syncPanelState()
     }
-    private func reconnect() { Task { await engine.reconnect() } }
+    private func setAudioCaptureEnabled(_ enabled: Bool) {
+        guard settings.audioCaptureEnabled != enabled else { return }
+        settings.audioCaptureEnabled = enabled
+        UserDefaults.standard.set(enabled, forKey: Self.audioCaptureEnabledKey)
+        if enabled { startAudioIfEnabled() } else { engine.stop() }
+    }
+    private func startAudioIfEnabled() {
+        Task {
+            guard settings.audioCaptureEnabled else { return }
+            await engine.start()
+        }
+    }
+    private func reconnect() {
+        Task {
+            guard settings.audioCaptureEnabled else { return }
+            await engine.reconnect()
+        }
+    }
     private func connectKeyboard() {
         Task {
             await keyboardEngine.start(requestAccess: true)
@@ -195,6 +229,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, Observ
     }
     @objc private func quit() { NSApp.terminate(nil) }
     func applicationWillTerminate(_ notification: Notification) {
+        HardwareDisplay.shared.stop()
         trayIcon?.stop()
         keyboardEngine.stop()
         engine.stop()

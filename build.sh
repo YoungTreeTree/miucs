@@ -12,6 +12,9 @@ fi
 rm -rf "$app"
 mkdir -p "$app/Contents/MacOS"
 
+swift build --package-path "$root" -c release --product MiucsCore
+core_bin="$(swift build --package-path "$root" -c release --show-bin-path)"
+
 swiftc \
   -parse-as-library \
   -swift-version 6 \
@@ -24,12 +27,14 @@ swiftc \
   -framework CoreAudio \
   -framework Accelerate \
   -o "$app/Contents/MacOS/Miucs" \
-  "${app_sources[@]}"
+  -I "$core_bin/Modules" -L "$core_bin" -lMiucsCore \
+  "${linked_app_sources[@]}"
 
 cp "$root/apps/macos/Info.plist" "$app/Contents/Info.plist"
 mkdir -p "$app/Contents/Resources"
 cp "$root/apps/assets/cat-head.png" "$app/Contents/Resources/PixelCatHead.png"
 
+ditto "$core_bin/Miucs_MiucsCore.bundle" "$app/Contents/Resources/Miucs_MiucsCore.bundle"
 cp "$root/apps/assets/Miucs.icns" "$app/Contents/Resources/Miucs.icns"
 
 # Ad-hoc signatures change on every build, so macOS drops the screen-recording grant.

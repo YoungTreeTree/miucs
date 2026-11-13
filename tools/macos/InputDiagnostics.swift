@@ -1,3 +1,6 @@
+#if canImport(MiucsCore)
+import MiucsCore
+#endif
 import AppKit
 
 /// Explicit, aggregate-only diagnostics: never exports key codes, held keys or individual timestamps.
